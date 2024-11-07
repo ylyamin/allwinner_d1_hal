@@ -1,4 +1,3 @@
-OUTPUT_FORMAT("elf64-littleriscv", "elf64-littleriscv", "elf64-littleriscv")
 OUTPUT_ARCH(riscv)
 
 STACK_SIZE = 0x400;

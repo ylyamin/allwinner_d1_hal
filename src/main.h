@@ -1,8 +1,10 @@
 
-#ifndef _MAIN_H_
-#define _MAIN_H_
+#ifndef MAIN_H_
+#define MAIN_H_
 
-extern unsigned int __bss_start;
-extern unsigned int __bss_end;
+#include <platform.h>
+#include <ccu.h>
+#include <uart.h>
+#include <led.h>
 
-#endif //_MAIN_H_
+#endif //MAIN_H_
