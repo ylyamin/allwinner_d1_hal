@@ -1,0 +1,136 @@
+
+Discarded input sections
+
+ .text          0x0000000000000000        0x0 build/src/main.c.o
+ .data          0x0000000000000000        0x0 build/src/main.c.o
+ .bss           0x0000000000000000        0x0 build/src/main.c.o
+ .data          0x0000000000000000        0x0 build/src/start.s.o
+ .bss           0x0000000000000000        0x0 build/src/start.s.o
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+RAM              0x0000000040000000 0x0000000000400000
+*default*        0x0000000000000000 0xffffffffffffffff
+
+Linker script and memory map
+
+LOAD /home/yury/toolchain/riscv64-glibc-gcc-thead_20200702/bin/../lib/gcc/riscv64-unknown-linux-gnu/8.1.0/../../../../riscv64-unknown-linux-gnu/lib/../lib64/lp64/libsupc++.a
+LOAD /home/yury/toolchain/riscv64-glibc-gcc-thead_20200702/bin/../lib/gcc/riscv64-unknown-linux-gnu/8.1.0/lib64/lp64/libgcc.a
+LOAD build/src/main.c.o
+LOAD build/src/start.s.o
+START GROUP
+LOAD /home/yury/toolchain/riscv64-glibc-gcc-thead_20200702/bin/../sysroot/usr/lib64/lp64/libc.a
+LOAD /home/yury/toolchain/riscv64-glibc-gcc-thead_20200702/bin/../lib/gcc/riscv64-unknown-linux-gnu/8.1.0/lib64/lp64/libgcc.a
+END GROUP
+START GROUP
+LOAD /home/yury/toolchain/riscv64-glibc-gcc-thead_20200702/bin/../lib/gcc/riscv64-unknown-linux-gnu/8.1.0/lib64/lp64/libgcc.a
+LOAD /home/yury/toolchain/riscv64-glibc-gcc-thead_20200702/bin/../lib/gcc/riscv64-unknown-linux-gnu/8.1.0/lib64/lp64/libgcc_eh.a
+LOAD /home/yury/toolchain/riscv64-glibc-gcc-thead_20200702/bin/../sysroot/usr/lib64/lp64/libc.a
+END GROUP
+                0x0000000000000400                STACK_SIZE = 0x400
+                0x0000000040000000                . = ORIGIN (RAM)
+
+.text           0x0000000040000000       0x6a
+                [!provide]                        PROVIDE (__image_start = .)
+                [!provide]                        PROVIDE (__text_start = .)
+ *(.text*)
+ .text.main     0x0000000040000000       0x2c build/src/main.c.o
+                0x0000000040000000                main
+ .text          0x000000004000002c       0x3e build/src/start.s.o
+                0x000000004000002c                _start
+ *(.iplt)
+ *(.note.gnu.build-id)
+                [!provide]                        PROVIDE (__text_end = .)
+
+.ksymtab        0x0000000040000070        0x0
+                [!provide]                        PROVIDE (__ksymtab_start = .)
+ *(.ksymtab.text)
+                [!provide]                        PROVIDE (__ksymtab_end = .)
+
+.romdisk        0x0000000040000070        0x0
+                [!provide]                        PROVIDE (__romdisk_start = .)
+ *(.romdisk)
+                [!provide]                        PROVIDE (__romdisk_end = .)
+
+.rodata         0x0000000040000070        0x0
+                [!provide]                        PROVIDE (__rodata_start = .)
+ *(.rodata*)
+ *(.srodata*)
+                [!provide]                        PROVIDE (__rodata_end = .)
+
+.data           0x0000000040000070        0x0
+                [!provide]                        PROVIDE (__data_start = .)
+                [!provide]                        PROVIDE (__global_pointer$ = (. + 0x800))
+ *(.sdata*)
+ *(.data*)
+                0x0000000040000070                . = ALIGN (0x8)
+                [!provide]                        PROVIDE (__data_end = .)
+                [!provide]                        PROVIDE (__image_end = .)
+
+.bss            0x0000000040000070        0x0
+                [!provide]                        PROVIDE (__bss_start = .)
+ *(.bss*)
+ *(.sbss*)
+ *(COMMON)
+                0x0000000040000070                . = ALIGN (0x8)
+                [!provide]                        PROVIDE (__bss_end = .)
+
+.stack          0x0000000040000070      0x400
+                [!provide]                        PROVIDE (__stack_start = .)
+                0x0000000040000470                . = (. + STACK_SIZE)
+ *fill*         0x0000000040000070      0x400 
+                0x0000000040000470                . = ALIGN (0x10)
+                [!provide]                        PROVIDE (__stack_end = .)
+
+/DISCARD/
+ *(.dynsym)
+ *(.dynstr*)
+ *(.dynamic*)
+ *(.plt*)
+ *(.interp*)
+ *(.gnu*)
+OUTPUT(build/app.elf elf64-littleriscv)
+
+.debug_info     0x0000000000000000       0xc7
+ .debug_info    0x0000000000000000       0x99 build/src/main.c.o
+ .debug_info    0x0000000000000099       0x2e build/src/start.s.o
+
+.debug_abbrev   0x0000000000000000       0x7e
+ .debug_abbrev  0x0000000000000000       0x6a build/src/main.c.o
+ .debug_abbrev  0x000000000000006a       0x14 build/src/start.s.o
+
+.debug_loc      0x0000000000000000       0xe0
+ .debug_loc     0x0000000000000000       0xe0 build/src/main.c.o
+
+.debug_aranges  0x0000000000000000       0x60
+ .debug_aranges
+                0x0000000000000000       0x30 build/src/main.c.o
+ .debug_aranges
+                0x0000000000000030       0x30 build/src/start.s.o
+
+.debug_ranges   0x0000000000000000       0x20
+ .debug_ranges  0x0000000000000000       0x20 build/src/main.c.o
+
+.debug_line     0x0000000000000000      0x117
+ .debug_line    0x0000000000000000       0x6d build/src/main.c.o
+ .debug_line    0x000000000000006d       0xaa build/src/start.s.o
+
+.debug_str      0x0000000000000000      0x11f
+ .debug_str     0x0000000000000000      0x107 build/src/main.c.o
+ .debug_str     0x0000000000000107       0x18 build/src/start.s.o
+                                         0x3d (size before relaxing)
+
+.comment        0x0000000000000000       0x30
+ .comment       0x0000000000000000       0x30 build/src/main.c.o
+                                         0x31 (size before relaxing)
+
+.debug_frame    0x0000000000000000       0x38
+ .debug_frame   0x0000000000000000       0x38 build/src/main.c.o
+
+Cross Reference Table
+
+Symbol                                            File
+_start                                            build/src/start.s.o
+main                                              build/src/main.c.o
+                                                  build/src/start.s.o
