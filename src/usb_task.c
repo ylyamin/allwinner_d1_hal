@@ -15,10 +15,8 @@
 
 static void usb_hw_init(void);
 
-void task_usb(void *arg)
+void task_usb()
 {
-	(void)arg;
-
 	small_printf("task: usb\n");
 
 	usb_hw_init();
@@ -31,10 +29,8 @@ void task_usb(void *arg)
 	}
 }
 
-static void usb_int_handler(void *arg)
+void usb_int_handler(void)
 {
-	(void)arg;
-
 	tuh_int_handler(0);
 }
 
@@ -66,10 +62,12 @@ static void usb_hw_init(void)
 	*phy_ctrl &= ~BV(3);
 	*usb_ctrl |= BV(10) | BV(9) | BV(8) | BV(0);
 
-	small_printf("phy_ctl = %08x\n", *portsc);
+	small_printf("phy_ctl = %x\n", *phy_ctrl);
+	small_printf("usb_ctl = %x\n", *usb_ctrl);
+	small_printf("portsc = %x\n", *portsc);
+	
 	*portsc |= BV(13);
 
-	small_printf("usb_ctl = %08x\n", *portsc);
 
 	//irq_set_handler(USB1_OHCI_IRQn, usb_int_handler, NULL);
 	//irq_set_prio(USB1_OHCI_IRQn, configMAX_API_CALL_INTERRUPT_PRIORITY << portPRIORITY_SHIFT );
@@ -79,7 +77,7 @@ static void usb_hw_init(void)
 void hcd_int_enable(uint8_t rhport)
 {
 	(void)rhport;
-	//irq_set_enable(USB1_OHCI_IRQn, 1);
+	irq_enable(USB1_OHCI_IRQn);
 }
 
 /*

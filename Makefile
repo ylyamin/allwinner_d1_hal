@@ -1,4 +1,6 @@
 # Variables
+.PHONY: all clean
+
 TOOLCHAIN_INSTALL_DIR ?= $(shell pwd)/toolchain
 TARGET_NAME = app
 BUILD_DIR = build
@@ -17,7 +19,8 @@ SRC_ADD = 	src/lib/tinyusb-ohci/src/tusb.c \
 
 INC_ADD = 	src/lib/tinyusb-ohci/src
 
-SRC_EXL = 	src/lib/tinyusb-ohci/% \
+SRC_EXL = 	src/xboot/% \
+			src/lib/tinyusb-ohci/% \
 			src/aw_lib/de.c \
 			src/aw_lib/dmac.c \
 			src/aw_lib/timer.c \
@@ -25,22 +28,35 @@ SRC_EXL = 	src/lib/tinyusb-ohci/% \
 			src/aw_lib/twi.c \
 			src/aw_lib/tcon_lcd-lvds.c \
 			src/aw_lib/tcon_lcd-rgb.c \
-			src/aw_lib/tcon_lcd.c
+			src/aw_lib/tcon_lcd.c \
+			src/aw_lib/cache-c906.c
 
-INC_EXL = 	src/lib/tinyusb-ohci%
+INC_EXL = 	src/lib/tinyusb-ohci% \
+			src/xboot%
 
 #Toolcahin
 T_HEAD_DEBUGSERVER_BIN = $(TOOLCHAIN_INSTALL_DIR)/T-HEAD_DebugServer/DebugServerConsole.elf
 RISCV64_GLIBC_GCC_BIN  = $(TOOLCHAIN_INSTALL_DIR)/riscv64-glibc-gcc-thead_20200702/bin/riscv64-unknown-linux-gnu-
 RISCV64_MUSL_BIN = $(TOOLCHAIN_INSTALL_DIR)/riscv64-linux-musleabi_for_x86_64-pc-linux-gnu/bin/riscv64-unknown-linux-musl-
 
-CROSS_COMPILE = $(RISCV64_GLIBC_GCC_BIN)
+XUANTIE_900_GCC_ELF_NEWLIB_DIR = $(TOOLCHAIN_INSTALL_DIR)/Xuantie-900-gcc-elf-newlib-x86_64-V2.8.1
+XUANTIE_900_GCC_ELF_NEWLIB_BIN = $(XUANTIE_900_GCC_ELF_NEWLIB_DIR)/bin/riscv64-unknown-elf-
+
+$(XUANTIE_900_GCC_ELF_NEWLIB_DIR):
+	wget -P $(TOOLCHAIN_INSTALL_DIR) https://occ-oss-prod.oss-cn-hangzhou.aliyuncs.com/resource//1705395512373/Xuantie-900-gcc-elf-newlib-x86_64-V2.8.1-20240115.tar.gz
+	tar -C $(TOOLCHAIN_INSTALL_DIR) -xvzf $(TOOLCHAIN_INSTALL_DIR)/Xuantie-900-gcc-elf-newlib-x86_64-V2.8.1-20240115.tar.gz
+
+toolchain: $(XUANTIE_900_GCC_ELF_NEWLIB_DIR)
+
+# Compile
+CROSS_COMPILE = $(XUANTIE_900_GCC_ELF_NEWLIB_BIN)
 AS = ${CROSS_COMPILE}gcc
 CC = ${CROSS_COMPILE}gcc
 LD = ${CROSS_COMPILE}gcc
 GDB = ${CROSS_COMPILE}gdb
 OBJCOPY = ${CROSS_COMPILE}objcopy
 OBDUMP = ${CROSS_COMPILE}objdump
+SIZE = ${CROSS_COMPILE}size
 
 DEVICE = -mcmodel=medany -march=rv64imafdc -mabi=lp64
 CFLAGS = $(DEVICE) -Wno-cpp -fvar-tracking -ffreestanding -fno-common -ffunction-sections -fdata-sections -fstrict-volatile-bitfields -D_POSIX_SOURCE -fdiagnostics-color=always
@@ -68,7 +84,7 @@ DEPS = $(OBJS:.o=.d)
 
 # TARGET_NAMEs
 
-# Check if verbosity is ON for build process
+# Check if verbosity is ON (v=1) for build process
 CMD_PREFIX_DEFAULT := @
 ifeq ($(v), 1)
 	CMD_PREFIX :=
@@ -95,8 +111,7 @@ $(BUILD_DIR)/$(TARGET_NAME): $(OBJS)
 	@echo LD
 	$(CMD_PREFIX)${LD} -o $(BUILD_DIR)/$(TARGET_NAME).elf ${LFLAGS} $(OBJS) $(LFLAGS_END)
 	$(CMD_PREFIX)${OBJCOPY} -O binary -S $(BUILD_DIR)/$(TARGET_NAME).elf $(BUILD_DIR)/$(TARGET_NAME).bin
-
-.PHONY: all clean
+	$(CMD_PREFIX)${SIZE} $(BUILD_DIR)/$(TARGET_NAME).elf
 
 all: $(BUILD_DIR)/$(TARGET_NAME)
 

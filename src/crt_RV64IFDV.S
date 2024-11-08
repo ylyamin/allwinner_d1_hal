@@ -236,133 +236,27 @@
 	fcvt.d.w f31, x0
 .endm
 
-.macro mtrap_handler func, tail=_Handler
-trap_\func:
+trap_func:
 	trap_entry
 	//fill0_i64
 	//fill0_fp64		/* set all floating registers to zero */
 	call handle_trap //\func\tail
 	trap_exit
 	mret
-.endm
 
-	.global Reset_Handler
+.global Reset_Handler
 .section .startup0
 .align 8
 Reset_Handler:
 	fill0_i64		/* set all integer registers to zero */
-
 	/* stack initilization */
 	la	sp, __stack
 	mv	ra, zero	// return address - link register
 	mv	gp, zero
     mv  a0, zero
     mv  a1, zero
-	//call SystemInit
+	la  t0, trap_func
+   	csrw mtvec, t0
+
 	//fill0_fp64		/* set all floating registers to zero */
-	call main//__riscv_start
-    /* to let simulator know program end point */
-    addi x1,x0,1
-    addi x2,x0,-1
-    sw x1, 0(x2)
-
-.section .isr_vector
-.align 8
-
-.global __Vectors
-
-__Vectors:
-    j trap_SYNCTRAP
-    .align 2
-    j trap_EMPTY
-    .align 2
-    j trap_EMPTY
-    .align 2
-    j trap_VMSI
-    .align 2
-    j trap_EMPTY
-    .align 2
-    j trap_EMPTY
-    .align 2
-    j trap_EMPTY
-    .align 2
-    j trap_VMTI
-    .align 2
-    j trap_EMPTY
-    .align 2
-    j trap_EMPTY
-    .align 2
-    j trap_EMPTY
-    .align 2
-    j trap_VMEI
-    .align 2
-    j trap_EMPTY
-    .align 2
-    j trap_EMPTY
-    .align 2
-    j trap_EMPTY
-    .align 2
-    j trap_EMPTY
-    .align 2
-    j trap_IRQ0
-    .align 2
-    j trap_IRQ1
-    .align 2
-    j trap_IRQ2
-    .align 2
-    j trap_IRQ3
-    .align 2
-    j trap_IRQ4
-    .align 2
-    j trap_IRQ5
-    .align 2
-    j trap_IRQ6
-    .align 2
-    j trap_IRQ7
-    .align 2
-    j trap_IRQ8
-    .align 2
-    j trap_IRQ9
-    .align 2
-    j trap_IRQ10
-    .align 2
-    j trap_IRQ11
-    .align 2
-    j trap_IRQ12
-    .align 2
-    j trap_IRQ13
-    .align 2
-    j trap_IRQ14
-    .align 2
-    j trap_IRQ15
-    .align 2
-
- //   .space (4096 - (16 + 16) * 4)
-
-.section .text
-
-	mtrap_handler SYNCTRAP
-	mtrap_handler VMSI
-	mtrap_handler VMTI
-	mtrap_handler VMEI
-
-	mtrap_handler IRQ0
-	mtrap_handler IRQ1
-	mtrap_handler IRQ2
-	mtrap_handler IRQ3
-	mtrap_handler IRQ4
-	mtrap_handler IRQ5
-	mtrap_handler IRQ6
-	mtrap_handler IRQ7
-	mtrap_handler IRQ8
-	mtrap_handler IRQ9
-	mtrap_handler IRQ10
-	mtrap_handler IRQ11
-	mtrap_handler IRQ12
-	mtrap_handler IRQ13
-	mtrap_handler IRQ14
-	mtrap_handler IRQ15
-
-	mtrap_handler EMPTY
-
-
+	call main

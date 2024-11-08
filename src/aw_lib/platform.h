@@ -5,7 +5,6 @@
 #include <stddef.h>
 
 #include <allwnr_f133.h>
-#include <riscv_csr.h>
 
 #define LIKELY(x)          __builtin_expect(!!(x), 1)
 #define UNLIKELY(x)        __builtin_expect(!!(x), 0)
