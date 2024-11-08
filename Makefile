@@ -4,19 +4,25 @@ BUILD_DIR = build
 
 SRC_DIRS = src
 SRC_ADD = 
-SRC_EXL = src/aw_lib/de.c src/aw_lib/dmac.c src/aw_lib/timer.c src/aw_lib/smhc.c src/aw_lib/twi.c src/aw_lib/tcon_lcd-lvds.c src/aw_lib/tcon_lcd-rgb.c src/aw_lib/tcon_lcd.c
+SRC_EXL = 	src/aw_lib/de.c \
+			src/aw_lib/dmac.c \
+			src/aw_lib/timer.c \
+			src/aw_lib/smhc.c \
+			src/aw_lib/twi.c \
+			src/aw_lib/tcon_lcd-lvds.c \
+			src/aw_lib/tcon_lcd-rgb.c \
+			src/aw_lib/tcon_lcd.c
 
-
-#T oolcahin
+#Toolcahin
 TOOLCHAIN_INSTALL_DIR ?= $(shell pwd)/toolchain
 T_HEAD_DEBUGSERVER_BIN = $(TOOLCHAIN_INSTALL_DIR)/T-HEAD_DebugServer/DebugServerConsole.elf
 RISCV64_GLIBC_GCC_BIN  = $(TOOLCHAIN_INSTALL_DIR)/riscv64-glibc-gcc-thead_20200702/bin/riscv64-unknown-linux-gnu-
 RISCV64_MUSL_BIN = $(TOOLCHAIN_INSTALL_DIR)/riscv64-linux-musleabi_for_x86_64-pc-linux-gnu/bin/riscv64-unknown-linux-musl-
 
 CROSS_COMPILE = $(RISCV64_GLIBC_GCC_BIN)
-AS = ${CROSS_COMPILE}as
+AS = ${CROSS_COMPILE}gcc
 CC = ${CROSS_COMPILE}gcc
-LD = ${CROSS_COMPILE}ld
+LD = ${CROSS_COMPILE}gcc
 GDB = ${CROSS_COMPILE}gdb
 OBJCOPY = ${CROSS_COMPILE}objcopy
 OBDUMP = ${CROSS_COMPILE}objdump
@@ -24,30 +30,13 @@ OBDUMP = ${CROSS_COMPILE}objdump
 DEVICE = -mcmodel=medany -march=rv64imafdc -mabi=lp64
 CFLAGS = $(DEVICE) -Wno-cpp -fvar-tracking -ffreestanding -fno-common -ffunction-sections -fdata-sections -fstrict-volatile-bitfields -D_POSIX_SOURCE -fdiagnostics-color=always
 AFLAGS = -c $(DEVICE) -x assembler-with-cpp -D__ASSEMBLY__
-LFLAGS = $(DEVICE) -nostartfiles -Wl,--gc-sections,-Map=$(BUILD_DIR)/$(TARGET).map,-cref,-u,_start -T $(SRC_DIRS)/link.ld -lsupc++ -lgcc -static #--specs=kernel.specs 
+LFLAGS = $(DEVICE) -nostartfiles -Wl,--gc-sections,-Map=$(BUILD_DIR)/$(TARGET).map,-cref,-u,_start -T $(SRC_DIRS)/aw_f133_app.ld -lsupc++ -lgcc -static #--specs=kernel.specs 
 LFLAGS_END = -Wl,--start-group -lc -lgcc -Wl,--end-group
 
-CFLAGS = -march=rv64gvxtheadc906 -mabi=lp64d -mcmodel=medany -fno-stack-protector --freestanding
-AFLAGS = 
-LFLAGS = --no-relax -T $(SRC_DIRS)/link.ld 
-LFLAGS_END =
-
-CFLAGS := \
-	-g  -Os   -fno-common \
-	-ffunction-sections \
-	-fno-builtin -ffreestanding \
-	-D__KERNEL__  \
-	-march=rv64gc\
-	-mabi=lp64\
-	-fno-stack-protector \
-	-Wall \
-	-Werror \
-	-Wstrict-prototypes \
-	-Wno-format-security \
-	-Wno-format-nonliteral \
-	-fno-delete-null-pointer-checks \
-	-pipe
-
+# CFLAGS = -march=rv64gvxtheadc906 -mabi=lp64d -mcmodel=medany -fno-stack-protector --freestanding
+# AFLAGS = 
+# LFLAGS = --no-relax -T $(SRC_DIRS)/link.ld 
+# LFLAGS_END =
 
 
 CFLAGS +=  -O0 -ggdb

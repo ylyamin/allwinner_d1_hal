@@ -5,9 +5,7 @@
 #include <stddef.h>
 
 #include <allwnr_f133.h>
-#include <uart.h>
 #include <riscv_csr.h>
-
 
 #define LIKELY(x)          __builtin_expect(!!(x), 1)
 #define UNLIKELY(x)        __builtin_expect(!!(x), 0)
@@ -43,7 +41,7 @@
 
 #define MAGIC_KEY  0xDEADBEEF
 
-//extern uint32_t SystemCoreClock;
+extern uint32_t SystemCoreClock;
 extern uint32_t SystemAPB1Clock;
 extern uint32_t SystemAPB2Clock;
 

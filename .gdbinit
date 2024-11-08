@@ -12,5 +12,5 @@ file build/app.elf
 
 echo Loading finished\n
 echo Jump to address\n
-b main
+#b main
 j *$app_addr
