@@ -11,6 +11,8 @@ void main(void)
 	uart_init(115200);
 	small_printf("\n\nHello from allwinner\n\r");
 
+	task_usb();
+
 	led_init();
 	led_set(0, 1);
 }

@@ -192,16 +192,25 @@ static void uart_send_dma(const char *buf, size_t count)
 }
  */
 
-void uart_putchar(char c)
+void _uart_putchar(char c)
 {
 	while ((UART0->UART_USR & 2) == 0);
 	UART0->UART_RBR_THR_DLL = c;
 	while ((UART0->UART_USR & 2) == 0);
 }
 
-/* 
-static void uart_send_blocking(const char *buf, size_t count)
+void uart_putchar(char c)
 {
+	_uart_putchar(c);
+	if (c == '\n') {
+			_uart_putchar('\r');
+	}
+}
+
+/* 
+void uart_send_blocking(const char *buf)
+{
+	int count = sizeof(buf);
 	while(count)
 	{
 		uart_putchar(*buf);
@@ -220,7 +229,7 @@ void uart_send(const char *buf, size_t count)
 	if (uart_dma_mode == 0) {
 		uart_send_blocking(buf, count);
 	} else {
-		//uart_send_dma(buf, count);
+		uart_send_dma(buf, count);
 	}
 }
 
@@ -235,7 +244,7 @@ void uart_printf(const char *fmt, ...)
 	va_end(va);
 
 	uart_send_blocking(out, len);
-} 
+}
 
 void uart_dump_reg(uint32_t base, size_t count)
 {
