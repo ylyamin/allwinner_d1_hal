@@ -207,6 +207,12 @@ void uart_putchar(char c)
 	}
 }
 
+void uart_putc ( void* p, char c)
+		{
+			uart_putchar(c);
+		}
+
+
 /* 
 void uart_send_blocking(const char *buf)
 {

@@ -1,6 +1,6 @@
 # TODO:
 
-- Interrupts
+- Interrupts ? asm trap
 - change printf
 - MMU
 - USB

@@ -29,6 +29,9 @@
 #ifdef __cplusplus
  extern "C" {
 #endif
+
+#include <platform.h>
+
 #define CFG_TUSB_DEBUG_PRINTF small_printf
 
 //--------------------------------------------------------------------+

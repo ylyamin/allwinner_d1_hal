@@ -58,11 +58,16 @@ OBJCOPY = ${CROSS_COMPILE}objcopy
 OBDUMP = ${CROSS_COMPILE}objdump
 SIZE = ${CROSS_COMPILE}size
 
-DEVICE = -mcmodel=medany -march=rv64imafdc -mabi=lp64
-CFLAGS = $(DEVICE) -Wno-cpp -fvar-tracking -ffreestanding -fno-common -ffunction-sections -fdata-sections -fstrict-volatile-bitfields -D_POSIX_SOURCE -fdiagnostics-color=always
-AFLAGS = -c $(DEVICE) -x assembler-with-cpp -D__ASSEMBLY__
-LFLAGS = $(DEVICE) -nostartfiles -Wl,--gc-sections,-Map=$(BUILD_DIR)/$(TARGET_NAME).map,-cref,-u,_start -T $(SRC_DIRS)/aw_f133_app.ld -lsupc++ -lgcc -static #--specs=kernel.specs 
-LFLAGS_END = -Wl,--start-group -lc -lgcc -Wl,--end-group
+
+#DEVICE = -mcmodel=medany -march=rv64imafdc -mabi=lp64
+#CFLAGS = $(DEVICE) -Wno-cpp -fvar-tracking -ffreestanding -fno-common -ffunction-sections -fdata-sections -fstrict-volatile-bitfields -D_POSIX_SOURCE -fdiagnostics-color=always
+#AFLAGS = -c $(DEVICE) -x assembler-with-cpp -D__ASSEMBLY__
+#LFLAGS = $(DEVICE) -nostartfiles -Wl,--gc-sections,-Map=$(BUILD_DIR)/$(TARGET_NAME).map,-cref,-u,_start -T $(SRC_DIRS)/aw_f133_app.ld -lsupc++ -lgcc -static -Wl,--start-group -lc -lgcc -Wl,--end-group
+
+DEVICE = -march=rv64gcv0p7_xtheadc -mabi=lp64d -mtune=c906 -mcmodel=medlow  
+CFLAGS = $(DEVICE) -fno-stack-protector -mstrict-align -ffunction-sections -fdata-sections -ffreestanding -std=gnu99 -fdiagnostics-color=always -Wno-cpp
+AFLAGS = -c $(DEVICE) -x assembler-with-cpp
+LFLAGS = $(DEVICE) -T $(SRC_DIRS)/aw_f133_app.ld -Wl,-gc-sections,--cref,-Map=$(BUILD_DIR)/$(TARGET_NAME).map -lgcc
 
 CFLAGS +=  -O0 -ggdb
 AFLAGS +=  -ggdb
@@ -100,7 +105,7 @@ $(BUILD_DIR)/%.c.o: %.c
 $(BUILD_DIR)/%.s.o: %.s
 	@echo AS
 	$(CMD_PREFIX)mkdir -p $(dir $@)
-	$(CMD_PREFIX)$(AS) $(AFLAGS) -c -o $@ $<
+	$(CMD_PREFIX)$(AS) $(INC_FLAGS) $(AFLAGS) -c -o $@ $<
 
 $(BUILD_DIR)/%.S.o: %.S
 	@echo AS
@@ -109,7 +114,7 @@ $(BUILD_DIR)/%.S.o: %.S
 
 $(BUILD_DIR)/$(TARGET_NAME): $(OBJS)
 	@echo LD
-	$(CMD_PREFIX)${LD} -o $(BUILD_DIR)/$(TARGET_NAME).elf ${LFLAGS} $(OBJS) $(LFLAGS_END)
+	$(CMD_PREFIX)${LD} -o $(BUILD_DIR)/$(TARGET_NAME).elf ${LFLAGS} $(OBJS)
 	$(CMD_PREFIX)${OBJCOPY} -O binary -S $(BUILD_DIR)/$(TARGET_NAME).elf $(BUILD_DIR)/$(TARGET_NAME).bin
 	$(CMD_PREFIX)${SIZE} $(BUILD_DIR)/$(TARGET_NAME).elf
 

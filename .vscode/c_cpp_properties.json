@@ -4,7 +4,7 @@
             "name": "Win32",
             "includePath": [
                 "${workspaceFolder}/**",
-                "C:/hobby/allwinner_d1/riscv64-glibc-gcc-thead_20200702/sysroot/usr/include/**"
+                "C:/hobby/allwinner_d1/Xuantie-900-gcc-elf-newlib-x86_64-V2.8.1/riscv64-unknown-elf/include/**"
             ],
             "defines": [
                 "_DEBUG",

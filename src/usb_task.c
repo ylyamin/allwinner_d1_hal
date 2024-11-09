@@ -65,7 +65,7 @@ static void usb_hw_init(void)
 	small_printf("phy_ctl = %x\n", *phy_ctrl);
 	small_printf("usb_ctl = %x\n", *usb_ctrl);
 	small_printf("portsc = %x\n", *portsc);
-	
+
 	*portsc |= BV(13);
 
 
@@ -96,6 +96,6 @@ void hcd_int_enable(uint8_t rhport)
 void hcd_int_disable(uint8_t rhport)
 {
 	(void)rhport;
-	//irq_set_enable(USB1_EHCI_IRQn, 0);
+	irq_disable(USB1_OHCI_IRQn);
 }
 

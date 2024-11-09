@@ -29,7 +29,7 @@
  */
 
 .macro trap_entry
-	addi	sp,sp,-512
+	addi	sp,sp,-256
 
 //	sd x0,0(sp)		/* zero register */
 	sd x1,8(sp)		/* ABI link register ra */
@@ -63,38 +63,6 @@
 	sd x29,232(sp)
 	sd x30,240(sp)
 	sd x31,248(sp)
-	fsd f0,256(sp)
-	fsd f1,264(sp)
-	fsd f2,272(sp)
-	fsd f3,280(sp)
-	fsd f4,288(sp)
-	fsd f5,296(sp)
-	fsd f6,304(sp)
-	fsd f7,312(sp)
-	fsd f8,320(sp)
-	fsd f9,328(sp)
-	fsd f10,336(sp)
-	fsd f11,344(sp)
-	fsd f12,352(sp)
-	fsd f13,360(sp)
-	fsd f14,368(sp)
-	fsd f15,376(sp)
-	fsd f16,384(sp)
-	fsd f17,392(sp)
-	fsd f18,400(sp)
-	fsd f19,408(sp)
-	fsd f20,416(sp)
-	fsd f21,424(sp)
-	fsd f22,432(sp)
-	fsd f23,440(sp)
-	fsd f24,448(sp)
-	fsd f25,456(sp)
-	fsd f26,464(sp)
-	fsd f27,472(sp)
-	fsd f28,480(sp)
-	fsd f29,488(sp)
-	fsd f30,496(sp)
-	fsd f31,504(sp)
 .endm
 
 
@@ -131,40 +99,7 @@
 	ld x29,232(sp)
 	ld x30,240(sp)
 	ld x31,248(sp)
-	fld f0,256(sp)
-	fld f1,264(sp)
-	fld f2,272(sp)
-	fld f3,280(sp)
-	fld f4,288(sp)
-	fld f5,296(sp)
-	fld f6,304(sp)
-	fld f7,312(sp)
-	fld f8,320(sp)
-	fld f9,328(sp)
-	fld f10,336(sp)
-	fld f11,344(sp)
-	fld f12,352(sp)
-	fld f13,360(sp)
-	fld f14,368(sp)
-	fld f15,376(sp)
-	fld f16,384(sp)
-	fld f17,392(sp)
-	fld f18,400(sp)
-	fld f19,408(sp)
-	fld f20,416(sp)
-	fld f21,424(sp)
-	fld f22,432(sp)
-	fld f23,440(sp)
-	fld f24,448(sp)
-	fld f25,456(sp)
-	fld f26,464(sp)
-	fld f27,472(sp)
-	fld f28,480(sp)
-	fld f29,488(sp)
-	fld f30,496(sp)
-	fld f31,504(sp)
-
-	addi	sp,sp,512
+	addi	sp,sp,256
 .endm
 
 /* set all integer registers to zero */
