@@ -56,3 +56,18 @@ void dcache_wbinv_range(unsigned long start, unsigned long end)
 		__asm__ __volatile__("dcache.cipa %0\n"::"r"(i):"memory");
 	__asm__ __volatile__("sync.is");
 }
+
+void dcache_invalidate(unsigned long start, unsigned long end)
+{
+	dcache_inv_range(start, end);
+}
+
+void dcache_clean(unsigned long start, unsigned long end)
+{
+	dcache_wb_range(start, end);
+}
+
+void dcache_clean_and_invalidate(unsigned long start, unsigned long end)
+{
+	dcache_wbinv_range(start, end);
+}

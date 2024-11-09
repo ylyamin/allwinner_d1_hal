@@ -295,14 +295,14 @@ bool hidh_xfer_cb(uint8_t dev_addr, uint8_t ep_addr, xfer_result_t result, uint3
   {
     TU_LOG2("  Get Report callback (%u, %u)\r\n", dev_addr, instance);
     TU_LOG3_MEM(hid_itf->epin_buf, xferred_bytes, 2);
-//extern void L1_InvalidateDCache_by_Addr(volatile void *addr, int32_t dsize);
-//L1_InvalidateDCache_by_Addr(hid_itf->epin_buf, xferred_bytes);
 
+    extern void dcache_invalidate(unsigned long start, unsigned long end);
+    dcache_invalidate(hid_itf->epin_buf, xferred_bytes);
     tuh_hid_report_received_cb(dev_addr, instance, hid_itf->epin_buf, xferred_bytes);
   }else
   {
-//extern void L1_CleanDCache_by_Addr(volatile void *addr, int32_t dsize);
-//L1_CleanDCache_by_Addr(hid_itf->epin_buf, xferred_bytes);
+    extern void dcache_clean(unsigned long start, unsigned long end);
+    dcache_clean(hid_itf->epin_buf, xferred_bytes);
     if (tuh_hid_report_sent_cb) tuh_hid_report_sent_cb(dev_addr, instance, hid_itf->epout_buf, xferred_bytes);
   }
 

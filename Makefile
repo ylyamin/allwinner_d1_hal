@@ -29,7 +29,7 @@ SRC_EXL = 	src/xboot/% \
 			src/aw_lib/tcon_lcd-lvds.c \
 			src/aw_lib/tcon_lcd-rgb.c \
 			src/aw_lib/tcon_lcd.c \
-			src/aw_lib/cache-c906.c
+			#src/aw_lib/cache-c906.c
 
 INC_EXL = 	src/lib/tinyusb-ohci% \
 			src/xboot%
