@@ -27,6 +27,7 @@
  */
 
 #include <cache.h>
+#include <platform.h>
 
 #define L1_CACHE_BYTES	(64)
 
@@ -70,4 +71,18 @@ void dcache_clean(unsigned long start, unsigned long end)
 void dcache_clean_and_invalidate(unsigned long start, unsigned long end)
 {
 	dcache_wbinv_range(start, end);
+}
+
+#define CFG_USE_MAEE 1
+
+void dcache_enable(void)
+{
+	csr_write_mcor(0x70013);
+	csr_write_mhcr(0x11ff);
+#ifdef CFG_USE_MAEE
+	csr_set_bits_mxstatus(0x638000);
+#else
+	csr_set_bits_mxstatus(0x438000);
+#endif
+	csr_write_mhint(0x16e30c);
 }

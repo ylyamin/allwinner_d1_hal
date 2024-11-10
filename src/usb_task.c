@@ -61,11 +61,6 @@ static void usb_hw_init(void)
 
 	*phy_ctrl &= ~BV(3);
 	*usb_ctrl |= BV(10) | BV(9) | BV(8) | BV(0);
-
-	small_printf("phy_ctl = %x\n", *phy_ctrl);
-	small_printf("usb_ctl = %x\n", *usb_ctrl);
-	small_printf("portsc = %x\n", *portsc);
-
 	*portsc |= BV(13);
 
 

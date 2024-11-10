@@ -79,8 +79,8 @@ void uart_init(uint32_t baudrate)
 	UART0->UART_LCR |= (1 << 7);
 
 	// configure baudrate prescaler
-	UART0->UART_RBR_THR_DLL = 0xd & 0xff;
-	UART0->UART_DLH_IER = (0xd >> 8) & 0xff;
+	UART0->UART_RBR_THR_DLL = br & 0xff;
+	UART0->UART_DLH_IER = (br >> 8) & 0xff;
 
 	// disable access to DLL DLH
 	UART0->UART_LCR &= ~(1 << 7);

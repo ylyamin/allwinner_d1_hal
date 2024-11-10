@@ -1,3 +1,7 @@
+#
+# File: .gdbinit
+# Author: ylyamin
+#
 #Set gdb environment
 set confirm off
 set height  0

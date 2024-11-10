@@ -308,8 +308,11 @@ static void gtd_init(ohci_gtd_t* p_td, uint8_t* data_ptr, uint16_t total_bytes)
   p_td->current_buffer_pointer = data_ptr;
   p_td->buffer_end             = total_bytes ? (data_ptr + total_bytes-1) : data_ptr;
 
+#include <config.h>
+#ifdef USE_DCACHE
   extern void dcache_invalidate(unsigned long start, unsigned long end);
 	dcache_invalidate(data_ptr, total_bytes);
+#endif
 }
 
 static ohci_ed_t * ed_from_addr(uint8_t dev_addr, uint8_t ep_addr)

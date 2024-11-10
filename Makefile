@@ -1,3 +1,7 @@
+#
+# File: Makefile
+# Author: ylyamin
+#
 # Variables
 .PHONY: all clean
 
