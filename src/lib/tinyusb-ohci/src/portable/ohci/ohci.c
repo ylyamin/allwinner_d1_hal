@@ -158,7 +158,7 @@ static void ed_list_remove_by_addr(ohci_ed_t * p_head, uint8_t dev_addr);
 bool hcd_init(uint8_t rhport)
 {
   (void) rhport;
-
+  small_printf("OHCI init\n\r");
   //------------- Data Structure init -------------//
   tu_memclr(&ohci_data, sizeof(ohci_data_t));
   for(uint8_t i=0; i<32; i++)
@@ -610,6 +610,7 @@ void hcd_int_handler(uint8_t hostid)
   uint32_t const int_status = OHCI_REG->interrupt_status & int_en;
 
   if (int_status == 0) return;
+  small_printf("OHCI handler %d\n\r", int_status);
 
   // Frame number overflow
   if ( int_status & OHCI_INT_FRAME_OVERFLOW_MASK )

@@ -14,8 +14,8 @@ SRC_ADD = 	src/lib/tinyusb-ohci/src/tusb.c \
 			src/lib/tinyusb-ohci/src/host/hub.c \
 			src/lib/tinyusb-ohci/src/host/usbh.c \
 			src/lib/tinyusb-ohci/src/portable/ohci/ohci.c \
+			src/lib/tinyusb-ohci/src/common/tusb_fifo.c \
 			src/lib/tinyusb-ohci/examples/host/cdc_msc_hid/src/hid_app.c \
-			src/lib/tinyusb-ohci/src/common/tusb_fifo.c
 
 INC_ADD = 	src/lib/tinyusb-ohci/src
 
@@ -28,8 +28,7 @@ SRC_EXL = 	src/xboot/% \
 			src/aw_lib/twi.c \
 			src/aw_lib/tcon_lcd-lvds.c \
 			src/aw_lib/tcon_lcd-rgb.c \
-			src/aw_lib/tcon_lcd.c \
-			#src/aw_lib/cache-c906.c
+			src/aw_lib/tcon_lcd.c
 
 INC_EXL = 	src/lib/tinyusb-ohci% \
 			src/xboot%
@@ -67,7 +66,7 @@ SIZE = ${CROSS_COMPILE}size
 DEVICE = -march=rv64gcv0p7_xtheadc -mabi=lp64d -mtune=c906 -mcmodel=medlow  
 CFLAGS = $(DEVICE) -fno-stack-protector -mstrict-align -ffunction-sections -fdata-sections -ffreestanding -std=gnu99 -fdiagnostics-color=always -Wno-cpp
 AFLAGS = -c $(DEVICE) -x assembler-with-cpp
-LFLAGS = $(DEVICE) -T $(SRC_DIRS)/aw_f133_app.ld -Wl,-gc-sections,--cref,-Map=$(BUILD_DIR)/$(TARGET_NAME).map -lgcc
+LFLAGS = $(DEVICE) -T $(SRC_DIRS)/aw_f133_app.ld -Wl,-gc-sections,--cref,-Map=$(BUILD_DIR)/$(TARGET_NAME).map -lgcc -nostdlib
 
 CFLAGS +=  -O0 -ggdb
 AFLAGS +=  -ggdb

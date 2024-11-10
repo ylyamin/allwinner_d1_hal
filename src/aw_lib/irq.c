@@ -10,6 +10,7 @@ void irq_enable(int irq)
 
 void irq_disable(int irq)
 {
+	small_printf("irq_disable %d\n\r", irq);
 	PLIC->PLIC_MIE_REGn[irq / 32] &= ~(1 << (irq % 32));
 }
 

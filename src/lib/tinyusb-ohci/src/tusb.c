@@ -240,7 +240,7 @@ static void dump_str_line(uint8_t const* buf, uint16_t count)
   for(uint16_t i=0; i<count; i++)
   {
     const char ch = buf[i];
-    tu_printf("%c", isprint(ch) ? ch : '.');
+    tu_printf("%c", ch); //isprint(ch) ? ch : '.');
   }
 
   tu_printf("|\r\n");

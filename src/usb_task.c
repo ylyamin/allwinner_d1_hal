@@ -80,19 +80,6 @@ void hcd_int_enable(uint8_t rhport)
 	irq_enable(USB1_OHCI_IRQn);
 }
 
-/*
-bool hcd_init(uint8_t rhport)
-{
-  return ehci_init(rhport, (uint32_t) EHCI1_BASE, (uint32_t) EHCI1_BASE+0x10);
-}
-
-void hcd_int_enable(uint8_t rhport)
-{
-	(void)rhport;
-	irq_set_enable(USB1_EHCI_IRQn, 1);
-}
-*/
-
 void hcd_int_disable(uint8_t rhport)
 {
 	(void)rhport;
