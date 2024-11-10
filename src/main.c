@@ -12,7 +12,6 @@
 
 extern void uart_putc ( void* p, char c);
 
-
 void main(void)
 {
 	ccu_init();
@@ -29,7 +28,7 @@ void main(void)
 	small_printf("dcache_enable\n\r");
 #endif
 	task_usb();
-
+	
 	led_init();
 	led_set(0, 1);
 }

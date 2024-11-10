@@ -47,6 +47,8 @@ static const char * exception_names[] = {
 	"Store page fault",					//15
 };
 
+static int (*irq_handlers_array[IRQ_NUM_MAX])(void) = {0};
+
 void handle_trap(void)
 {
 	uint64_t mcause = csr_read_mcause();
@@ -92,12 +94,14 @@ void handle_interrupt(uint64_t mcause) {
 	// An external HW interrupt in M-mode
 	if((mcause & ~(1UL << 63)) == 11)
 	{
-		//csr_clr_bits_mip(csr_read_mip() & (mcause & ~(1UL << 63)));
+		uint64_t val = csr_read_mip();
+		csr_write_mip(val & (uint64_t)(mcause & ~(1UL << 63)));
+
 		uint32_t irq = PLIC->PLIC_MCLAIM_REG;
-		if(irq == USB1_OHCI_IRQn)
+		if(irq > IRQ_NUM_MIN & irq < IRQ_NUM_MAX)
 		{
-			small_printf("USB1_OHCI_IRQn interrupt\n\r");
-			usb_int_handler();
+			small_printf("Handle irq: %d\n\r",irq);
+			(irq_handlers_array[irq])();
 		}else{
 			small_printf("Unknown irq: %d\n\r",irq);
 			while(1)
@@ -125,6 +129,27 @@ void irq_disable(int irq)
 	PLIC->PLIC_MIE_REGn[irq / 32] &= ~(1 << (irq % 32));
 }
 
+void irq_assign(int irq, void (*func)(void *))
+{
+	if(irq > IRQ_NUM_MIN & irq < IRQ_NUM_MAX)
+		irq_handlers_array[irq] = func;
+	else
+		small_printf("Unknown irq: %d\n\r",irq);
+}
+
+void dummy_irq_handler(void)
+{
+	small_printf("dummy_irq_handler\n\r");
+}
+
+void init_irq_handlers(void)
+{
+ 	for(int i = 0; i < ARRAY_SIZE(irq_handlers_array); i++)
+	{
+		irq_handlers_array[i] = dummy_irq_handler;
+	}	
+}
+
 static void plic_init()
 {
 	for(int irq = IRQ_NUM_MIN; irq < IRQ_NUM_MAX; irq++)
@@ -137,6 +162,7 @@ static void plic_init()
 
 void irq_init(void)
 {
+	init_irq_handlers();
 	plic_init();
 	csr_set_bits_mie(MIE_MEI_BIT_MASK);	
 	csr_set_bits_mstatus(MSTATUS_MIE_BIT_MASK);

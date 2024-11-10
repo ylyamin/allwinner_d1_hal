@@ -1,17 +1,9 @@
 #include "platform.h"
-
-//#include "irq.h"
-//#include "FreeRTOS.h"
-//#include "task.h"
-
 #include "tusb.h"
-#include "portable/ehci/ehci_api.h"
-
-//TaskHandle_t task_usb_handle;
 
 #define EHCI0_BASE (0x04101000)
 #define EHCI1_BASE (0x04200000)
-#define OHCI_BASE (0x04200000+0x400)
+#define OHCI_BASE  (0x04200000+0x400)
 
 static void usb_hw_init(void);
 
@@ -34,16 +26,6 @@ void usb_int_handler(void)
 	tuh_int_handler(0);
 }
 
-/* void usb_task_init(void)
-{
-
-	BaseType_t ret = xTaskCreate(task_usb, "usb", 1000, NULL, tskIDLE_PRIORITY+2, &task_usb_handle);
-	if (ret != pdTRUE){
-		uart_printf("not created\n");
-		while(1);
-	}
-} */
-
 static void usb_hw_init(void)
 {
 	volatile uint32_t *usb_ctrl = (uint32_t * ) (EHCI1_BASE + 0x800);
@@ -63,10 +45,7 @@ static void usb_hw_init(void)
 	*usb_ctrl |= BV(10) | BV(9) | BV(8) | BV(0);
 	*portsc |= BV(13);
 
-
-	//irq_set_handler(USB1_OHCI_IRQn, usb_int_handler, NULL);
-	//irq_set_prio(USB1_OHCI_IRQn, configMAX_API_CALL_INTERRUPT_PRIORITY << portPRIORITY_SHIFT );
-
+	irq_assign(USB1_OHCI_IRQn, usb_int_handler);
 }
 
 void hcd_int_enable(uint8_t rhport)
