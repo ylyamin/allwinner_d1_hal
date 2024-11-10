@@ -392,7 +392,7 @@ void ccu_init(void)
 	ccu_mbus_enable();
 	ccu_dma_enable();
 
-	//ccu_peri0_pll_set();
+	ccu_peri0_pll_set();
 	//ccu_video0_pll_set();
 	//ccu_video1_pll_set();
 	//ccu_ve_pll_set();

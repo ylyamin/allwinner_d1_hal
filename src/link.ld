@@ -160,6 +160,12 @@ SECTIONS
 
 	} > DDR3
 
+    .usb :
+    {
+        . = ALIGN(4);   
+    } > DDR3
+
+
 	__etext2 = .;
 
 	.sysram : AT (__etext2)

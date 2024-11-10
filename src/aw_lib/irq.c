@@ -85,7 +85,7 @@ void handle_trap(void)
 }
 
 void handle_exception(uint64_t mcause) {
-    small_printf("Handle exception not implemented");
+	small_printf("Stored pc: %x\r\n", csr_read_mepc());
 	while(1)
 		;
 }

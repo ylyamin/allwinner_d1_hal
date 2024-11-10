@@ -2,9 +2,9 @@
 # File: Makefile
 # Author: ylyamin
 #
-# Variables
-.PHONY: all clean
 
+.PHONY: all clean
+# Variables
 TOOLCHAIN_INSTALL_DIR ?= $(shell pwd)/toolchain
 TARGET_NAME = app
 BUILD_DIR = build
@@ -19,7 +19,7 @@ SRC_ADD = 	src/lib/tinyusb-ohci/src/tusb.c \
 			src/lib/tinyusb-ohci/src/host/usbh.c \
 			src/lib/tinyusb-ohci/src/portable/ohci/ohci.c \
 			src/lib/tinyusb-ohci/src/common/tusb_fifo.c \
-			src/lib/tinyusb-ohci/examples/host/cdc_msc_hid/src/hid_app.c \
+			src/lib/tinyusb-ohci/examples/host/cdc_msc_hid/src/hid_app.c
 
 INC_ADD = 	src/lib/tinyusb-ohci/src
 
@@ -70,7 +70,7 @@ SIZE = ${CROSS_COMPILE}size
 DEVICE = -march=rv64gcv0p7_xtheadc -mabi=lp64d -mtune=c906 -mcmodel=medlow  
 CFLAGS = $(DEVICE) -fno-stack-protector -mstrict-align -ffunction-sections -fdata-sections -ffreestanding -std=gnu99 -fdiagnostics-color=always -Wno-cpp
 AFLAGS = -c $(DEVICE) -x assembler-with-cpp
-LFLAGS = $(DEVICE) -T $(SRC_DIRS)/aw_f133_app.ld -Wl,-gc-sections,--cref,-Map=$(BUILD_DIR)/$(TARGET_NAME).map -lgcc -nostdlib
+LFLAGS = $(DEVICE) -T $(SRC_DIRS)/link.ld -Wl,-gc-sections,--cref,-Map=$(BUILD_DIR)/$(TARGET_NAME).map -lgcc -nostdlib
 
 CFLAGS +=  -O0 -ggdb
 AFLAGS +=  -ggdb
@@ -90,7 +90,7 @@ SRCS += $(SRC_ADD)
 OBJS = $(SRCS:%=$(BUILD_DIR)/%.o)
 DEPS = $(OBJS:.o=.d)
 
-# TARGET_NAMEs
+# Targets
 
 # Check if verbosity is ON (v=1) for build process
 CMD_PREFIX_DEFAULT := @
@@ -115,13 +115,13 @@ $(BUILD_DIR)/%.S.o: %.S
 	$(CMD_PREFIX)mkdir -p $(dir $@)
 	$(CMD_PREFIX)$(AS) $(INC_FLAGS) $(AFLAGS) -c -o $@ $<
 
-$(BUILD_DIR)/$(TARGET_NAME): $(OBJS)
+$(BUILD_DIR)/$(TARGET_NAME).bin: $(OBJS)
 	@echo LD
 	$(CMD_PREFIX)${LD} -o $(BUILD_DIR)/$(TARGET_NAME).elf ${LFLAGS} $(OBJS)
 	$(CMD_PREFIX)${OBJCOPY} -O binary -S $(BUILD_DIR)/$(TARGET_NAME).elf $(BUILD_DIR)/$(TARGET_NAME).bin
 	$(CMD_PREFIX)${SIZE} $(BUILD_DIR)/$(TARGET_NAME).elf
 
-all: $(BUILD_DIR)/$(TARGET_NAME)
+all: $(BUILD_DIR)/$(TARGET_NAME).bin
 
 dis: $(BUILD_DIR)/$(TARGET_NAME).bin
 	@echo DIS
@@ -136,7 +136,6 @@ debug:
 	@echo "${RED}Press and hold the FEL pin then press RESET pin to go to the FEL mode.${NC}"
 	xfel ddr d1
 	xfel jtag
-	$(T_HEAD_DEBUGSERVER_BIN)&
-	$(GDB) -x $(SRC_DIRS)/.gdbinit
+	$(T_HEAD_DEBUGSERVER_BIN) &	$(GDB) -x $(SRC_DIRS)/.gdbinit
 
 -include $(DEPS)
