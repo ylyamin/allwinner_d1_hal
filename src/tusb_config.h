@@ -31,6 +31,7 @@
 #endif
 
 #include <platform.h>
+#include <log.h>
 
 #define CFG_TUSB_DEBUG_PRINTF small_printf
 
