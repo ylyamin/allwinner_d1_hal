@@ -3,9 +3,7 @@
 
 #include <stdint.h>
 #include <stddef.h>
-
 #include <allwnr_f133.h>
-#define small_printf tfp_printf
 
 #define LIKELY(x)          __builtin_expect(!!(x), 1)
 #define UNLIKELY(x)        __builtin_expect(!!(x), 0)

@@ -25,6 +25,7 @@
 
 //#include "bsp/board.h"
 #include "tusb.h"
+#include <log.h>
 
 //--------------------------------------------------------------------+
 // MACRO TYPEDEF CONSTANT ENUM DECLARATION
@@ -65,34 +66,34 @@ void hid_app_task(void)
 // therefore report_desc = NULL, desc_len = 0
 void tuh_hid_mount_cb(uint8_t dev_addr, uint8_t instance, uint8_t const* desc_report, uint16_t desc_len)
 {
-  small_printf("HID device address = %d, instance = %d is mounted\r\n", dev_addr, instance);
+  LOG_D("HID device address = %d, instance = %d is mounted\r\n", dev_addr, instance);
 
   // Interface protocol (hid_interface_protocol_enum_t)
   const char* protocol_str[] = { "None", "Keyboard", "Mouse" };
   uint8_t const itf_protocol = tuh_hid_interface_protocol(dev_addr, instance);
 
-  small_printf("HID Interface Protocol = %s\r\n", protocol_str[itf_protocol]);
+  LOG_D("HID Interface Protocol = %s", protocol_str[itf_protocol]);
 
   // By default host stack will use activate boot protocol on supported interface.
   // Therefore for this simple example, we only need to parse generic report descriptor (with built-in parser)
   if ( itf_protocol == HID_ITF_PROTOCOL_NONE )
   {
     hid_info[instance].report_count = tuh_hid_parse_report_descriptor(hid_info[instance].report_info, MAX_REPORT, desc_report, desc_len);
-    small_printf("HID has %u reports \r\n", hid_info[instance].report_count);
+    LOG_D("HID has %u reports ", hid_info[instance].report_count);
   }
 
   // request to receive report
   // tuh_hid_report_received_cb() will be invoked when report is available
   if ( !tuh_hid_receive_report(dev_addr, instance) )
   {
-    small_printf("Error: cannot request to receive report\r\n");
+    LOG_D("Error: cannot request to receive report");
   }
 }
 
 // Invoked when device with hid interface is un-mounted
 void tuh_hid_umount_cb(uint8_t dev_addr, uint8_t instance)
 {
-  small_printf("HID device address = %d, instance = %d is unmounted\r\n", dev_addr, instance);
+  LOG_D("HID device address = %d, instance = %d is unmounted", dev_addr, instance);
 }
 
 // Invoked when received report from device via interrupt endpoint
@@ -121,7 +122,7 @@ void tuh_hid_report_received_cb(uint8_t dev_addr, uint8_t instance, uint8_t cons
   // continue to request to receive report
   if ( !tuh_hid_receive_report(dev_addr, instance) )
   {
-    small_printf("Error: cannot request to receive report\r\n");
+    LOG_D("Error: cannot request to receive report");
   }
 }
 
@@ -157,8 +158,8 @@ static void process_kbd_report(hid_keyboard_report_t const *report)
         // not existed in previous report means the current key is pressed
         bool const is_shift = report->modifier & (KEYBOARD_MODIFIER_LEFTSHIFT | KEYBOARD_MODIFIER_RIGHTSHIFT);
         uint8_t ch = keycode2ascii[report->keycode[i]][is_shift ? 1 : 0];
-        _uart_putchar(ch);
-        if ( ch == '\r' ) _uart_putchar('\n'); // added new line for enter key
+        uart_putc(NULL,ch);
+        if ( ch == '\r' ) uart_putc(NULL,'\n'); // added new line for enter key
 
         //fflush(stdout); // flush right away, else nanolib will wait for newline
       }
@@ -179,33 +180,33 @@ void cursor_movement(int8_t x, int8_t y, int8_t wheel)
   // Move X using ansi escape
   if ( x < 0)
   {
-    small_printf(ANSI_CURSOR_BACKWARD(%d), (-x)); // move left
+    LOG_D(ANSI_CURSOR_BACKWARD(%d), (-x)); // move left
   }else if ( x > 0)
   {
-    small_printf(ANSI_CURSOR_FORWARD(%d), x); // move right
+    LOG_D(ANSI_CURSOR_FORWARD(%d), x); // move right
   }
 
   // Move Y using ansi escape
   if ( y < 0)
   {
-    small_printf(ANSI_CURSOR_UP(%d), (-y)); // move up
+    LOG_D(ANSI_CURSOR_UP(%d), (-y)); // move up
   }else if ( y > 0)
   {
-    small_printf(ANSI_CURSOR_DOWN(%d), y); // move down
+    LOG_D(ANSI_CURSOR_DOWN(%d), y); // move down
   }
 
   // Scroll using ansi escape
   if (wheel < 0)
   {
-    small_printf(ANSI_SCROLL_UP(%d), (-wheel)); // scroll up
+    LOG_D(ANSI_SCROLL_UP(%d), (-wheel)); // scroll up
   }else if (wheel > 0)
   {
-    small_printf(ANSI_SCROLL_DOWN(%d), wheel); // scroll down
+    LOG_D(ANSI_SCROLL_DOWN(%d), wheel); // scroll down
   }
 
-  small_printf("\r\n");
+  LOG_D("\r\n");
 #else
-  small_printf("(%d %d %d)\r\n", x, y, wheel);
+  LOG_D("(%d %d %d)\r\n", x, y, wheel);
 #endif
 }
 
@@ -217,7 +218,7 @@ static void process_mouse_report(hid_mouse_report_t const * report)
   uint8_t button_changed_mask = report->buttons ^ prev_report.buttons;
   if ( button_changed_mask & report->buttons)
   {
-    small_printf(" %c%c%c ",
+    LOG_D(" %c%c%c ",
        report->buttons & MOUSE_BUTTON_LEFT   ? 'L' : '-',
        report->buttons & MOUSE_BUTTON_MIDDLE ? 'M' : '-',
        report->buttons & MOUSE_BUTTON_RIGHT  ? 'R' : '-');
@@ -263,7 +264,7 @@ static void process_generic_report(uint8_t dev_addr, uint8_t instance, uint8_t c
 
   if (!rpt_info)
   {
-    small_printf("Couldn't find the report info for this report !\r\n");
+    LOG_D("Couldn't find the report info for this report !");
     return;
   }
 

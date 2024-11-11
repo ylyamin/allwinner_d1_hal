@@ -28,6 +28,7 @@
 
 #include <cache.h>
 #include <platform.h>
+#include <log.h>
 
 #define L1_CACHE_BYTES	(64)
 
@@ -77,6 +78,7 @@ void dcache_clean_and_invalidate(unsigned long start, unsigned long end)
 
 void dcache_enable(void)
 {
+	LOG_D("dcache_enable");
 	csr_write_mcor(0x70013);
 	csr_write_mhcr(0x11ff);
 #ifdef CFG_USE_MAEE

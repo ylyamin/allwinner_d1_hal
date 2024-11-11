@@ -4,6 +4,7 @@
  */
 #include <platform.h>
 #include <config.h>
+#include <log.h>
 #include <stdio.h>
 #include <ccu.h>
 #include <uart.h>
@@ -22,16 +23,12 @@ void main(void)
 
 	uart_init(115200);
 	init_printf(NULL,uart_putc);
-	small_printf("\n\nHello from allwinner\n\r");
+	LOG_I("Hello from allwinner !");
 
 	irq_init();
-	small_printf("irq_init\n\r");
-
-
 
 #ifdef USE_DCACHE
 	dcache_enable();
-	small_printf("dcache_enable\n\r");
 #endif
 	task_usb();
 	

@@ -70,7 +70,7 @@ SIZE = ${CROSS_COMPILE}size
 DEVICE = -march=rv64gcv0p7_xtheadc -mabi=lp64d -mtune=c906 -mcmodel=medlow  
 CFLAGS = $(DEVICE) -fno-stack-protector -mstrict-align -ffunction-sections -fdata-sections -ffreestanding -std=gnu99 -fdiagnostics-color=always -Wno-cpp
 AFLAGS = -c $(DEVICE) -x assembler-with-cpp
-LFLAGS = $(DEVICE) -T $(SRC_DIRS)/link.ld -Wl,-gc-sections,--cref,-Map=$(BUILD_DIR)/$(TARGET_NAME).map -lgcc -nostdlib
+LFLAGS = $(DEVICE) -T $(SRC_DIRS)/link.ld -Wl,-gc-sections,--cref,-Map=$(BUILD_DIR)/$(TARGET_NAME).map -lgcc# -nostdlib
 
 CFLAGS +=  -O0 -ggdb
 AFLAGS +=  -ggdb

@@ -23,7 +23,7 @@
  *
  * This file is part of the TinyUSB stack.
  */
-
+#include <log.h>
 #include "tusb_option.h"
 
 #if CFG_TUH_ENABLED && defined(TUP_USBIP_OHCI)
@@ -158,7 +158,8 @@ static void ed_list_remove_by_addr(ohci_ed_t * p_head, uint8_t dev_addr);
 bool hcd_init(uint8_t rhport)
 {
   (void) rhport;
-  small_printf("OHCI init\n\r");
+  LOG_D("OHCI init");
+
   //------------- Data Structure init -------------//
   tu_memclr(&ohci_data, sizeof(ohci_data_t));
   for(uint8_t i=0; i<32; i++)
@@ -574,6 +575,7 @@ static void done_queue_isr(uint8_t hostid)
     // TODO check if td_head is iso td
     //------------- Non ISO transfer -------------//
     ohci_gtd_t * const qtd = (ohci_gtd_t *) td_head;
+    LOG_D("qtd->condition_code: %d",qtd->condition_code);
     xfer_result_t const event = (qtd->condition_code == OHCI_CCODE_NO_ERROR) ? XFER_RESULT_SUCCESS :
                                 (qtd->condition_code == OHCI_CCODE_STALL) ? XFER_RESULT_STALLED : XFER_RESULT_FAILED;
 
@@ -613,7 +615,7 @@ void hcd_int_handler(uint8_t hostid)
   uint32_t const int_status = OHCI_REG->interrupt_status & int_en;
 
   if (int_status == 0) return;
-  small_printf("OHCI handler %d\n\r", int_status);
+  LOG_D("OHCI handler %d", int_status);
 
   // Frame number overflow
   if ( int_status & OHCI_INT_FRAME_OVERFLOW_MASK )

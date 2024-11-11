@@ -1,5 +1,6 @@
 #include "platform.h"
 #include "tusb.h"
+#include <log.h>
 
 #define EHCI0_BASE (0x04101000)
 #define EHCI1_BASE (0x04200000)
@@ -9,12 +10,9 @@ static void usb_hw_init(void);
 
 void task_usb()
 {
-	small_printf("task: usb\n");
-
+	LOG_D("usb_task");
 	usb_hw_init();
-
 	tuh_init(0);
-
 	while(1)
 	{
 		tuh_task();
@@ -30,8 +28,7 @@ static void usb_hw_init(void)
 {
 	volatile uint32_t *usb_ctrl = (uint32_t * ) (EHCI1_BASE + 0x800);
 	volatile uint32_t *phy_ctrl = (uint32_t * ) (EHCI1_BASE + 0x810);
-	volatile uint32_t *portsc  = (uint32_t * ) (EHCI1_BASE + 0x054);
-
+	volatile uint32_t *portsc   = (uint32_t * ) (EHCI1_BASE + 0x054);
 
 	CCU->USB1_CLK_REG |= 0x01 << 24; // usb clock from 24MHz
 	CCU->USB1_CLK_REG |= BV(30) | BV(31); // rst USB1 phy, gating
