@@ -30,7 +30,7 @@
  extern "C" {
 #endif
 
-#include <log.h>
+#include <platform.h>
 
 #define CFG_TUSB_DEBUG_PRINTF small_printf
 

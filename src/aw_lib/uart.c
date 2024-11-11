@@ -191,17 +191,25 @@ static void uart_send_dma(const char *buf, size_t count)
 }
  */
 
-void uart_putchar(char c)
+void _uart_putchar(char c)
 {
 	while ((UART0->UART_USR & 2) == 0);
 	UART0->UART_RBR_THR_DLL = c;
 	while ((UART0->UART_USR & 2) == 0);
 }
 
-void uart_putc( void* p, char c)
+void uart_putchar(char c)
 {
-	uart_putchar(c);
+	_uart_putchar(c);
+	if (c == '\n') {
+			_uart_putchar('\r');
+	}
 }
+
+void uart_putc ( void* p, char c)
+		{
+			uart_putchar(c);
+		}
 
 /* 
 void uart_send_blocking(const char *buf)

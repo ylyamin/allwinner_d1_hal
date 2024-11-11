@@ -6,9 +6,8 @@
 #define LOG_H
 
 #include <config.h>
-#include <tinyprintf.h>
+#include <platform.h>
 
-#define small_printf tfp_printf
 
 /* DEBUG level */
 #define LOG_ERROR           0
