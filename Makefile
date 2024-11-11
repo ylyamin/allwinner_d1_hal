@@ -17,9 +17,11 @@ SRC_ADD = 	src/lib/tinyusb-ohci/src/tusb.c \
 			src/lib/tinyusb-ohci/src/class/msc/msc_host.c \
 			src/lib/tinyusb-ohci/src/host/hub.c \
 			src/lib/tinyusb-ohci/src/host/usbh.c \
-			src/lib/tinyusb-ohci/src/portable/ohci/ohci.c \
 			src/lib/tinyusb-ohci/src/common/tusb_fifo.c \
-			src/lib/tinyusb-ohci/examples/host/cdc_msc_hid/src/hid_app.c
+			src/lib/tinyusb-ohci/examples/host/cdc_msc_hid/src/hid_app.c \
+			src/lib/tinyusb-ohci/src/portable/ohci/ohci.c
+
+#src/lib/tinyusb-ohci/src/portable/ehci/ehci.c
 
 INC_ADD = 	src/lib/tinyusb-ohci/src
 

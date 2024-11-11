@@ -1,9 +1,10 @@
 # TODO:
-
+- gcc flags
 - detailed recheck all irq implementation. eps after handle_interrupt ?
-- ccu pll0
-- LOG debug
+- ccu, pll0, usb_clk
 - PMP, MMU ?
+- FreeRTOS
+
 - long make, all not automatic
 - repo structure and docs
 - changelog

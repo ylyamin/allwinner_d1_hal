@@ -36,7 +36,7 @@
 #include "host/hcd.h"
 #include "ehci_api.h"
 #include "ehci.h"
-
+#include <log.h>
 //--------------------------------------------------------------------+
 // MACRO CONSTANT TYPEDEF
 //--------------------------------------------------------------------+
@@ -240,6 +240,8 @@ void hcd_device_close(uint8_t rhport, uint8_t dev_addr)
 
 bool ehci_init(uint8_t rhport, uint32_t capability_reg, uint32_t operatial_reg)
 {
+  LOG_I("EHCI init\n\r");
+
   (void) capability_reg; // not used yet
 
   tu_memclr(&ehci_data, sizeof(ehci_data_t));
@@ -254,7 +256,7 @@ bool ehci_init(uint8_t rhport, uint32_t capability_reg, uint32_t operatial_reg)
   regs->status = EHCI_INT_MASK_ALL; // 2. clear all status
 
   regs->inten  = EHCI_INT_MASK_ERROR | EHCI_INT_MASK_PORT_CHANGE | EHCI_INT_MASK_ASYNC_ADVANCE |
-                 EHCI_INT_MASK_NXP_PERIODIC | EHCI_INT_MASK_NXP_ASYNC | EHCI_INT_MASK_FRAMELIST_ROLLOVER;
+                 EHCI_INT_MASK_NXP_PERIODIC | EHCI_INT_MASK_NXP_ASYNC;// | EHCI_INT_MASK_FRAMELIST_ROLLOVER;
 
   //------------- Asynchronous List -------------//
   ehci_qhd_t * const async_head = qhd_async_head(rhport);
@@ -316,6 +318,7 @@ bool ehci_init(uint8_t rhport, uint32_t capability_reg, uint32_t operatial_reg)
                    FRAMELIST_SIZE_USBCMD_VALUE;
 
   //------------- ConfigFlag Register (skip) -------------//
+  regs->config_flag = 1;
   regs->portsc_bm.port_power = 1; // enable port power
 
   return true;
@@ -687,7 +690,7 @@ void hcd_int_handler(uint8_t rhport)
   regs->status = int_status; // Acknowledge handled interrupt
 
   if (int_status == 0) return;
-
+  LOG_I("EHCI handler int_status:%d\n\r",int_status);
   if (int_status & EHCI_INT_MASK_FRAMELIST_ROLLOVER)
   {
     ehci_data.uframe_number += (FRAMELIST_SIZE << 3);
