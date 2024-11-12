@@ -23,6 +23,7 @@ void ccu_video1_pll_set(uint8_t n, uint8_t m);
 
 uint32_t ccu_clk_hosc_get(void);
 uint32_t ccu_perip_x1_clk_get(void);
+uint32_t ccu_perip_x1_to_clk(void);
 uint32_t ccu_video0_x4_clk_get(void);
 uint32_t ccu_apb1_clk_get(void);
 uint32_t ccu_apb0_clk_get(void);

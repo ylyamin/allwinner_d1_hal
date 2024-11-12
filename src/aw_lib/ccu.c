@@ -2,13 +2,13 @@
 
 #include "ccu.h"
 
-uint32_t ccu_clk_hosc24 = 24000000;
-uint32_t ccu_clk_cpu = 408000000;
-uint32_t ccu_clk_perip_x1 = 24000000;
-uint32_t ccu_clk_video0_x4 = 24000000;
-uint32_t ccu_clk_ahb = 24000000;
-uint32_t ccu_clk_apb0 = 24000000;
-uint32_t ccu_clk_apb1 = 24000000;
+uint32_t ccu_clk_hosc24		=  24000000;
+uint32_t ccu_clk_cpu		=1008000000;
+uint32_t ccu_clk_perip_x1	=  24000000;
+uint32_t ccu_clk_video0_x4	=  24000000;
+uint32_t ccu_clk_ahb		=  24000000;
+uint32_t ccu_clk_apb0		=  24000000;
+uint32_t ccu_clk_apb1		=  24000000;
 
 static inline uint64_t counter(void)
 {
@@ -155,7 +155,7 @@ static void ccu_cpu_pll_set(uint8_t n)
 	// set PLL CPU clock (24*42 = 1008) 
 	reg = CCU->PLL_CPU_CTRL_REG;
 	reg &= ~((0x3 << 16) | (0xff << 8) | (0x3 << 0));
-	// (41+1) * 24MHz = 1008
+	// (41+1) * 24MHz = 1008Mhz
 	reg |= ((n-1) << 8);
 	CCU->PLL_CPU_CTRL_REG = reg;
 

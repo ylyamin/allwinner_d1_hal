@@ -17,16 +17,23 @@ void main(void)
 	uart_init(115200);
 	init_printf(NULL,uart_putc);
 	LOG_I("Hello from allwinner !");
+	LOG_I("ccu_perip_x1_clk_get: %d",ccu_perip_x1_to_clk());
 
-	csr_write_pmpaddr0(0xffffffffULL);
-	csr_write_pmpcfg0(0x0FULL); // PMP_R | PMP_W | PMP_X | PMP_MATCH_TOR);
-	csr_write_satp(0);
+#ifdef USE_PMP
+	csr_write_pmpaddr0((0x40000000 >> 2) | 0b011111111111111111);  //1M
+	csr_write_pmpaddr1((0x40100000 >> 2) | 0b0111111111111111111); //2M
+	csr_write_pmpcfg0(0x00009f9f); // LOCK | NAPOT | X | W | R
+#endif
+#ifdef USE_MMU
+	csr_write_satp(0x00000000);
+#endif
 
 	irq_init();
 
 #ifdef USE_DCACHE
 	dcache_enable();
 #endif
+
 	task_usb();
 	
 	led_init();
