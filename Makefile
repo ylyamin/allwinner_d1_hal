@@ -3,41 +3,67 @@
 # Author: ylyamin
 #
 
-.PHONY: all clean
 # Variables
 TOOLCHAIN_INSTALL_DIR ?= $(shell pwd)/toolchain
 TARGET_NAME = app
 BUILD_DIR = build
-SRC_DIRS = src
-INC_DIRS = src
+SRC_DIR = src
+.DEFAULT_GOAL := all
 
-SRC_ADD = 	src/lib/tinyusb-ohci/src/tusb.c \
-			src/lib/tinyusb-ohci/src/class/cdc/cdc_host.c \
-			src/lib/tinyusb-ohci/src/class/hid/hid_host.c \
-			src/lib/tinyusb-ohci/src/class/msc/msc_host.c \
-			src/lib/tinyusb-ohci/src/host/hub.c \
-			src/lib/tinyusb-ohci/src/host/usbh.c \
-			src/lib/tinyusb-ohci/src/common/tusb_fifo.c \
-			src/lib/tinyusb-ohci/examples/host/cdc_msc_hid/src/hid_app.c \
-			src/lib/tinyusb-ohci/src/portable/ohci/ohci.c
+# Sources
+SRC +=	$(SRC_DIR)/aw_f133/memcpy_sunxi.c
+SRC +=	$(SRC_DIR)/aw_f133/memset_sunxi.c
 
-#src/lib/tinyusb-ohci/src/portable/ehci/ehci.c
+#SRC +=	$(SRC_DIR)/aw_lib/cache-c906.c
+SRC +=	$(SRC_DIR)/aw_lib/ccu.c
+#SRC +=	$(SRC_DIR)/aw_lib/de.c
+SRC +=	$(SRC_DIR)/aw_lib/de_scaler_table.c
+#SRC +=	$(SRC_DIR)/aw_lib/dmac.c
+SRC +=	$(SRC_DIR)/aw_lib/gpio.c
+SRC +=	$(SRC_DIR)/aw_lib/gr.c
+SRC +=	$(SRC_DIR)/aw_lib/irq.c	
+SRC +=	$(SRC_DIR)/aw_lib/led.c
+#SRC +=	$(SRC_DIR)/aw_lib/smhc.c
+#SRC +=	$(SRC_DIR)/aw_lib/tcon_lcd.c
+#SRC +=	$(SRC_DIR)/aw_lib/tcon_lcd-lvds.c
+#SRC +=	$(SRC_DIR)/aw_lib/tcon_lcd-rgb.c
+#SRC +=	$(SRC_DIR)/aw_lib/timer.c
+#SRC +=	$(SRC_DIR)/aw_lib/twi.c
+SRC +=	$(SRC_DIR)/aw_lib/uart.c
 
-INC_ADD = 	src/lib/tinyusb-ohci/src
+SRC +=	$(SRC_DIR)/lib/tinyprintf/tinyprintf.c
 
-SRC_EXL = 	src/xboot/% \
-			src/lib/tinyusb-ohci/% \
-			src/aw_lib/de.c \
-			src/aw_lib/dmac.c \
-			src/aw_lib/timer.c \
-			src/aw_lib/smhc.c \
-			src/aw_lib/twi.c \
-			src/aw_lib/tcon_lcd-lvds.c \
-			src/aw_lib/tcon_lcd-rgb.c \
-			src/aw_lib/tcon_lcd.c
+SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb/src/tusb.c
+SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb/src/typec/usbc.c
+SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb/src/class/cdc/cdc_host.c
+SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb/src/class/hid/hid_host.c
+SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb/src/class/msc/msc_host.c
+SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb/src/host/hub.c
+SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb/src/host/usbh.c
+SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb/src/common/tusb_fifo.c
+SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb/examples/host/cdc_msc_hid/src/hid_app.c
+SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb/src/portable/ohci/ohci.c
 
-INC_EXL = 	src/lib/tinyusb-ohci% \
-			src/xboot%
+#SRC +=	$(SRC_DIR)/lib/tinyusb-ohci/src/tusb.c
+#SRC +=	$(SRC_DIR)/lib/tinyusb-ohci/src/class/cdc/cdc_host.c
+#SRC +=	$(SRC_DIR)/lib/tinyusb-ohci/src/class/hid/hid_host.c
+#SRC +=	$(SRC_DIR)/lib/tinyusb-ohci/src/class/msc/msc_host.c
+#SRC +=	$(SRC_DIR)/lib/tinyusb-ohci/src/host/hub.c
+#SRC +=	$(SRC_DIR)/lib/tinyusb-ohci/src/host/usbh.c
+#SRC +=	$(SRC_DIR)/lib/tinyusb-ohci/src/common/tusb_fifo.c
+#SRC +=	$(SRC_DIR)/lib/tinyusb-ohci/examples/host/cdc_msc_hid/src/hid_app.c
+#SRC +=	$(SRC_DIR)/lib/tinyusb-ohci/src/portable/ohci/ohci.c
+
+#SRC +=	$(SRC_DIR)/kvm.c
+SRC +=	$(SRC_DIR)/main.c
+SRC +=	$(SRC_DIR)/start.s
+SRC +=	$(SRC_DIR)/usb_task.c
+
+INC +=	$(SRC_DIR)/aw_f133
+INC +=	$(SRC_DIR)/aw_lib
+INC +=	$(SRC_DIR)/lib/tinyprintf
+INC +=	$(SRC_DIR)/lib/hftrx_tinyusb/src
+INC +=	$(SRC_DIR)
 
 #Toolcahin
 T_HEAD_DEBUGSERVER_BIN = $(TOOLCHAIN_INSTALL_DIR)/T-HEAD_DebugServer/DebugServerConsole.elf
@@ -51,10 +77,14 @@ $(XUANTIE_900_GCC_ELF_NEWLIB_DIR):
 	wget -P $(TOOLCHAIN_INSTALL_DIR) https://occ-oss-prod.oss-cn-hangzhou.aliyuncs.com/resource//1705395512373/Xuantie-900-gcc-elf-newlib-x86_64-V2.8.1-20240115.tar.gz
 	tar -C $(TOOLCHAIN_INSTALL_DIR) -xvzf $(TOOLCHAIN_INSTALL_DIR)/Xuantie-900-gcc-elf-newlib-x86_64-V2.8.1-20240115.tar.gz
 
+#https://github.com/xpack-dev-tools/riscv-none-elf-gcc-xpack/releases/download/v14.2.0-2/xpack-riscv-none-elf-gcc-14.2.0-2-linux-x64.tar.gz
+
+XPACK_RISCV_NONE_ELF_GCC_BIN = $(TOOLCHAIN_INSTALL_DIR)/xpack-riscv-none-elf-gcc-14.2.0-2/bin/riscv-none-elf-
+
 toolchain: $(XUANTIE_900_GCC_ELF_NEWLIB_DIR)
 
 # Compile
-CROSS_COMPILE = $(XUANTIE_900_GCC_ELF_NEWLIB_BIN)
+CROSS_COMPILE = $(XPACK_RISCV_NONE_ELF_GCC_BIN)
 AS = ${CROSS_COMPILE}gcc
 CC = ${CROSS_COMPILE}gcc
 LD = ${CROSS_COMPILE}gcc
@@ -63,34 +93,29 @@ OBJCOPY = ${CROSS_COMPILE}objcopy
 OBDUMP = ${CROSS_COMPILE}objdump
 SIZE = ${CROSS_COMPILE}size
 
+#DEVICE = -march=rv64gcv0p7_xtheadc -mabi=lp64d -mtune=c906 -mcmodel=medlow  
 
-#DEVICE = -mcmodel=medany -march=rv64imafdc -mabi=lp64
-#CFLAGS = $(DEVICE) -Wno-cpp -fvar-tracking -ffreestanding -fno-common -ffunction-sections -fdata-sections -fstrict-volatile-bitfields -D_POSIX_SOURCE -fdiagnostics-color=always
-#AFLAGS = -c $(DEVICE) -x assembler-with-cpp -D__ASSEMBLY__
-#LFLAGS = $(DEVICE) -nostartfiles -Wl,--gc-sections,-Map=$(BUILD_DIR)/$(TARGET_NAME).map,-cref,-u,_start -T $(SRC_DIRS)/aw_f133_app.ld -lsupc++ -lgcc -static -Wl,--start-group -lc -lgcc -Wl,--end-group
-
-DEVICE = -march=rv64gcv0p7_xtheadc -mabi=lp64d -mtune=c906 -mcmodel=medlow  
+DEVICE = -march=rv64imafd_zicsr -mabi=lp64d -mcmodel=medany  
 CFLAGS = $(DEVICE) -fno-stack-protector -mstrict-align -ffunction-sections -fdata-sections -ffreestanding -std=gnu99 -fdiagnostics-color=always -Wno-cpp
 AFLAGS = -c $(DEVICE) -x assembler-with-cpp
-LFLAGS = $(DEVICE) -T $(SRC_DIRS)/link.ld -Wl,-gc-sections,--cref,-Map=$(BUILD_DIR)/$(TARGET_NAME).map -lgcc# -nostdlib
+LFLAGS = $(DEVICE) -T $(SRC_DIR)/link.ld -Wl,--cref,-Map=$(BUILD_DIR)/$(TARGET_NAME).map,--print-memory-usage -nostartfiles -Xlinker --sort-section=alignment -Xlinker --gc-sections
+
+#-gc-sections 
+#-lgcc
+#--specs=nano.specs -fno-common -fno-builtin
+# -nostartfiles 
+# -nostdlib
 
 CFLAGS +=  -O0 -ggdb
 AFLAGS +=  -ggdb
 
-# Includes
-INCS = $(shell find $(INC_DIRS) -type d)
-INCS := $(filter-out $(INC_EXL), $(INCS))
-INCS += $(INC_ADD)
-
-INC_FLAGS = $(addprefix -I,$(INCS))
-INC_FLAGS += -MMD -MP
-
 # Sources
-SRCS = $(shell find $(SRC_DIRS) -name '*.c' -or -name '*.s' -or -name '*.S')
-SRCS := $(filter-out $(SRC_EXL), $(SRCS))
-SRCS += $(SRC_ADD)
-OBJS = $(SRCS:%=$(BUILD_DIR)/%.o)
+OBJS = $(SRC:%=$(BUILD_DIR)/%.o)
 DEPS = $(OBJS:.o=.d)
+
+# Includes
+INC_FLAGS = $(addprefix -I,$(INC))
+INC_FLAGS += -MMD -MP
 
 # Targets
 
@@ -121,16 +146,15 @@ $(BUILD_DIR)/$(TARGET_NAME).bin: $(OBJS)
 	@echo LD
 	$(CMD_PREFIX)${LD} -o $(BUILD_DIR)/$(TARGET_NAME).elf ${LFLAGS} $(OBJS)
 	$(CMD_PREFIX)${OBJCOPY} -O binary -S $(BUILD_DIR)/$(TARGET_NAME).elf $(BUILD_DIR)/$(TARGET_NAME).bin
-	$(CMD_PREFIX)${SIZE} $(BUILD_DIR)/$(TARGET_NAME).elf
 
 all: $(BUILD_DIR)/$(TARGET_NAME).bin
 
 dis: $(BUILD_DIR)/$(TARGET_NAME).bin
-	@echo DIS
+	@echo DISASSEMBLY
 	$(CMD_PREFIX)${OBDUMP} -D -S $(BUILD_DIR)/$(TARGET_NAME).elf > $(BUILD_DIR)/$(TARGET_NAME).asm
 
 clean:
-	@echo RM
+	@echo REMOVE
 	$(CMD_PREFIX)rm -rf $(BUILD_DIR)/*
 
 debug:
@@ -138,6 +162,9 @@ debug:
 	@echo "${RED}Press and hold the FEL pin then press RESET pin to go to the FEL mode.${NC}"
 	xfel ddr d1
 	xfel jtag
-	$(T_HEAD_DEBUGSERVER_BIN) &	$(GDB) -x $(SRC_DIRS)/.gdbinit
+	$(T_HEAD_DEBUGSERVER_BIN)&
+	$(GDB) -x $(SRC_DIR)/.gdbinit
 
 -include $(DEPS)
+
+.PHONY: all clean

@@ -4,8 +4,7 @@
 
 MEMORY
 {
-  RAM (rwx) : ORIGIN = 0x40000000, LENGTH = 1M
-  DMA (rwx)	: ORIGIN = 0x40100000, LENGTH = 16M
+  RAM (rwx) : ORIGIN = 0x40000000, LENGTH = 16M
 }
 
 /* Library configurations */
@@ -165,7 +164,7 @@ SECTIONS
         . = ALIGN(16);
 		*(.usb)
 		. = ALIGN(16);  
-    } > DMA
+    } > RAM
 
 
 	__etext2 = .;

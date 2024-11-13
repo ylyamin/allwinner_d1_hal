@@ -1,3 +1,4 @@
+
 /* 
  * The MIT License (MIT)
  *
@@ -154,6 +155,8 @@ TU_ATTR_ALWAYS_INLINE static inline bool osal_queue_receive(osal_queue_t qhdl, v
 
   return success;
 }
+
+#include <host/hcd.h>
 
 TU_ATTR_ALWAYS_INLINE static inline bool osal_queue_send(osal_queue_t qhdl, void const * data, bool in_isr)
 {

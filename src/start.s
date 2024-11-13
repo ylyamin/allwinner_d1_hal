@@ -28,7 +28,7 @@
  * SOFTWARE.
  */
 
-.macro trap_entry
+.macro S_trap_entry
 	addi	sp,sp,-256
 
 //	sd x0,0(sp)		/* zero register */
@@ -66,7 +66,7 @@
 .endm
 
 
-.macro trap_exit
+.macro S_trap_exit
 //	ld x0,0(sp)		/* zero register */
 	ld x1,8(sp)		/* ABI link register ra */
 //	ld x2,16(sp)	/* ABI stack pointer sp */
@@ -171,18 +171,18 @@
 	fcvt.d.w f31, x0
 .endm
 
-trap_func:
-	trap_entry
+S_trap_func:
+	S_trap_entry
 	//fill0_i64
 	//fill0_fp64		/* set all floating registers to zero */
-	call handle_trap //\func\tail
-	trap_exit
+	call S_handle_trap //\func\tail
+	S_trap_exit
 	mret
 
-.global Reset_Handler
+.global S_Reset_Handler
 .section .startup0
 .align 8
-Reset_Handler:
+S_Reset_Handler:
 	fill0_i64		/* set all integer registers to zero */
 	/* stack initilization */
 	la	sp, __stack
@@ -190,8 +190,8 @@ Reset_Handler:
 	mv	gp, zero
     mv  a0, zero
     mv  a1, zero
-	la  t0, trap_func
+	la  t0, S_trap_func
    	csrw mtvec, t0
 
 	//fill0_fp64		/* set all floating registers to zero */
-	call main
+	call S_main

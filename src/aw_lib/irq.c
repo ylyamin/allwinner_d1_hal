@@ -48,7 +48,10 @@ static const char * exception_names[] = {
 	"Store page fault",					//15
 };
 
-static int (*irq_handlers_array[IRQ_NUM_MAX])(void) = {0};
+static void (*irq_handlers_array[IRQ_NUM_MAX])(void) = {0};
+
+void handle_interrupt(uint64_t mcause);
+void handle_exception(uint64_t mcause);
 
 void handle_trap(void)
 {
@@ -130,7 +133,7 @@ void irq_disable(int irq)
 	PLIC->PLIC_MIE_REGn[irq / 32] &= ~(1 << (irq % 32));
 }
 
-void irq_assign(int irq, void (*func)(void *))
+void irq_assign(int irq, void (*func)(void))
 {
 	if(irq > IRQ_NUM_MIN & irq < IRQ_NUM_MAX)
 		irq_handlers_array[irq] = func;

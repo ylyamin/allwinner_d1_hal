@@ -1,19 +1,14 @@
 # TODO:
 
-
-- gcc flags
-- irq implementation. eps after handle_interrupt ?
-- ccu, pll0, usb_clk
 - MMU ?
+- startup files ? malloc ? cheack hftrx
+- irq implementation. eps after handle_interrupt ?
 - FreeRTOS
 
 - long make, 'all' not automatic
 - repo structure and docs
 - changelog
 - hftrx to learn
-
-
-
 
 # Reuse:
 

@@ -32,23 +32,28 @@ static void usb_hw_init(void)
 	volatile uint32_t *portsc   = (uint32_t * ) (EHCI1_BASE + 0x054);
 	volatile uint32_t *confflag = (uint32_t * ) (EHCI1_BASE + 0x050);
 
-	CCU->USB1_CLK_REG |= 0x01 << 24; // usb clock 12M divided from 24MHz 
+	CCU->USB1_CLK_REG &= ~(BV(24) | BV(25));
+	CCU->USB1_CLK_REG |= BV(24); // usb clock 12M divided from 24MHz 
 	CCU->USB1_CLK_REG |= BV(30) | BV(31); // rst USB1 phy, gating
+
+	CCU->USB_BGR_REG &= ~BV(17);	// rst OHCI1
+	CCU->USB_BGR_REG &= ~BV(21);	// rst EHCI1
 
 	CCU->USB_BGR_REG |= BV(21); // rst EHCI1
 	CCU->USB_BGR_REG |= BV(5); // gating EHCI1
-	CCU->USB_BGR_REG |= BV(17); // rst oHCI1
-	CCU->USB_BGR_REG |= BV(1); // gating oHCI1
+
+	CCU->USB_BGR_REG |= BV(17); // rst OHCI1
+	CCU->USB_BGR_REG |= BV(1); // gating OHCI1
+
 
 	*phy_ctrl &= ~BV(3);
-	//*usb_ctrl &= ~BV(28);
-	*usb_ctrl |= BV(10) | BV(9) | BV(8) | BV(0);
+	*usb_ctrl |= BV(11) | BV(10) | BV(9) | BV(8) | BV(0);
 
 	//*confflag = 0;
 	*portsc |= BV(13);
 
 	//irq_assign(USB1_EHCI_IRQn, usb_int_handler);
-	irq_assign(USB1_OHCI_IRQn, usb_int_handler);
+	irq_assign(USB1_OHCI_IRQn, (void *) usb_int_handler);
 
 }
 
