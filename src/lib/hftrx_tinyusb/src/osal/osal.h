@@ -42,7 +42,7 @@ typedef void (*osal_task_func_t)( void * );
 #define OSAL_TIMEOUT_CONTROL_XFER  OSAL_TIMEOUT_WAIT_FOREVER
 
 // Mutex is required when using a preempted RTOS or MCU has multiple cores
-#if (CFG_TUSB_OS != OPT_OS_NONE) && !TUP_MCU_MULTIPLE_CORE
+#if (CFG_TUSB_OS == OPT_OS_NONE) && !TUP_MCU_MULTIPLE_CORE
   #define OSAL_MUTEX_REQUIRED   0
   #define OSAL_MUTEX_DEF(_name) uint8_t :0
 #else
