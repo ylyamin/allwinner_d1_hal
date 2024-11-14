@@ -10,6 +10,7 @@
 #include <irq.h>
 #include <led.h>
 #include <usb_task.h>
+#include <twi.h>
 
 extern unsigned int __bss_start__;
 extern unsigned int __bss_end__;
@@ -53,7 +54,10 @@ void main(void)
 	dcache_enable();
 #endif
 
-	task_usb();
+	twi_init();
+
+
+	//task_usb();
 	
 	led_init();
 	led_set(0, 1);

@@ -17,13 +17,28 @@ static inline uint64_t counter(void)
 	return cnt;
 }
 
-void dly(unsigned long us)
+void delay_us(unsigned long us)
 {
 	uint64_t t1 = counter();
 	uint64_t t2 = t1 + us * 24;
 	do {
 		t1 = counter();
 	} while(t2 >= t1);
+}
+
+void delay_ms(unsigned long ms)
+{
+	delay_us(ms * 1000);
+}
+
+unsigned long get_time_us(void)
+{
+	return (counter() / 24);
+}
+
+unsigned long get_time_ms(void)
+{
+	return (get_time_us() / 1000);
 }
 
 void ccu_de_set_peripx2_div(uint32_t div)
@@ -127,7 +142,7 @@ static void ccu_dma_enable(void)
 {
 	// deassert reset
 	CCU->DMA_BGR_REG |= BV(16);
-	dly(20);
+	delay_us(20);
 	// enable clock
 	CCU->DMA_BGR_REG |= BV(0);
 }
@@ -136,7 +151,7 @@ static void ccu_mbus_enable(void)
 {
 	// deassert reset
 	CCU->MBUS_CLK_REG |= BV(30);
-	//dly(1);
+	//delay_us(1);
 	// enable clock to all mbus peripherals
 	CCU->MBUS_MAT_CLK_GATING_REG = 0x00000d87;
 }
@@ -155,14 +170,14 @@ static void ccu_cpu_pll_set(uint8_t n)
 
 	// CPU clock source to osc24m Select cpux clock src to osc24m, axi divide ratio is 3, system apb clk ratio is 4 
 	CCU->RISC_CLK_REG = (0 << 24) | (3 << 8) | (1 << 0);
-	dly(1);
+	delay_us(1);
 
 	// enable pll output
 	CCU->PLL_CPU_CTRL_REG &= ~(1 << 27);
 
 	// enable pll ldo
 	CCU->PLL_CPU_CTRL_REG |= (1 << 30);
-	dly(5);
+	delay_us(5);
 
 	// set PLL CPU clock (24*42 = 1008) 
 	reg = CCU->PLL_CPU_CTRL_REG;
@@ -179,14 +194,14 @@ static void ccu_cpu_pll_set(uint8_t n)
 
 	// wait for pll lock/
 	while ((CCU->PLL_CPU_CTRL_REG & BV(28)) == 0);
-	dly(20);
+	delay_us(20);
 
 	// Enable pll gating
 	CCU->PLL_CPU_CTRL_REG |= BV(27);
 
 	// Lock disable - is this needed ? 
 //	CCU->PLL_CPU_CTRL_REG &= ~(1 << 29);
-//	dly(1);
+//	delay_us(1);
 
 	// change CPU clock source
 	reg = CCU->RISC_CLK_REG;
@@ -195,7 +210,7 @@ static void ccu_cpu_pll_set(uint8_t n)
 	//! reg |= ((0x03 << 24) | (0x0 << 16) | (0x3 << 8) | (0x1 << 0));
 	reg |= ((0x05 << 24) | (0x1 << 8));
 	CCU->RISC_CLK_REG = reg;
-	dly(1);
+	delay_us(1);
 
 	ccu_clk_cpu = ccu_cpu_to_clk();
 }
@@ -234,7 +249,7 @@ static void ccu_perip_pll_set(void)
 
 	// wait for pll lock/
 	while (!(CCU->PLL_PERI_CTRL_REG & BV(28)));
-	dly(20);
+	delay_us(20);
 
 	// Lock disable - needed ?
 	//CCU->PLL_PERI_CTRL_REG &= ~(1 << 29);
@@ -267,7 +282,7 @@ void ccu_video0_pll_set(uint8_t n, uint8_t m)
 	CCU->PLL_VIDEO0_CTRL_REG |= BV(29); // lock enable
 
 	while (!(CCU->PLL_VIDEO0_CTRL_REG & BV(28))); // wait for pll stable
-	dly(20);
+	delay_us(20);
 
 	//CCU->PLL_VIDEO0_CTRL_REG &= ~BV(29); // lock disable
 
@@ -293,7 +308,7 @@ void ccu_video1_pll_set(uint8_t n, uint8_t m)
 	CCU->PLL_VIDEO1_CTRL_REG |= BV(29); // lock enable
 
 	while (!(CCU->PLL_VIDEO1_CTRL_REG & BV(28))); // wait for pll stable
-	dly(20);
+	delay_us(20);
 
 	//CCU->PLL_VIDEO1_CTRL_REG &= ~BV(29); // lock disable
 
@@ -308,7 +323,7 @@ static void ccu_ve_pll_set(void)
 		CCU->PLL_VE_CTRL_REG |= BV(29); // lock enable
 
 		while (!(CCU->PLL_VE_CTRL_REG & BV(28))); // wait for pll stable
-		dly(20);
+		delay_us(20);
 
 		//CCU->PLL_VE_CTRL_REG &= ~BV(29); // lock disable
 	}
@@ -322,7 +337,7 @@ static void ccu_audio0_pll_set(void)
 		CCU->PLL_AUDIO0_CTRL_REG |= BV(29); // lock enable
 
 		while (!(CCU->PLL_AUDIO0_CTRL_REG & BV(28))); // wait for pll stable
-		dly(20);
+		delay_us(20);
 
 		//CCU->PLL_AUDIO0_CTRL_REG &= ~BV(29); // lock disable
 	}
@@ -336,7 +351,7 @@ static void ccu_audio1_pll_set(void)
 		CCU->PLL_AUDIO1_CTRL_REG |= BV(29); // lock enable
 
 		while (!(CCU->PLL_AUDIO1_CTRL_REG & BV(28))); // wait for pll stable
-		dly(20);
+		delay_us(20);
 
 		//CCU->PLL_AUDIO1_CTRL_REG &= ~BV(29); // lock disable
 	}
@@ -350,7 +365,7 @@ static void ccu_peri0_pll_set(void)
 		CCU->PLL_PERI_CTRL_REG |= BV(29); // lock enable
 
 		while (!(CCU->PLL_PERI_CTRL_REG & BV(28))); // wait for pll stable
-		dly(20);
+		delay_us(20);
 
 		CCU->PLL_PERI_CTRL_REG &= ~BV(29); // lock disable
 	}

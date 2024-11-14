@@ -3,6 +3,11 @@
 
 #include "platform.h"
 
+void delay_us(unsigned long us);
+void delay_ms(unsigned long ms);
+unsigned long  get_time_us(void);
+unsigned long  get_time_ms(void);
+
 void ccu_init(void);
 
 void ccu_de_set_peripx2_div(uint32_t div);
