@@ -28,7 +28,7 @@ SRC +=	$(SRC_DIR)/aw_lib/led.c
 #SRC +=	$(SRC_DIR)/aw_lib/tcon_lcd-lvds.c
 #SRC +=	$(SRC_DIR)/aw_lib/tcon_lcd-rgb.c
 #SRC +=	$(SRC_DIR)/aw_lib/timer.c
-#SRC +=	$(SRC_DIR)/aw_lib/twi.c
+SRC +=	$(SRC_DIR)/aw_lib/twi.c
 SRC +=	$(SRC_DIR)/aw_lib/uart.c
 
 SRC +=	$(SRC_DIR)/lib/tinyprintf/tinyprintf.c

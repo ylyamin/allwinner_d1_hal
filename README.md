@@ -1,9 +1,9 @@
 # TODO:
-- hid app
+- twi
+- RTT
 
-- compart tinyusb and hftrx_tinyusb
-- git fork hftrx_tinyusb
-- simple linker script?
+- git fork hftrx_tinyusb ?
+- simple linker script ?
 - MMU ?
 
 - no stdlib, built-in  printf

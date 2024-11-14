@@ -25,9 +25,9 @@
 #define CFG_TUH_ENDPOINT_MAX 	16
 #define CFG_TUSB_RHPORT0_MODE OPT_MODE_HOST
 
-#define CFG_TUH_MSC	1
-#define CFG_TUH_HID	4
-#define CFG_TUH_CDC	12	
+//#define CFG_TUH_MSC	1
+#define CFG_TUH_HID	8
+//#define CFG_TUH_CDC	12	
 //#define CFG_TUH_BTH	1	
 //#define CFG_TUH_VENDOR 0
 #define CFG_TUH_HUB 12

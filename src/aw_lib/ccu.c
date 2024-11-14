@@ -88,9 +88,21 @@ uint32_t ccu_tcon_get_clk(void)
 
 void ccu_twi_enable(TWI_TypeDef *twi)
 {
+	if (twi == TWI0) {
+		CCU->TWI_BGR_REG |= BV(0);
+		CCU->TWI_BGR_REG |= BV(16);
+	}
+	if (twi == TWI1) {
+		CCU->TWI_BGR_REG |= BV(1);
+		CCU->TWI_BGR_REG |= BV(17);
+	}
 	if (twi == TWI2) {
 		CCU->TWI_BGR_REG |= BV(2);
 		CCU->TWI_BGR_REG |= BV(18);
+	}
+	if (twi == TWI3) {
+		CCU->TWI_BGR_REG |= BV(3);
+		CCU->TWI_BGR_REG |= BV(19);
 	}
 }
 
