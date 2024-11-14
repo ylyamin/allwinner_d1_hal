@@ -25,15 +25,18 @@
 #define CFG_TUH_ENDPOINT_MAX 	16
 #define CFG_TUSB_RHPORT0_MODE OPT_MODE_HOST
 
-//#define CFG_TUH_MSC	1
+#define CFG_TUH_MSC	1
 #define CFG_TUH_HID	4
-//#define CFG_TUH_CDC	12	
+#define CFG_TUH_CDC	12	
 //#define CFG_TUH_BTH	1	
+//#define CFG_TUH_VENDOR 0
+#define CFG_TUH_HUB 12
+#define CFG_TUH_DEVICE_MAX	12
+
+
 #define CFG_TUSB_DEBUG 3	// 0..3
 #define TUP_OHCI_RHPORTS 1
 
-//#define CFG_TUH_HUB 12
-//#define CFG_TUH_DEVICE_MAX	12
 
 #define CFG_TUH_ENUMERATION_BUFSIZE	2048
 
