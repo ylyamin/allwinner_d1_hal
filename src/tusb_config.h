@@ -76,9 +76,8 @@
  */
 
 #define CFG_TUSB_MEM_SECTION __attribute__((section(".ramnc")))
-/* #ifndef CFG_TUSB_MEM_ALIGN
-#define CFG_TUSB_MEM_ALIGN   __attribute__ ((aligned(4)))
-#endif */
+
+//#define CFG_TUSB_MEM_ALIGN   __attribute__ ((aligned(64)))
 //--------------------------------------------------------------------
 // DEVICE CONFIGURATION
 //--------------------------------------------------------------------

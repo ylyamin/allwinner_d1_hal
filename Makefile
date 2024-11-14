@@ -130,43 +130,43 @@ else
 endif
 
 $(BUILD_DIR)/%.c.o: %.c
-	@echo CC
+	@echo CC $<
 	$(CMD_PREFIX)mkdir -p $(dir $@)
 	$(CMD_PREFIX)$(CC) -o $@ -c $(INC_FLAGS) $(CFLAGS) $< 
 
 $(BUILD_DIR)/%.s.o: %.s
-	@echo AS
+	@echo AS $<
 	$(CMD_PREFIX)mkdir -p $(dir $@)
 	$(CMD_PREFIX)$(AS) $(INC_FLAGS) $(AFLAGS) -c -o $@ $<
 
 $(BUILD_DIR)/%.S.o: %.S
-	@echo AS
+	@echo AS $<
 	$(CMD_PREFIX)mkdir -p $(dir $@)
 	$(CMD_PREFIX)$(AS) $(INC_FLAGS) $(AFLAGS) -c -o $@ $<
 
 $(BUILD_DIR)/$(TARGET_NAME).bin: $(OBJS)
-	@echo LD
+	@echo LD $(BUILD_DIR)/$(TARGET_NAME).elf
 	$(CMD_PREFIX)${LD} -o $(BUILD_DIR)/$(TARGET_NAME).elf ${LFLAGS} $(OBJS)
 	$(CMD_PREFIX)${OBJCOPY} -O binary -S $(BUILD_DIR)/$(TARGET_NAME).elf $(BUILD_DIR)/$(TARGET_NAME).bin
 
 all: $(BUILD_DIR)/$(TARGET_NAME).bin
 
 dis: $(BUILD_DIR)/$(TARGET_NAME).bin
-	@echo DISASSEMBLY
+	@echo DISASSEMBLY $(BUILD_DIR)/$(TARGET_NAME).asm
 	$(CMD_PREFIX)${OBDUMP} -D -S $(BUILD_DIR)/$(TARGET_NAME).elf > $(BUILD_DIR)/$(TARGET_NAME).asm
 
 clean:
-	@echo REMOVE
+	@echo REMOVE $(BUILD_DIR)/
 	$(CMD_PREFIX)rm -rf $(BUILD_DIR)/*
 
 flash:
-	@echo FLASH
-	xfel ddr d1
-	xfel write 0x40000000 $(BUILD_DIR)/$(TARGET_NAME).bin
-	xfel exec 0x40000000
+	@echo FLASH $(BUILD_DIR)/$(TARGET_NAME).bin
+	$(CMD_PREFIX)xfel ddr d1
+	$(CMD_PREFIX)xfel write 0x40000000 $(BUILD_DIR)/$(TARGET_NAME).bin
+	$(CMD_PREFIX)xfel exec 0x40000000
 
 debug:
-	@echo DEBUG
+	@echo DEBUG $(SRC_DIR)/.gdbinit
 	xfel ddr d1
 	xfel jtag
 	$(T_HEAD_DEBUGSERVER_BIN)&

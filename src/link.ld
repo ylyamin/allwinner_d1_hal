@@ -191,15 +191,17 @@ SECTIONS
 		*(.framebuff*)
 	} > RAM
 
-	.ramnc ALIGN(1M) (NOLOAD):
+	.ramnc ALIGN(1M):
 	{
-		PROVIDE(__RAMNC_BASE = .);
-		__bss2_start__ = .;
+ 		PROVIDE(__RAMNC_BASE = .);
+ 		__bss2_start__ = .;
+
 		*(.ramnc*)
+
 		__bss2_end__ = .;
 		. = ALIGN(1M);
-		PROVIDE(__RAMNC_TOP = .);
-	} > RAM
+ 		PROVIDE(__RAMNC_TOP = .);
+ 	} > RAM
 
 	.heap (NOLOAD):
 	{

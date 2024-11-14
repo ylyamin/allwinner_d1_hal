@@ -22,7 +22,7 @@ void init_bss(int start, int end)
     dst = &start;
     while (dst < &end)
     {
-        *dst++ = 0;
+        *dst++ = 0ul;
     }
 }
 
