@@ -11,8 +11,27 @@
 #include <led.h>
 #include <usb_task.h>
 
+extern unsigned int __bss_start__;
+extern unsigned int __bss_end__;
+extern unsigned int __bss2_start__;
+extern unsigned int __bss2_end__;
+
+void init_bss(int start, int end)
+{
+    unsigned int *dst;
+    dst = &start;
+    while (dst < &end)
+    {
+        *dst++ = 0;
+    }
+}
+
+
 void main(void)
 {
+	init_bss(__bss_start__ , __bss_end__);
+	init_bss(__bss2_start__ , __bss2_end__);
+
 	ccu_init();
 	uart_init(115200);
 	init_printf(NULL,uart_putc);

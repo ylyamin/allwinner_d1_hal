@@ -96,10 +96,12 @@ SIZE = ${CROSS_COMPILE}size
 #DEVICE = -march=rv64gcv0p7_xtheadc -mabi=lp64d -mtune=c906 -mcmodel=medlow  
 
 DEVICE = -march=rv64imafd_zicsr -mabi=lp64d -mcmodel=medany  
-CFLAGS = $(DEVICE) -fno-stack-protector -mstrict-align -ffunction-sections -fdata-sections -ffreestanding -std=gnu99 -fdiagnostics-color=always -Wno-cpp
+CFLAGS = $(DEVICE) -fno-stack-protector -ffunction-sections -fdata-sections -fdiagnostics-color=always -Wno-cpp
 AFLAGS = -c $(DEVICE) -x assembler-with-cpp
-LFLAGS = $(DEVICE) -T $(SRC_DIR)/link.ld -Wl,--cref,-Map=$(BUILD_DIR)/$(TARGET_NAME).map,--print-memory-usage -nostartfiles -Xlinker --sort-section=alignment -Xlinker --gc-sections
+LFLAGS = $(DEVICE) -T $(SRC_DIR)/link.ld -Wl,--cref,-Map=$(BUILD_DIR)/$(TARGET_NAME).map,--print-memory-usage -nostartfiles
 
+# -ffreestanding -std=gnu99 
+# -mstrict-align
 #-gc-sections 
 #-lgcc
 #--specs=nano.specs -fno-common -fno-builtin
@@ -157,9 +159,14 @@ clean:
 	@echo REMOVE
 	$(CMD_PREFIX)rm -rf $(BUILD_DIR)/*
 
+flash:
+	@echo FLASH
+	xfel ddr d1
+	xfel write 0x40000000 $(BUILD_DIR)/$(TARGET_NAME).bin
+	xfel exec 0x40000000
+
 debug:
 	@echo DEBUG
-	@echo "${RED}Press and hold the FEL pin then press RESET pin to go to the FEL mode.${NC}"
 	xfel ddr d1
 	xfel jtag
 	$(T_HEAD_DEBUGSERVER_BIN)&

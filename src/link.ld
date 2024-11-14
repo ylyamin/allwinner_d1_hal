@@ -4,7 +4,7 @@
 
 MEMORY
 {
-  RAM (rwx) : ORIGIN = 0x40000000, LENGTH = 16M
+  RAM : ORIGIN = 0x40000000, LENGTH = 16M
 }
 
 /* Library configurations */
@@ -159,14 +159,6 @@ SECTIONS
 
 	} > RAM
 
-    .usb :
-    {
-        . = ALIGN(16);
-		*(.usb)
-		. = ALIGN(16);  
-    } > RAM
-
-
 	__etext2 = .;
 
 	.sysram : AT (__etext2)
@@ -199,7 +191,7 @@ SECTIONS
 		*(.framebuff*)
 	} > RAM
 
-	.ramnc BLOCK(1M) (NOLOAD):
+	.ramnc ALIGN(1M) (NOLOAD):
 	{
 		PROVIDE(__RAMNC_BASE = .);
 		__bss2_start__ = .;
