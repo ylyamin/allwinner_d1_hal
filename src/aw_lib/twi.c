@@ -5,25 +5,6 @@
 #include "twi.h"
 #include "irq.h"
 
-struct gpio_t twi_gpio[] = {
-	{ // sck
-		.gpio = GPIOB,
-		.pin = BV(10),
-		.mode = GPIO_MODE_FNC4,
-		.pupd = GPIO_PUPD_UP,
-		.drv = GPIO_DRV_3,
-		//.state = GPIO_SET
-	},
-	{ // sda
-		.gpio = GPIOB,
-		.pin = BV(11),
-		.mode = GPIO_MODE_FNC4,
-		.pupd = GPIO_PUPD_UP,
-		.drv = GPIO_DRV_3,
-		//.state = GPIO_SET
-	},
-};
-
 enum {
 	I2C_STAT_BUS_ERROR	= 0x00,
 	I2C_STAT_TX_START	= 0x08,
@@ -55,10 +36,8 @@ struct i2c_msg_t {
 	uint8_t addr;
 	uint8_t flags;
 	uint8_t len;
-	uint8_t * buf;
+	void * buf;
 };
-
-
 
 /*
 * Fin is APB CLOCK INPUT;
@@ -92,17 +71,19 @@ void twi_set_clock(TWI_TypeDef *twi, uint32_t tgtfreq)
 	twi->TWI_CCR = (best_m << 3) | best_n;
 }
 
-static int d1_i2c_wait_status(TWI_TypeDef *twi)
+static int i2c_wait_status(TWI_TypeDef *twi)
 {
 	unsigned long timeout = get_time_ms() + 1;
+
 	do {
 		if(twi->TWI_CNTR & (1 << 3))
 			return twi->TWI_STAT;
 	} while(get_time_ms() < timeout);
+
 	return I2C_STAT_BUS_ERROR;
 }
 
-static int d1_i2c_start(TWI_TypeDef *twi)
+static int i2c_start(TWI_TypeDef *twi)
 {
 	twi->TWI_CNTR |= (1 << 5) | (1 << 3);
 
@@ -113,10 +94,10 @@ static int d1_i2c_start(TWI_TypeDef *twi)
 			break;
 	} while(get_time_ms() < timeout);
 
-	return d1_i2c_wait_status(twi);
+	return i2c_wait_status(twi);
 }
 
-static int d1_i2c_stop(TWI_TypeDef *twi)
+static int i2c_stop(TWI_TypeDef *twi)
 {
 	twi->TWI_CNTR |= (1 << 4) | (1 << 3);
 
@@ -127,37 +108,38 @@ static int d1_i2c_stop(TWI_TypeDef *twi)
 			break;
 	} while(get_time_ms() < timeout);
 
-	return d1_i2c_wait_status(twi);
+	return i2c_wait_status(twi);
 }
 
-static int d1_i2c_send_data(TWI_TypeDef *twi, uint8_t data)
+static int i2c_send_data(TWI_TypeDef *twi, uint8_t data)
 {
 	twi->TWI_DATA = data;
 	twi->TWI_CNTR |= (1 << 3);
-	return d1_i2c_wait_status(twi);
+	return i2c_wait_status(twi);
 }
 
-static int d1_i2c_read(TWI_TypeDef *twi, struct i2c_msg_t * msg)
+static int i2c_read(TWI_TypeDef *twi, struct i2c_msg_t * msg)
 {
 	uint8_t * p = msg->buf;
 	int len = msg->len;
 
-	if(d1_i2c_send_data(twi, (uint8_t)(msg->addr << 1 | 1)) != I2C_STAT_TX_AR_ACK)
+	if(i2c_send_data(twi, (uint8_t)(msg->addr << 1 | 1)) != I2C_STAT_TX_AR_ACK)
 		return -1;
 
 	twi->TWI_CNTR |= (1 << 2);
+
 	while(len > 0)
 	{
 		if(len == 1)
 		{
 			twi->TWI_CNTR = (twi->TWI_CNTR & ~(1 << 2)) | (1 << 3);
-			if(d1_i2c_wait_status(twi) != I2C_STAT_RXD_NAK)
+			if(i2c_wait_status(twi) != I2C_STAT_RXD_NAK)
 				return -1;
 		}
 		else
 		{
 			twi->TWI_CNTR |= (1 << 3);
-			if(d1_i2c_wait_status(twi) != I2C_STAT_RXD_ACK)
+			if(i2c_wait_status(twi) != I2C_STAT_RXD_ACK)
 				return -1;
 		}
 		*p++ = twi->TWI_DATA;
@@ -166,23 +148,24 @@ static int d1_i2c_read(TWI_TypeDef *twi, struct i2c_msg_t * msg)
 	return 0;
 }
 
-static int d1_i2c_write(TWI_TypeDef *twi, struct i2c_msg_t * msg)
+static int i2c_write(TWI_TypeDef *twi, struct i2c_msg_t * msg)
 {
 	uint8_t * p = msg->buf;
 	int len = msg->len;
 
-	if(d1_i2c_send_data(twi, (uint8_t)(msg->addr << 1)) != I2C_STAT_TX_AW_ACK)
+	if(i2c_send_data(twi, (uint8_t)(msg->addr << 1)) != I2C_STAT_TX_AW_ACK)
 		return -1;
+		
 	while(len > 0)
 	{
-		if(d1_i2c_send_data(twi, *p++) != I2C_STAT_TXD_ACK)
+		if(i2c_send_data(twi, *p++) != I2C_STAT_TXD_ACK)
 			return -1;
 		len--;
 	}
 	return 0;
 }
 
-static int i2c_d1_xfer(TWI_TypeDef *twi, struct i2c_msg_t * msgs, int num)
+static int i2c_xfer(TWI_TypeDef *twi, struct i2c_msg_t * msgs, int num)
 {
 	struct i2c_msg_t * pmsg = msgs;
 	int i, res;
@@ -190,114 +173,95 @@ static int i2c_d1_xfer(TWI_TypeDef *twi, struct i2c_msg_t * msgs, int num)
 	if(!msgs || num <= 0)
 		return 0;
 
-	if(d1_i2c_start(twi) != I2C_STAT_TX_START)
+	if(i2c_start(twi) != I2C_STAT_TX_START)
 		return 0;
 
 	for(i = 0; i < num; i++, pmsg++)
 	{
 		if(i != 0)
 		{
-			if(d1_i2c_start(twi) != I2C_STAT_TX_RSTART)
+			if(i2c_start(twi) != I2C_STAT_TX_RSTART)
 				break;
 		}
 		if(pmsg->flags & I2C_M_RD)
-			res = d1_i2c_read(twi, pmsg);
+			res = i2c_read(twi, pmsg);
 		else
-			res = d1_i2c_write(twi, pmsg);
+			res = i2c_write(twi, pmsg);
 		if(res < 0)
 			break;
 	}
-	d1_i2c_stop(twi);
+	i2c_stop(twi);
 
 	return i;
 }
 
-int i2c_master_send(TWI_TypeDef *twi,  struct i2c_msg_t * msg)
+void i2c_master_set(TWI_TypeDef *twi, uint8_t dev_addr, uint8_t reg_addr, uint8_t value)
 {
-	msg->flags &= I2C_M_TEN;
-	return i2c_d1_xfer(twi, msg, 1);
+	struct i2c_msg_t msg[1];
+	uint8_t data[2] = { reg_addr, value };
+
+    msg[0].addr = dev_addr;
+    msg[0].buf =  &data;
+	msg[0].flags = 0;
+    msg[0].len = sizeof(data);
+
+	i2c_xfer(twi, &msg[0], 1);
 }
 
-int i2c_master_recv(TWI_TypeDef *twi, struct i2c_msg_t * msg)
-{
-	msg->flags &= I2C_M_TEN;
-	msg->flags |= I2C_M_RD;
-	return i2c_d1_xfer(twi, msg, 1);
-}
-
-#define AXP228_ADDR (0x69 >> 1)
-#define DLDO1_Voltage_REG 0x15
-#define DLDO2_Voltage_REG 0x16
-#define DLDO3_Voltage_REG 0x17
-#define DLDO4_Voltage_REG 0x18
-#define ELDO1_Voltage_REG 0x19
-#define ELDO2_Voltage_REG 0x1A
-#define ELDO3_Voltage_REG 0x1B
-#define DC5LD_Voltage_REG 0x1C
-#define DCDC1_Voltage_REG 0x21
-#define DCDC2_Voltage_REG 0x22
-#define DCDC3_Voltage_REG 0x23
-#define DCDC4_Voltage_REG 0x24
-#define DCDC5_Voltage_REG 0x25
-#define ALDO1_Voltage_REG 0x28
-#define ALDO2_Voltage_REG 0x29
-#define ALDO3_Voltage_REG 0x2A
-
-
-
-void _axp_get_reg(TWI_TypeDef *twi, uint8_t reg_addr)
+uint8_t i2c_master_get(TWI_TypeDef *twi, uint8_t dev_addr, uint8_t reg_addr)
 {
 	struct i2c_msg_t msg[2];
+	uint8_t data[1] = { reg_addr };
 
-    msg[0].addr = AXP228_ADDR;
-    msg[0].buf = &reg_addr;
+    msg[0].addr  = dev_addr;
+    msg[0].buf   = &data;
 	msg[0].flags = 0;
-    msg[0].len = sizeof(reg_addr);
+    msg[0].len   = sizeof(data);
 
-    msg[1].addr = AXP228_ADDR;
-    msg[1].buf = &reg_addr;
+    msg[1].addr   = dev_addr;
+    msg[1].buf    = &data;
 	msg[1].flags |= I2C_M_RD;
-    msg[1].len = sizeof(reg_addr);
+    msg[1].len    = sizeof(data);
 
-	i2c_d1_xfer(twi, &msg[0], 2);
+	i2c_xfer(twi, &msg[0], 2);
 
-	uint8_t value = *msg[1].buf;
-    LOG_D("REG: %d", value);
-}	
-
-void twi_int_handler(void)
-{
-    LOG_D("twi_int_handler");
+	return data[0];
 }
 
-void twi_init(void)
+struct gpio_t twi_gpio[2] = {
+		//TWI0
+		{ // sck
+			.gpio = GPIOB,
+			.pin = BV(10),
+			.mode = GPIO_MODE_FNC4,
+			.pupd = GPIO_PUPD_UP,
+			.drv = GPIO_DRV_3,
+			//.state = GPIO_SET
+		},
+		{ // sda
+			.gpio = GPIOB,
+			.pin = BV(11),
+			.mode = GPIO_MODE_FNC4,
+			.pupd = GPIO_PUPD_UP,
+			.drv = GPIO_DRV_3,
+			//.state = GPIO_SET
+		},
+};
+
+void twi_init(TWI_TypeDef *twi, uint32_t freq)
 {
-	LOG_D("twi: init\n\r");
+	LOG_D("twi_init");
+	
+	if (twi == TWI0) {twi_gpio[0].pin = BV(10); twi_gpio[1].pin = BV(11);}
+	if (twi == TWI1) {twi_gpio[0].pin = BV(4);  twi_gpio[1].pin = BV(5); }
+	if (twi == TWI2) {twi_gpio[0].pin = BV(0);  twi_gpio[1].pin = BV(1); }
+	if (twi == TWI3) {twi_gpio[0].pin = BV(6);  twi_gpio[1].pin = BV(7); }
+
 	gpio_init(twi_gpio, ARRAY_SIZE(twi_gpio));
-	ccu_twi_enable(TWI0);
-	twi_set_clock(TWI0, 400000);
-	TWI0->TWI_CNTR = (1 << 6);
-	TWI0->TWI_SRST = (1 << 0);
-
-	irq_assign(TWI0_IRQn, (void *) twi_int_handler);
-	irq_enable(TWI0_IRQn);
-
- 	_axp_get_reg(TWI0, DLDO1_Voltage_REG);
-	_axp_get_reg(TWI0, DLDO2_Voltage_REG);
-	_axp_get_reg(TWI0, DLDO3_Voltage_REG);
-	_axp_get_reg(TWI0, DLDO4_Voltage_REG);
-	_axp_get_reg(TWI0, ELDO1_Voltage_REG);
-	_axp_get_reg(TWI0, ELDO2_Voltage_REG);
-	_axp_get_reg(TWI0, ELDO3_Voltage_REG);
-	_axp_get_reg(TWI0, DC5LD_Voltage_REG);
-	_axp_get_reg(TWI0, DCDC1_Voltage_REG);
-	_axp_get_reg(TWI0, DCDC2_Voltage_REG);
-	_axp_get_reg(TWI0, DCDC3_Voltage_REG);
-	_axp_get_reg(TWI0, DCDC4_Voltage_REG);
-	_axp_get_reg(TWI0, DCDC5_Voltage_REG);
-	_axp_get_reg(TWI0, ALDO1_Voltage_REG);
-	_axp_get_reg(TWI0, ALDO2_Voltage_REG);
-	_axp_get_reg(TWI0, ALDO3_Voltage_REG);
-
-
+	
+	ccu_twi_enable(twi);
+	twi_set_clock(twi, freq);
+	
+	twi->TWI_CNTR = (1 << 6);
+	twi->TWI_SRST = (1 << 0);
 }

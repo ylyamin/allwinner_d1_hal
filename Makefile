@@ -58,6 +58,7 @@ SRC +=	$(SRC_DIR)/hid_app.c
 SRC +=	$(SRC_DIR)/main.c
 SRC +=	$(SRC_DIR)/start.s
 SRC +=	$(SRC_DIR)/usb_task.c
+SRC +=	$(SRC_DIR)/axp228.c
 
 INC +=	$(SRC_DIR)/aw_f133
 INC +=	$(SRC_DIR)/aw_lib

@@ -11,6 +11,7 @@
 #include <led.h>
 #include <usb_task.h>
 #include <twi.h>
+#include <axp228.h>
 
 extern unsigned int __bss_start__;
 extern unsigned int __bss_end__;
@@ -54,10 +55,9 @@ void main(void)
 	dcache_enable();
 #endif
 
-	twi_init();
-
-
-	//task_usb();
+	twi_init(TWI0, 400000);
+    axp_USB_control(TWI0,1);
+	task_usb();
 	
 	led_init();
 	led_set(0, 1);
