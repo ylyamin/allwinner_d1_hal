@@ -41,18 +41,9 @@ SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb/src/class/msc/msc_host.c
 SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb/src/host/hub.c
 SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb/src/host/usbh.c
 SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb/src/common/tusb_fifo.c
+SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb/src/portable/ehci/ehci.c
 SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb/src/portable/ohci/ohci.c
 SRC +=	$(SRC_DIR)/hid_app.c
-
-#SRC +=	$(SRC_DIR)/lib/tinyusb-ohci/src/tusb.c
-#SRC +=	$(SRC_DIR)/lib/tinyusb-ohci/src/class/cdc/cdc_host.c
-#SRC +=	$(SRC_DIR)/lib/tinyusb-ohci/src/class/hid/hid_host.c
-#SRC +=	$(SRC_DIR)/lib/tinyusb-ohci/src/class/msc/msc_host.c
-#SRC +=	$(SRC_DIR)/lib/tinyusb-ohci/src/host/hub.c
-#SRC +=	$(SRC_DIR)/lib/tinyusb-ohci/src/host/usbh.c
-#SRC +=	$(SRC_DIR)/lib/tinyusb-ohci/src/common/tusb_fifo.c
-#SRC +=	$(SRC_DIR)/lib/tinyusb-ohci/examples/host/cdc_msc_hid/src/hid_app.c
-#SRC +=	$(SRC_DIR)/lib/tinyusb-ohci/src/portable/ohci/ohci.c
 
 #SRC +=	$(SRC_DIR)/kvm.c
 SRC +=	$(SRC_DIR)/main.c
