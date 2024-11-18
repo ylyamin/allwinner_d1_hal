@@ -1,0 +1,4 @@
+[submodule "src/lib/hftrx_tinyusb_fork"]
+	path = src/lib/hftrx_tinyusb_fork
+	url = https://github.com/ylyamin/hftrx_tinyusb_fork
+	branch = master_ua1arn
