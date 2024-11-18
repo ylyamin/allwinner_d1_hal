@@ -33,16 +33,16 @@ SRC +=	$(SRC_DIR)/aw_lib/uart.c
 
 SRC +=	$(SRC_DIR)/lib/tinyprintf/tinyprintf.c
 
-SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb/src/tusb.c
-SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb/src/typec/usbc.c
-SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb/src/class/cdc/cdc_host.c
-SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb/src/class/hid/hid_host.c
-SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb/src/class/msc/msc_host.c
-SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb/src/host/hub.c
-SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb/src/host/usbh.c
-SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb/src/common/tusb_fifo.c
-SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb/src/portable/ehci/ehci.c
-SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb/src/portable/ohci/ohci.c
+SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb_fork/src/tusb.c
+SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb_fork/src/typec/usbc.c
+SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb_fork/src/class/cdc/cdc_host.c
+SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb_fork/src/class/hid/hid_host.c
+SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb_fork/src/class/msc/msc_host.c
+SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb_fork/src/host/hub.c
+SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb_fork/src/host/usbh.c
+SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb_fork/src/common/tusb_fifo.c
+SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb_fork/src/portable/ehci/ehci.c
+SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb_fork/src/portable/ohci/ohci.c
 SRC +=	$(SRC_DIR)/hid_app.c
 
 #SRC +=	$(SRC_DIR)/kvm.c
@@ -54,7 +54,7 @@ SRC +=	$(SRC_DIR)/axp228.c
 INC +=	$(SRC_DIR)/aw_f133
 INC +=	$(SRC_DIR)/aw_lib
 INC +=	$(SRC_DIR)/lib/tinyprintf
-INC +=	$(SRC_DIR)/lib/hftrx_tinyusb/src
+INC +=	$(SRC_DIR)/lib/hftrx_tinyusb_fork/src
 INC +=	$(SRC_DIR)
 
 #Toolcahin

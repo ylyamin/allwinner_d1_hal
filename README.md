@@ -1,15 +1,19 @@
 # TODO:
-- twi
-- RTT
 
-- git fork hftrx_tinyusb ?
+- LCD rgb/ mipi
+
+- to do as library and external main
+- cleanup repo structure, readme etc.
+- ehci/ohci switch ?
 - simple linker script ?
 - MMU ?
-
 - no stdlib, built-in  printf
 - FreeRTOS ?
-- repo structure and docs
+- bootloader external
+- own bootloader
 - changelog
+- kbuild ?
+- common for D1s T113 (configured gpio)
 
 # Reuse:
 

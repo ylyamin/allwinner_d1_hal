@@ -1,5 +1,6 @@
 #include <platform.h>
 #include <tusb.h>
+#include <tusb_config.h>
 #include "portable/ehci/ehci_api.h"
 #include <log.h>
 #include <irq.h>
@@ -50,30 +51,47 @@ static void usb_hw_init(void)
 	*phy_ctrl &= ~BV(3);
 	*usb_ctrl |= BV(11) | BV(10) | BV(9) | BV(8) | BV(0);
 
-	//*confflag = 1;
-	//*portsc |= BV(13);
+#ifdef TUP_USBIP_EHCI
 
+	*confflag = 1;
+	*portsc &= ~BV(13);
 	irq_assign(USB1_EHCI_IRQn, (void *) usb_int_handler);
-	//irq_assign(USB1_OHCI_IRQn, (void *) usb_int_handler);
+
+#elif TUP_USBIP_OHCI
+
+	*confflag = 0;
+	*portsc |= BV(13);
+	irq_assign(USB1_OHCI_IRQn, (void *) usb_int_handler);
+
+#endif
 
 }
 
+#ifdef TUP_USBIP_EHCI
 bool hcd_init(uint8_t rhport)
 {
   return ehci_init(rhport, (uint32_t) EHCI1_BASE, (uint32_t) EHCI1_BASE+0x10);
 }
+#endif
 
 void hcd_int_enable(uint8_t rhport)
 {
 	(void)rhport;
+
+#ifdef TUP_USBIP_EHCI
 	irq_enable(USB1_EHCI_IRQn);
-	//irq_enable(USB1_OHCI_IRQn);
+#elif TUP_USBIP_OHCI
+	irq_enable(USB1_OHCI_IRQn);
+#endif
 }
 
 void hcd_int_disable(uint8_t rhport)
 {
 	(void)rhport;
+#ifdef TUP_USBIP_EHCI
 	irq_disable(USB1_EHCI_IRQn);
-	//irq_disable(USB1_OHCI_IRQn);
+#elif TUP_USBIP_OHCI
+	irq_disable(USB1_OHCI_IRQn);
+#endif
 }
 
