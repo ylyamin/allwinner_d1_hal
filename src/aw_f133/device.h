@@ -59,6 +59,7 @@ typedef enum IRQn
     DE_IRQn = 103,                                    /*!< DE_TOP Display Engine (DE) TOP */
     DI_IRQn = 104,                                    /*!< DI De-interlacer (DI) */
     G2D_IRQn = 105,                                   /*!< G2D_TOP Graphic 2D top */
+    LCD_IRQn = 106,
     TVE_IRQn = 107,                                   /*!< TVE_TOP TV Output (TV_Encoder) */
     DSI0_IRQn = 108,                                  /*!< DSI MIPI DSI Display Interface */
     TV_Encoder_IRQn = 110,                            /*!< TV_Encoder TV Encoder (display out interface = CVBS OUT) */

@@ -13,7 +13,7 @@ uint32_t de_layer_get_w(void);
 void *de_layer_get_fb(void);
 int de_layer_swap_done(void);
 void de_layer_swap(void);
-void de_layer_register_semaphore(SemaphoreHandle_t s);
+//void de_layer_register_semaphore(SemaphoreHandle_t s);
 
 void de_int_vblank(void);
 

@@ -6,10 +6,10 @@
 
 struct gpio_t led_gpio[] = {
 	{
-		.gpio = GPIOC,
-		.pin = BV(1),
+		.gpio = GPIOD,
+		.pin = BV(22),
 		.mode = GPIO_MODE_OUTPUT,
-		.drv = GPIO_DRV_1,
+		.drv = GPIO_DRV_3,
 	},
 };
 

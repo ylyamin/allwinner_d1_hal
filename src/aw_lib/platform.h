@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <allwnr_f133.h>
 
+#define __IO volatile
 #define LIKELY(x)          __builtin_expect(!!(x), 1)
 #define UNLIKELY(x)        __builtin_expect(!!(x), 0)
 #define ARRAY_SIZE(x)      ((sizeof(x)/sizeof(x[0])))

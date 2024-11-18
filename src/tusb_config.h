@@ -15,10 +15,9 @@
 #include <platform.h>
 #include <log.h>
 
-//#define ASSERT(x) do { __asm("ebreak\n"); } while(0)
 #define CFG_TUSB_DEBUG_PRINTF small_printf
 
-#define CFG_TUSB_MCU OPT_MCU_F1C100S //OPT_MCU_SUN20IW1
+#define CFG_TUSB_MCU OPT_MCU_SUN20IW1
 
 //#define TUP_USBIP_EHCI 1
 #define TUP_USBIP_OHCI 1

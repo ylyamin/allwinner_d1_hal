@@ -1,11 +1,9 @@
 #include "platform.h"
-
 #include "ccu.h"
 #include "uart.h"
-
+#include "log.h"
 #include "de.h"
 #include "de_priv.h"
-
 #include "de_scaler_table.h"
 
 //#include "FreeRTOS.h"
@@ -24,7 +22,7 @@ struct layer_t {
 
 	uint8_t alpha;
 
-	SemaphoreHandle_t semaphore;
+	//! SemaphoreHandle_t semaphore;
 
 	// overlay window
 	struct {
@@ -74,8 +72,8 @@ struct layer_t layers[1] = {
 	},
 };
 
-uint32_t lcd_w = 1024;
-uint32_t lcd_h = 600;
+uint32_t lcd_w = 480;
+uint32_t lcd_h = 272;
 
 
 uint32_t fmt_to_pitch(uint8_t fmt)
@@ -160,7 +158,7 @@ void de_layer_set(void *fb0, void *fb1)
 	layers[0].fb_idx = 0;
 	layers[0].fb_dbl = fb1 != 0;
 
-	uart_printf("de: set layer, fmt = %d\n\r", layers[0].fmt);
+	LOG_D("de: set layer, fmt = %d", layers[0].fmt);
 	uint32_t w = layers[0].win.x1 - layers[0].win.x0;
 	uint32_t h = layers[0].win.y1 - layers[0].win.y0;
 	uint32_t p = fmt_to_pitch(layers[0].fmt);
@@ -179,7 +177,7 @@ void de_layer_set(void *fb0, void *fb1)
 		uint64_t vstep = 0;
 
 		// enable GSU (scaler unit)
-		uart_printf("de: enable scaler\n\r");
+		LOG_D("de: enable scaler");
 
 		// set input resolution and output resolution
 		DE_MUX_GSU1->OUTSIZE_REG = ((lcd_h-1) << 16) | (lcd_w - 1);
@@ -190,24 +188,24 @@ void de_layer_set(void *fb0, void *fb1)
 		tmp = tmp / lcd_w;
 
 		DE_MUX_GSU1->HSTEP_REG = tmp << GSU_PHASE_FRAC_REG_SHIFT;
-//		uart_printf("de: hstep = %08x\n\r", DE_MUX_GSU1->HSTEP_REG);
+//		LOG_D("de: hstep = %08x\n\r", DE_MUX_GSU1->HSTEP_REG);
 
 		// calculate fractional vstep
 		vstep = h << GSU_PHASE_FRAC_BITWIDTH;
 		vstep = vstep / lcd_h;
 
 		DE_MUX_GSU1->VSTEP_REG = vstep << GSU_PHASE_FRAC_REG_SHIFT;
-//		uart_printf("de: vstep = %08x\n\r", DE_MUX_GSU1->VSTEP_REG);
+//		LOG_D("de: vstep = %08x\n\r", DE_MUX_GSU1->VSTEP_REG);
 
 		// calculate hphase (its always zero for our purpose)
 		tmp = (0 & 0xFFFFFFFF) >> (32 - GSU_PHASE_FRAC_BITWIDTH);
 		DE_MUX_GSU1->HPHASE_REG = tmp << GSU_PHASE_FRAC_REG_SHIFT;
-//		uart_printf("de: hphase = %08x\n\r", DE_MUX_GSU1->HPHASE_REG);
+//		LOG_D("de: hphase = %08x\n\r", DE_MUX_GSU1->HPHASE_REG);
 
 		// calculate vphase (its always zero for our purpose)
 		tmp = (0 & 0xFFFFFFFF) >> (32 - GSU_PHASE_FRAC_BITWIDTH);
 		DE_MUX_GSU1->VPHASE0_REG = tmp << GSU_PHASE_FRAC_REG_SHIFT;
-//		uart_printf("de: vphase = %08x\n\r", DE_MUX_GSU1->VPHASE0_REG);
+//		LOG_D("de: vphase = %08x\n\r", DE_MUX_GSU1->VPHASE0_REG);
 
 		uint32_t pt_coef = 0;
 		
@@ -226,7 +224,7 @@ void de_layer_set(void *fb0, void *fb1)
 			pt_coef = fir_coef_ofst * GSU_PHASE_NUM;
 		}
 
-//		uart_printf("de: pt_coef = %d\n\r", pt_coef);
+//		LOG_D("de: pt_coef = %d\n\r", pt_coef);
 
 		// copy fir table
 		for (size_t i = 0; i < GSU_PHASE_NUM; i++) {
@@ -237,7 +235,7 @@ void de_layer_set(void *fb0, void *fb1)
 	}
 #endif
 
-	uart_printf("de: commiting\n\r");
+	LOG_D("de: commiting");
 	de_commit();
 }
 
@@ -265,23 +263,23 @@ int de_layer_swap_done(void)
 
 	uint32_t sp;
 
-	portENTER_CRITICAL();
+	//!portENTER_CRITICAL();
 	sp = layers[0].swap_pending == 0;
-	portEXIT_CRITICAL();
+	//!portEXIT_CRITICAL();
 
 	return sp;
 }
 
 void de_layer_swap(void)
 {
-	portENTER_CRITICAL();
+	//!portENTER_CRITICAL();
 	layers[0].swap_pending = 1;
-	portEXIT_CRITICAL();
+	//!portEXIT_CRITICAL();
 }
 
-void de_layer_register_semaphore(SemaphoreHandle_t s)
+void de_layer_register_semaphore() //! SemaphoreHandle_t s)
 {
-	layers[0].semaphore = s;
+	//layers[0].semaphore = s;
 }
 
 void de_int_vblank(void)
@@ -303,10 +301,10 @@ void de_int_vblank(void)
 			changed = 1;
 		}
 
-		if (layers[i].semaphore != NULL) {
+/* //!		if (layers[i].semaphore != NULL) {
 			BaseType_t xHigherPriorityTaskWoken;
 			xSemaphoreGiveFromISR(layers[i].semaphore, &xHigherPriorityTaskWoken);
-		}
+		} */
 	}
 
 	if (changed) {

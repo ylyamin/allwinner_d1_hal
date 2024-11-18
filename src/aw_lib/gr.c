@@ -1,6 +1,5 @@
 #include "platform.h"
 #include "gr.h"
-
 #include <string.h>
 
 void gr_fill(void *fb, uint32_t c)
