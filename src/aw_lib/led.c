@@ -7,7 +7,7 @@
 struct gpio_t led_gpio[] = {
 	{
 		.gpio = GPIOD,
-		.pin = BV(22),
+		.pin = BV(20),
 		.mode = GPIO_MODE_OUTPUT,
 		.drv = GPIO_DRV_3,
 	},

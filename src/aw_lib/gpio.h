@@ -4,6 +4,7 @@
 #define _GPIO_h_
 
 #include <stdint.h>
+#include <platform.h>
 
 enum gpio_state_t {
 	GPIO_RESET,

@@ -1,12 +1,12 @@
 #include "platform.h"
-
+#include <stdio.h>
 #include "ccu.h"
 #include "gpio.h"
 #include "uart.h"
-//#include "irq.h"
+#include "log.h"
+#include "irq.h"
 
 #include "de.h"
-
 #include "tcon_lcd.h"
 
 //#include "FreeRTOS.h"
@@ -29,7 +29,7 @@ typedef struct {
 #define DSI0        ((DSICOMBO_t *) (DSI0_BASE+0x1000))
 
 struct timing_t {
-	uint32_t pxclk;
+	uint32_t pixclk;
 	uint32_t w;
 	uint32_t h;
 	uint32_t hbp;
@@ -39,30 +39,23 @@ struct timing_t {
 	uint32_t vt;
 	uint32_t vspw;
 } timing = {
-	.pxclk = 51200000,
-	.w = 1024,
-	.h = 600,
-
-	.ht = 1024+250+1,
-	.hbp = 90+1,
-	.hspw = 70,
-
-	.vt = 600+35,
-	.vbp = 13,
+	.pixclk = 55000000,
+	.w = 480,
+	.h = 1280,
+	.hbp = 150,
+	.ht = 694,
+	.hspw = 40,
+	.vbp = 12,
+	.vt = 1308,
 	.vspw = 10,
 };
 
 struct gpio_t tcon_lcd_gpio[] = {
-	{ // LCD enable
-		.gpio = GPIOE,
-		.pin = BV(12),
-		.mode = GPIO_MODE_OUTPUT,
-		.drv = GPIO_DRV_3,
-	},
 	{
 		.gpio = GPIOD,
-		.pin = 0x3ff, // 0-9
-		.mode = GPIO_MODE_FNC3, // lvds
+		.pin = 0x3ff, // 0x3ff 0-9 0x3fffff, // 0-21
+		.mode = GPIO_MODE_FNC4, // lcd
+		.pupd = GPIO_PUPD_OFF,
 		.drv = GPIO_DRV_3, // highest drv?
 	},
 };
@@ -76,7 +69,7 @@ void tcon_find_clock(uint32_t tgt_freq)
 	uint32_t best_err = 0xffffffff;
 
 //	uint32_t d = 1;
-	uart_printf("tcon: looking up pll parameters for %dHz\n", tgt_freq);
+	LOG_D("tcon: looking up pll parameters for %dHz", tgt_freq);
 	// TODO: why 2x ?
 	tgt_freq *=2;
 
@@ -102,7 +95,7 @@ void tcon_find_clock(uint32_t tgt_freq)
 	}
 end:
 	
-	uart_printf("tcon: best: n=%d m=%d err=%d\n", best_n, best_m, best_err);
+	LOG_D("tcon: best: n=%d m=%d err=%d", best_n, best_m, best_err);
 
 	ccu_video0_pll_set(best_n, best_m);
 	ccu_tcon_set_video0x4_div(1);
@@ -111,34 +104,34 @@ end:
 
 void tcon_dither(void)
 {
-	TCON_LCD0->FRM_SEED_REG[0] = 0x11111111;
-	TCON_LCD0->FRM_SEED_REG[1] = 0x11111111;
-	TCON_LCD0->FRM_SEED_REG[2] = 0x11111111;
-	TCON_LCD0->FRM_SEED_REG[3] = 0x11111111;
-	TCON_LCD0->FRM_SEED_REG[4] = 0x11111111;
-	TCON_LCD0->FRM_SEED_REG[5] = 0x11111111;
-	TCON_LCD0->FRM_TAB_REG[0] = 0x01010000;
-	TCON_LCD0->FRM_TAB_REG[1] = 0x15151111;
-	TCON_LCD0->FRM_TAB_REG[2] = 0x57575555;
-	TCON_LCD0->FRM_TAB_REG[3] = 0x7f7f7777;
-	TCON_LCD0->FRM_CTL_REG = BV(31);
+	TCON_LCD0->LCD_FRM_SEED_REG[0] = 0x11111111;
+	TCON_LCD0->LCD_FRM_SEED_REG[1] = 0x11111111;
+	TCON_LCD0->LCD_FRM_SEED_REG[2] = 0x11111111;
+	TCON_LCD0->LCD_FRM_SEED_REG[3] = 0x11111111;
+	TCON_LCD0->LCD_FRM_SEED_REG[4] = 0x11111111;
+	TCON_LCD0->LCD_FRM_SEED_REG[5] = 0x11111111;
+	TCON_LCD0->LCD_FRM_TAB_REG[0] = 0x01010000;
+	TCON_LCD0->LCD_FRM_TAB_REG[1] = 0x15151111;
+	TCON_LCD0->LCD_FRM_TAB_REG[2] = 0x57575555;
+	TCON_LCD0->LCD_FRM_TAB_REG[3] = 0x7f7f7777;
+	TCON_LCD0->LCD_FRM_CTL_REG = BV(31);
 }
 
 static void tcon_int_handler(void *arg)
 {
 	(void)arg;
-	uart_printf("tcon int\n");
+	LOG_D("tcon int handler");
 
-	uint32_t gint0 = TCON_LCD0->GINT0_REG;
+	uint32_t gint0 = TCON_LCD0->LCD_GINT0_REG;
 
 	if (gint0 & BV(15)) {
-		TCON_LCD0->GINT0_REG = BV(15);
+		TCON_LCD0->LCD_GINT0_REG = BV(15);
 
 		de_int_vblank();
 	}
 
 	if (gint0 & BV(13)) {
-		TCON_LCD0->GINT0_REG = BV(13);
+		TCON_LCD0->LCD_GINT0_REG = BV(13);
 	}
 }
 
@@ -149,11 +142,11 @@ static void enable_combphy_lvds(void)
 
 	DSI0->combo_phy_reg1 = 0x43;
 	DSI0->combo_phy_reg0 = 0x1;
-	vTaskDelay(1);
+	delay_ms(1);
 	DSI0->combo_phy_reg0 = 0x5;
-	vTaskDelay(1);
+	delay_ms(1);
 	DSI0->combo_phy_reg0 = 0x7;
-	vTaskDelay(1);
+	delay_ms(1);
 	DSI0->combo_phy_reg0 = 0xf;
 
 
@@ -183,9 +176,9 @@ static void disable_combphy_lvds(void)
 #define LVDS_CLK_SEL    BV(20)
 static void setup_lvds(void)
 {
-	TCON_LCD0->LVDS_IF_REG = LVDS_18BIT | LVDS_MODE_JEIDA | LVDS_CLK_SEL;
-	TCON_LCD0->LVDS_IF_REG |= LVDS_EN;
-	TCON_LCD0->LVDS1_IF_REG = TCON_LCD0->LVDS_IF_REG;
+	TCON_LCD0->LCD_LVDS_IF_REG = LVDS_18BIT | LVDS_MODE_JEIDA | LVDS_CLK_SEL;
+	TCON_LCD0->LCD_LVDS_IF_REG |= LVDS_EN;
+	TCON_LCD0->LVDS1_IF_REG = TCON_LCD0->LCD_LVDS_IF_REG;
 }
 
 #define LVDS_ANA_C(x) (x << 13)
@@ -200,7 +193,7 @@ static void setup_lvds(void)
 
 static void enable_lvds(void)
 {
-	TCON_LCD0->LVDS_IF_REG |= BV(31);
+	TCON_LCD0->LCD_LVDS_IF_REG |= BV(31);
 
 #if 1
 	enable_combphy_lvds();
@@ -227,15 +220,15 @@ static void enable_lvds(void)
 
 static void disable_lvds(void)
 {
-	TCON_LCD0->LVDS_IF_REG &= ~BV(31);
-	TCON_LCD0->LVDS_ANA_REG[0] = 0;
+	TCON_LCD0->LCD_LVDS_IF_REG &= ~BV(31);
+	TCON_LCD0->LCD_LVDS_ANA_REG[0] = 0;
 
 	disable_combphy_lvds();
 }
 
 void tcon_lcd_init(void)
 {
-	uart_printf("tcon: init\n");
+	LOG_D("tcon: init");
 	gpio_init(tcon_lcd_gpio, ARRAY_SIZE(tcon_lcd_gpio));
 
 	// enable lcd power
@@ -245,14 +238,14 @@ void tcon_lcd_init(void)
 
 	uint32_t tcon_div = 7;
 
-	tcon_find_clock(timing.pxclk * tcon_div);
+	tcon_find_clock(timing.pixclk * tcon_div);
 
   // lvds dclk / 7
-	TCON_LCD0->DCLK_REG = tcon_div;
-	TCON_LCD0->DCLK_REG |= (0x0f << 28);
+	TCON_LCD0->LCD_DCLK_REG = tcon_div;
+	TCON_LCD0->LCD_DCLK_REG |= (0x0f << 28);
 
 	// TODO: where does this 2 come from ?
-	uart_printf("tcon_lcd: tcon clk = %dHz pixclk = %dHz\n", ccu_tcon_get_clk() / tcon_div / 2, timing.pxclk);
+	LOG_D("tcon_lcd: tcon clk = %dHz pixclk = %dHz", ccu_tcon_get_clk() / tcon_div / 2, timing.pixclk);
 	ccu_dsi_enable();
 	ccu_lvds_enable();
 
@@ -260,47 +253,45 @@ void tcon_lcd_init(void)
 	uint32_t val = timing.vt - timing.h - 8;
 	if (val > 31) val = 31;
 	if (val < 10) val = 10;
-	TCON_LCD0->CTL_REG = ((val & 0x1f) << 4) |  0; // 7= grid test mode, 1=colorcheck, 2-grray chaeck
-
-	TCON_LCD0->HV_IF_REG = 0; // 24bit/1cycle
+	TCON_LCD0->LCD_CTL_REG = ((val & 0x1f) << 4) |  0; // 7= grid test mode, 1=colorcheck, 2-grray chaeck
 
 	setup_lvds();
 
 	// init timing
-	TCON_LCD0->BASIC0_REG = ((timing.w  - 1) << 16) | (timing.h - 1);
-	TCON_LCD0->BASIC1_REG = ((timing.ht - 1) << 16) | (timing.hbp - 1);
-	TCON_LCD0->BASIC2_REG = ((timing.vt * 2) << 16) | (timing.vbp - 1);
-	TCON_LCD0->BASIC3_REG = ((timing.hspw)   << 16) | (timing.vspw);
+	TCON_LCD0->LCD_BASIC0_REG = ((timing.w  - 1) << 16) | (timing.h - 1);
+	TCON_LCD0->LCD_BASIC1_REG = ((timing.ht - 1) << 16) | (timing.hbp - 1);
+	TCON_LCD0->LCD_BASIC2_REG = ((timing.vt * 2) << 16) | (timing.vbp - 1);
+	TCON_LCD0->LCD_BASIC3_REG = ((timing.hspw)   << 16) | (timing.vspw);
 
 	// io polarity for h,v,de,clk
-	TCON_LCD0->IO_TRI_REG = 0; // default is 0xffffff (very bad :-)
-	TCON_LCD0->IO_POL_REG = 0;//2 << 28; // 2/3phase offset ?! why ?
+	TCON_LCD0->LCD_IO_TRI_REG = 0; // default is 0xffffff (very bad :-)
+	TCON_LCD0->LCD_IO_POL_REG = 0; // 2/3phase offset ?! why ?
 
 	// enable line interrupt ...
 	// install irq handler
 	// TCON_LCD0->GINT1_REG = line << 16;
 	// TCON_LCD0->GINT0_REG = BV(29);
 	//
-	irq_set_handler(TCON_LCD_IRQn, tcon_int_handler, NULL );
-	irq_set_prio(TCON_LCD_IRQn, configMAX_API_CALL_INTERRUPT_PRIORITY << portPRIORITY_SHIFT );
-	irq_set_enable(TCON_LCD_IRQn, 1);
+
+	irq_assign(LCD_IRQn, (void *) tcon_int_handler);
+	irq_enable(LCD_IRQn);
 
 	//tcon_dither();
-	uart_printf("tcon: init done\n");
+	LOG_D("tcon: init done");
 }
 
 void tcon_lcd_enable(void)
 {
-	TCON_LCD0->CTL_REG |= BV(31);
-	TCON_LCD0->GCTL_REG |= BV(31);
+	TCON_LCD0->LCD_CTL_REG |= BV(31);
+	TCON_LCD0->LCD_GCTL_REG |= BV(31);
 
 	enable_lvds();
 }
 
 void tcon_lcd_disable(void)
 {
-	TCON_LCD0->CTL_REG = 0;
-	TCON_LCD0->GCTL_REG &= ~BV(31);
+	TCON_LCD0->LCD_CTL_REG = 0;
+	TCON_LCD0->LCD_GCTL_REG &= ~BV(31);
 
 	disable_lvds();
 }

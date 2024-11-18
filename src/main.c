@@ -16,6 +16,8 @@
 #include <gr.h>
 #include <de.h>
 #include <tcon_lcd.h>
+#include <st7701s_rgb.h>
+
 
 
 extern unsigned int __bss_start__;
@@ -84,6 +86,8 @@ void main(void)
 	gr_draw_pixel(fb, 100, 101, 0xffff0000);
 	gr_draw_line(fb, 0, 0, w-1, h-1, 0xff00ff00);
 	gr_draw_line(fb, w-1, 0, 0, h-1, 0xffff0000);
+
+	LCD_panel_init();
 
 	tcon_lcd_init();
 	tcon_lcd_enable();
