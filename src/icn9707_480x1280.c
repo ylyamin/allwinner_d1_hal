@@ -3,6 +3,7 @@
 #include <ccu.h>
 #include <log.h>
 #include <axp228.h>
+#include <dsi.h>
 
 struct gpio_t lcd_gpio[] = {
 	{
@@ -84,8 +85,11 @@ void LCD_panel_init(void)
     /*T3*/
     delay_ms(20);
 
+	dsi_init();
+
+
     /*init sequence*/
-    for (i = 0; ; i++) {
+/*     for (i = 0; ; i++) {
         if(lcd_init_setting[i].cmd == REGFLAG_END_OF_TABLE) {
             break;
         } else if (lcd_init_setting[i].cmd == REGFLAG_DELAY) {
@@ -93,7 +97,7 @@ void LCD_panel_init(void)
         } else {
             //!dsi_dcs_wr(sel, (uint8_t)lcd_init_setting[i].cmd, lcd_init_setting[i].para_list, lcd_init_setting[i].count);
         }
-    }
+    } */
 
     //!sunxi_lcd_dsi_clk_enable(sel);
 	/* T6 */

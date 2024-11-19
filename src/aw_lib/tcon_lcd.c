@@ -142,6 +142,7 @@ void tcon_lcd_init(void)
 
 	tcon_find_clock(timing.pixclk);
 	LOG_D("tcon_lcd: tcon clk = %ldHz pixclk = %ldHz", ccu_tcon_get_clk(), timing.pixclk);
+	
 	ccu_dsi_enable();
 	ccu_lvds_enable();
 

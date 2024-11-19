@@ -24,8 +24,8 @@ SRC +=	$(SRC_DIR)/aw_lib/gr.c
 SRC +=	$(SRC_DIR)/aw_lib/irq.c	
 SRC +=	$(SRC_DIR)/aw_lib/led.c
 #SRC +=	$(SRC_DIR)/aw_lib/smhc.c
-SRC +=	$(SRC_DIR)/aw_lib/tcon_lcd.c
-#SRC +=	$(SRC_DIR)/aw_lib/tcon_lcd-lvds.c
+#SRC +=	$(SRC_DIR)/aw_lib/tcon_lcd.c
+SRC +=	$(SRC_DIR)/aw_lib/tcon_lcd-lvds.c
 #SRC +=	$(SRC_DIR)/aw_lib/tcon_lcd-rgb.c
 #SRC +=	$(SRC_DIR)/aw_lib/timer.c
 SRC +=	$(SRC_DIR)/aw_lib/twi.c
@@ -46,6 +46,7 @@ SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb_fork/src/portable/ohci/ohci.c
 SRC +=	$(SRC_DIR)/hid_app.c
 
 #SRC +=	$(SRC_DIR)/kvm.c
+SRC +=	$(SRC_DIR)/dsi.c
 
 SRC +=	$(SRC_DIR)/main.c
 SRC +=	$(SRC_DIR)/start.s
@@ -92,7 +93,7 @@ SIZE = ${CROSS_COMPILE}size
 #DEVICE = -march=rv64gcv0p7_xtheadc -mabi=lp64d -mtune=c906 -mcmodel=medlow  
 
 DEVICE = -march=rv64imafd_zicsr -mabi=lp64d -mcmodel=medany  
-CFLAGS = $(DEVICE) -fno-stack-protector -ffunction-sections -fdata-sections -fdiagnostics-color=always -Wno-cpp
+CFLAGS = $(DEVICE) -fno-stack-protector -ffunction-sections -fdata-sections -fdiagnostics-color=always -Wno-cpp -Wno-int-conversion
 AFLAGS = -c $(DEVICE) -x assembler-with-cpp
 LFLAGS = $(DEVICE) -T $(SRC_DIR)/link.ld -Wl,--cref,-Map=$(BUILD_DIR)/$(TARGET_NAME).map,--print-memory-usage -nostartfiles
 

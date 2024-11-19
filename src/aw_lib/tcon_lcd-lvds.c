@@ -42,13 +42,14 @@ struct timing_t {
 	.pixclk = 55000000,
 	.w = 480,
 	.h = 1280,
-	.hbp = 150,
-	.ht = 694,
-	.hspw = 40,
-	.vbp = 12,
-	.vt = 1308,
-	.vspw = 10,
+	.hbp = 150, //hsync back porch(pixel) + hsync plus width(pixel)
+	.ht = 694,  //hsync total cycle(pixel)
+	.hspw = 40, //hsync plus width(pixel)
+	.vbp = 12,  //vsync back porch(line) + vysnc plus width(line)
+	.vt = 1308, //vysnc total cycle(line)
+	.vspw = 10, //vysnc plus width(pixel)
 };
+
 
 struct gpio_t tcon_lcd_gpio[] = {
 	{
@@ -150,10 +151,10 @@ static void enable_combphy_lvds(void)
 	DSI0->combo_phy_reg0 = 0xf;
 
 
-	//DSI0->dphy_ana4 = 0x84000000;
-	//DSI0->dphy_ana3 = 0x01040000;
-	//DSI0->dphy_ana2 &= (0 << 1);
-	//DSI0->dphy_ana1 = 0;
+	DSI0->dphy_ana4 = 0x84000000;
+	DSI0->dphy_ana3 = 0x01040000;
+	DSI0->dphy_ana2 &= (0 << 1);
+	DSI0->dphy_ana1 = 0;
 
 
 //	uart_printf("dsi phy\n");
@@ -176,7 +177,7 @@ static void disable_combphy_lvds(void)
 #define LVDS_CLK_SEL    BV(20)
 static void setup_lvds(void)
 {
-	TCON_LCD0->LCD_LVDS_IF_REG = LVDS_18BIT | LVDS_MODE_JEIDA | LVDS_CLK_SEL;
+	TCON_LCD0->LCD_LVDS_IF_REG = LVDS_MODE_JEIDA | LVDS_CLK_SEL; //! LVDS_18BIT
 	TCON_LCD0->LCD_LVDS_IF_REG |= LVDS_EN;
 	TCON_LCD0->LVDS1_IF_REG = TCON_LCD0->LCD_LVDS_IF_REG;
 }
@@ -243,6 +244,8 @@ void tcon_lcd_init(void)
   // lvds dclk / 7
 	TCON_LCD0->LCD_DCLK_REG = tcon_div;
 	TCON_LCD0->LCD_DCLK_REG |= (0x0f << 28);
+
+//mipi_pll_cfg
 
 	// TODO: where does this 2 come from ?
 	LOG_D("tcon_lcd: tcon clk = %dHz pixclk = %dHz", ccu_tcon_get_clk() / tcon_div / 2, timing.pixclk);
