@@ -16,7 +16,7 @@
 #include <gr.h>
 #include <de.h>
 #include <tcon_lcd.h>
-#include <st7701s_rgb.h>
+#include <icn9707_480x1280.h>
 
 
 
@@ -34,7 +34,6 @@ void init_bss(int start, int end)
         *dst++ = 0ul;
     }
 }
-
 
 void main(void)
 {
@@ -61,39 +60,43 @@ void main(void)
 	dcache_enable();
 #endif
 
-/* 	twi_init(TWI0, 400000);
-    axp_USB_control(TWI0,1);
-	task_usb(); */
+twi_init(TWI0, 400000);   
+
+/*
+axp_USB_control(TWI0,1);
+task_usb(); 
+*/
 	
 ////////////////////////////////////////////////////////////
 	led_init();
+	LOG_I("led init");
 
- 	uint32_t h = de_layer_get_h();
+	uint32_t h = de_layer_get_h();
 	uint32_t w = de_layer_get_w();
 
 	uint32_t size = h * w * 4;
+	uint8_t fb1[size];  //= dma_memalign(128, size);
+	uint8_t fb2[size]; // = dma_memalign(128, size);
 
-	uint8_t *fb[size];  //= dma_memalign(128, size);
-	uint8_t *fb1[size]; // = dma_memalign(128, size);
+	LOG_D("fb addr: %08x and %08x\n", &fb1, &fb2);
 
-	LOG_D("fb addr: %08x and %08x\n", fb, fb1);
-
-	gr_fill(fb,  0xff000000);
-	gr_fill(fb1, 0xff000000);
-	gr_draw_pixel(fb, 100, 100, 0xffff0000);
-	gr_draw_pixel(fb, 101, 101, 0xffff0000);
-	gr_draw_pixel(fb, 101, 100, 0xffff0000);
-	gr_draw_pixel(fb, 100, 101, 0xffff0000);
-	gr_draw_line(fb, 0, 0, w-1, h-1, 0xff00ff00);
-	gr_draw_line(fb, w-1, 0, 0, h-1, 0xffff0000);
-
-	LCD_panel_init();
+	gr_fill(&fb1, 0xff000000);
+	gr_fill(&fb2, 0xff000000);
+	gr_draw_pixel(&fb1, 100, 100, 0xffff0000);
+	gr_draw_pixel(&fb1, 101, 101, 0xffff0000);
+	gr_draw_pixel(&fb1, 101, 100, 0xffff0000);
+	gr_draw_pixel(&fb1, 100, 101, 0xffff0000);
+	gr_draw_line(&fb1, 0, 0, w-1, h-1, 0xff00ff00);
+	gr_draw_line(&fb1, w-1, 0, 0, h-1, 0xffff0000);
 
 	tcon_lcd_init();
 	tcon_lcd_enable();
 	led_set(0, 1);
+
+	LCD_panel_init();
+
 	de_init();
-	de_layer_set(fb, fb1);
+	de_layer_set(&fb1, &fb2);
 
 //////////////////////////////////////////////////////////////
 

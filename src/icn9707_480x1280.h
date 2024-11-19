@@ -3,4 +3,10 @@
 
 void LCD_panel_init(void);
 
+
+/* 
+lcd_x = 480
+lcd_y = 1280 
+*/
+
 #endif

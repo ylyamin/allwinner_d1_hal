@@ -58,22 +58,22 @@ uint8_t fmtpitch[] = {
 
 struct layer_t layers[1] = {
 	{
-		.w = 320,
-		.h = 200,
+		.w = 480, //320,
+		.h = 1280, //200,
 		.fmt = LAY_FBFMT_ARGB_8888,
 		.alpha = 0xff,
 
 		.win = {
 			.x0 = 0,
 			.y0 = 0,
-			.x1 = 320,
-			.y1 = 200,
+			.x1 = 480,
+			.y1 = 1280,
 		},
 	},
 };
 
 uint32_t lcd_w = 480;
-uint32_t lcd_h = 1280; //272;
+uint32_t lcd_h = 1280; //272 1280
 
 
 uint32_t fmt_to_pitch(uint8_t fmt)
@@ -83,7 +83,7 @@ uint32_t fmt_to_pitch(uint8_t fmt)
 
 void de_init(void)
 {
-	ccu_de_set_peripx2_div(4);
+	ccu_de_set_peripx2_div(4); // (1.2Gz / 4)
 	ccu_de_enable();
 
 	// enable core0
@@ -94,9 +94,9 @@ void de_init(void)
 	DE_TOP->DE2TCON_MUX = 0;
 
 	// enable mixer
-	DE_MUX_GLB->CTL = BV(0);
+	DE_MUX_GLB->CTL = BV(0); //enable
 	DE_MUX_GLB->STS = 0;
-	DE_MUX_GLB->DBUFFER = 1;
+	DE_MUX_GLB->DBUFFER = 1; //register value be ready for update  
 	DE_MUX_GLB->SIZE = ((lcd_h-1) << 16) | (lcd_w-1);
 
 	// disable all overlay units (and all layers)
@@ -124,7 +124,7 @@ void de_init(void)
 	// setup blender
 	DE_MUX_BLD->FILLCOLOR_CTL = 0x0101; // enable pipe 0 and pipe 0 fill color
 	DE_MUX_BLD->CH_RTCTL = 0x1; // route channel 1(UI1) to pipe 0 of blender
-	DE_MUX_BLD->PREMUL_CTL = 0;
+	DE_MUX_BLD->PREMUL_CTL = 0; //all alpha data is no-pre-multiply alpha
 	DE_MUX_BLD->BK_COLOR = 0x80FF00; // RGB no alpha
 	DE_MUX_BLD->SIZE = ((lcd_h-1) << 16) | (lcd_w-1); // lcd size
 
@@ -171,7 +171,7 @@ void de_layer_set(void *fb0, void *fb1)
 
 	DE_MUX_OVL_UI1->SIZE = ((h-1) << 16) | (w-1);
 
-#if 1
+#if 0
 	if  ((w < lcd_w) || (h < lcd_h)) {
 		uint64_t tmp = 0;
 		uint64_t vstep = 0;

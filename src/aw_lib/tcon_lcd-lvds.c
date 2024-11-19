@@ -246,7 +246,7 @@ void tcon_lcd_init(void)
 
 	// TODO: where does this 2 come from ?
 	LOG_D("tcon_lcd: tcon clk = %dHz pixclk = %dHz", ccu_tcon_get_clk() / tcon_div / 2, timing.pixclk);
-	ccu_dsi_enable();
+	ccu_dsi_enable(); //600Mhz
 	ccu_lvds_enable();
 
 	// init iface
@@ -254,6 +254,8 @@ void tcon_lcd_init(void)
 	if (val > 31) val = 31;
 	if (val < 10) val = 10;
 	TCON_LCD0->LCD_CTL_REG = ((val & 0x1f) << 4) |  0; // 7= grid test mode, 1=colorcheck, 2-grray chaeck
+
+//!SUNXI_LCDC_TCON0_CTRL_IF_8080 SUN4I_TCON0_CPU_IF_MODE_DSI
 
 	setup_lvds();
 

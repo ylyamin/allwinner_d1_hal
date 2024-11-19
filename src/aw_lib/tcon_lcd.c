@@ -21,7 +21,7 @@ struct timing_t {
 	uint32_t vbp;
 	uint32_t vt;
 	uint32_t vspw;
-} timing = {
+ } timing = {
 	.pixclk = 55000000,
 	.w = 480,
 	.h = 1280,
@@ -33,7 +33,8 @@ struct timing_t {
 	.vspw = 10,
 };
 
-/* } timing = {
+
+/*  } timing = {
 	.pixclk = 12000000,
 	.w = 480,
 	.h = 272,
@@ -43,13 +44,16 @@ struct timing_t {
 	.vbp = 18,
 	.vt = 520,
 	.vspw = 4,
-}; */
+};  */
+
+
+
 
 struct gpio_t tcon_lcd_gpio[] = {
 	{
 		.gpio = GPIOD,
 		.pin = 0x3ff, // 0x3ff 0-9 0x3fffff, // 0-21
-		.mode = GPIO_MODE_FNC4, // lcd
+		.mode = GPIO_MODE_FNC4, // 2 - rgb, 4 - lcd
 		.pupd = GPIO_PUPD_OFF,
 		.drv = GPIO_DRV_3, // highest drv?
 	},

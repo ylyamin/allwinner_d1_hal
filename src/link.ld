@@ -4,7 +4,7 @@
 
 MEMORY
 {
-  RAM : ORIGIN = 0x40000000, LENGTH = 16M
+  RAM : ORIGIN = 0x40000000, LENGTH = 32M
 }
 
 /* Library configurations */
@@ -191,7 +191,7 @@ SECTIONS
 		*(.framebuff*)
 	} > RAM
 
-	.ramnc ALIGN(1M):
+	.ramnc ALIGN(1M) (NOLOAD):
 	{
  		PROVIDE(__RAMNC_BASE = .);
  		__bss2_start__ = .;
