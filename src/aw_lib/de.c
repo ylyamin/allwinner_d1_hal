@@ -6,33 +6,6 @@
 #include "de_priv.h"
 #include "de_scaler_table.h"
 
-//#include "FreeRTOS.h"
-//#include "semphr.h"
-
-struct layer_t {
-	// fb info
-	uint16_t w;
-	uint16_t h;
-	void *fb[2];
-	uint32_t fb_idx;
-	uint32_t fb_draw_idx;
-	uint32_t fb_dbl;
-	uint32_t swap_pending;
-	uint32_t fmt;
-
-	uint8_t alpha;
-
-	//! SemaphoreHandle_t semaphore;
-
-	// overlay window
-	struct {
-		uint32_t x0;
-		uint32_t y0;
-		uint32_t x1;
-		uint32_t y1;
-	} win;
-};
-
 uint8_t fmtpitch[] = {
 	[LAY_FBFMT_ARGB_8888] = 4,
 	[LAY_FBFMT_ABGR_8888] = 4,
@@ -58,6 +31,8 @@ uint8_t fmtpitch[] = {
 
 struct layer_t layers[1] = {
 	{
+		.lcd_w = 480,
+		.lcd_h = 1280,
 		.w = 480, //320,
 		.h = 1280, //200,
 		.fmt = LAY_FBFMT_ARGB_8888,
@@ -72,13 +47,15 @@ struct layer_t layers[1] = {
 	},
 };
 
-uint32_t lcd_w = 480;
-uint32_t lcd_h = 1280; //272 1280
-
 
 uint32_t fmt_to_pitch(uint8_t fmt)
 {
 	return fmtpitch[fmt];
+}
+
+void de_set_layer(struct layer_t layer)
+{
+	layers[0] = layer;
 }
 
 void de_init(void)
@@ -97,7 +74,7 @@ void de_init(void)
 	DE_MUX_GLB->CTL = BV(0); //enable
 	DE_MUX_GLB->STS = 0;
 	DE_MUX_GLB->DBUFFER = 1; //register value be ready for update  
-	DE_MUX_GLB->SIZE = ((lcd_h-1) << 16) | (lcd_w-1);
+	DE_MUX_GLB->SIZE = ((layers[0].lcd_h-1) << 16) | (layers[0].lcd_w-1);
 
 	// disable all overlay units (and all layers)
 	for (uint32_t i = 0; i < 4; i ++) {
@@ -126,7 +103,7 @@ void de_init(void)
 	DE_MUX_BLD->CH_RTCTL = 0x1; // route channel 1(UI1) to pipe 0 of blender
 	DE_MUX_BLD->PREMUL_CTL = 0; //all alpha data is no-pre-multiply alpha
 	DE_MUX_BLD->BK_COLOR = 0x80FF00; // RGB no alpha
-	DE_MUX_BLD->SIZE = ((lcd_h-1) << 16) | (lcd_w-1); // lcd size
+	DE_MUX_BLD->SIZE = ((layers[0].lcd_h-1) << 16) | (layers[0].lcd_w-1); // lcd size
 
 	// no color keying 
 	DE_MUX_BLD->KEY_CTL = 0;
@@ -134,7 +111,7 @@ void de_init(void)
 
 	DE_MUX_BLD->CTL[0] = 0x03010301;
 	DE_MUX_BLD->PIPE[0].FILL_COLOR = 0xFFFF8000;
-	DE_MUX_BLD->PIPE[0].CH_ISIZE = ((lcd_h-1) << 16) | (lcd_w-1);
+	DE_MUX_BLD->PIPE[0].CH_ISIZE = ((layers[0].lcd_h-1) << 16) | (layers[0].lcd_w-1);
 
 	de_commit();
 }
@@ -172,7 +149,7 @@ void de_layer_set(void *fb0, void *fb1)
 	DE_MUX_OVL_UI1->SIZE = ((h-1) << 16) | (w-1);
 
 #if 0
-	if  ((w < lcd_w) || (h < lcd_h)) {
+	if  ((w < layers[0].lcd_w) || (h < layers[0].lcd_h)) {
 		uint64_t tmp = 0;
 		uint64_t vstep = 0;
 
@@ -180,19 +157,19 @@ void de_layer_set(void *fb0, void *fb1)
 		LOG_D("de: enable scaler");
 
 		// set input resolution and output resolution
-		DE_MUX_GSU1->OUTSIZE_REG = ((lcd_h-1) << 16) | (lcd_w - 1);
+		DE_MUX_GSU1->OUTSIZE_REG = ((layers[0].lcd_h-1) << 16) | (layers[0].lcd_w - 1);
 		DE_MUX_GSU1->INSIZE_REG = ((h-1) << 16) | (w - 1);
 
 		// calculate fractional hstep
 		tmp = w << GSU_PHASE_FRAC_BITWIDTH;
-		tmp = tmp / lcd_w;
+		tmp = tmp / layers[0].lcd_w;
 
 		DE_MUX_GSU1->HSTEP_REG = tmp << GSU_PHASE_FRAC_REG_SHIFT;
 //		LOG_D("de: hstep = %08x\n\r", DE_MUX_GSU1->HSTEP_REG);
 
 		// calculate fractional vstep
 		vstep = h << GSU_PHASE_FRAC_BITWIDTH;
-		vstep = vstep / lcd_h;
+		vstep = vstep / layers[0].lcd_h;
 
 		DE_MUX_GSU1->VSTEP_REG = vstep << GSU_PHASE_FRAC_REG_SHIFT;
 //		LOG_D("de: vstep = %08x\n\r", DE_MUX_GSU1->VSTEP_REG);
@@ -301,7 +278,7 @@ void de_int_vblank(void)
 			changed = 1;
 		}
 
-/* //!		if (layers[i].semaphore != NULL) {
+/*		if (layers[i].semaphore != NULL) {
 			BaseType_t xHigherPriorityTaskWoken;
 			xSemaphoreGiveFromISR(layers[i].semaphore, &xHigherPriorityTaskWoken);
 		} */

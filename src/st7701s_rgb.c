@@ -66,6 +66,19 @@ LCD             RV_Dock_EXT_3517    GPIO Function
 
 */
 
+timing_t timing = {
+    .lcd_type = RGB,
+	.pixclk = 12000000,
+	.lcd_w = 480,
+	.lcd_h = 272,
+	.hbp = 60,
+	.ht = 612,
+	.hspw = 12,
+	.vbp = 18,
+	.vt = 520,
+	.vspw = 4,
+};
+
 struct gpio_t lcd_gpio[] = {
 	{
 		.gpio = GPIOG,
@@ -73,6 +86,21 @@ struct gpio_t lcd_gpio[] = {
 		.mode = GPIO_MODE_OUTPUT,
         .pupd = GPIO_PUPD_UP,
 		.drv = GPIO_DRV_3,
+	},
+    {
+		.gpio = GPIOD,
+		.pin =  BV(22), //BL
+		.pupd = GPIO_PUPD_UP,
+		.mode = GPIO_MODE_OUTPUT,
+		.drv =  GPIO_DRV_3,
+	},
+	{
+		.gpio = GPIOD,
+		.pin =  0x3fffff, // D0-D21
+		.mode = GPIO_MODE_FNC2,
+		.pupd = GPIO_PUPD_OFF,
+		.drv =  GPIO_DRV_3, 
+		.state = GPIO_RESET,
 	},
     {
 		.gpio = GPIOE,
@@ -97,18 +125,41 @@ struct gpio_t lcd_gpio[] = {
 	},
 };
 
-
 #define st7701s_spi_reset_1 gpio_set(&lcd_gpio[0], GPIO_SET)
 #define st7701s_spi_reset_0 gpio_set(&lcd_gpio[0], GPIO_RESET)
 
-#define st7701s_spi_cs_1    gpio_set(&lcd_gpio[1], GPIO_SET)
-#define st7701s_spi_cs_0    gpio_set(&lcd_gpio[1], GPIO_RESET)
+#define panel_bl_1 gpio_set(&lcd_gpio[1], GPIO_SET)
+#define panel_bl_0 gpio_set(&lcd_gpio[1], GPIO_RESET)
 
-#define st7701s_spi_sdi_1   gpio_set(&lcd_gpio[2], GPIO_SET)
-#define st7701s_spi_sdi_0   gpio_set(&lcd_gpio[2], GPIO_RESET)
+#define st7701s_spi_cs_1    gpio_set(&lcd_gpio[3], GPIO_SET)
+#define st7701s_spi_cs_0    gpio_set(&lcd_gpio[3], GPIO_RESET)
 
-#define st7701s_spi_scl_1   gpio_set(&lcd_gpio[3], GPIO_SET)
-#define st7701s_spi_scl_0   gpio_set(&lcd_gpio[3], GPIO_RESET)
+#define st7701s_spi_sdi_1   gpio_set(&lcd_gpio[4], GPIO_SET)
+#define st7701s_spi_sdi_0   gpio_set(&lcd_gpio[4], GPIO_RESET)
+
+#define st7701s_spi_scl_1   gpio_set(&lcd_gpio[5], GPIO_SET)
+#define st7701s_spi_scl_0   gpio_set(&lcd_gpio[5], GPIO_RESET)
+
+timing_t LCD_get_param(void)
+{
+	return timing;
+}
+
+void LCD_gpio_init(void)
+{
+    gpio_init(lcd_gpio, ARRAY_SIZE(lcd_gpio));
+}
+
+void LCD_bl_open(void)
+{
+	panel_bl_1;
+}
+
+void LCD_bl_close(void)
+{
+	panel_bl_0;
+}
+
 
 //three line 9bit mode
 static void LCD_WRITE_DATA(uint32_t value)
@@ -161,7 +212,7 @@ void LCD_panel_init(void)
 {
     LOG_D("=====================LCD_panel_init\n");
     
-    gpio_init(lcd_gpio, ARRAY_SIZE(lcd_gpio));
+    //gpio_init(lcd_gpio, ARRAY_SIZE(lcd_gpio));
 
     st7701s_spi_reset_0;
 	delay_ms(10);

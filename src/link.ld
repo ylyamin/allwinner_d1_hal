@@ -191,7 +191,7 @@ SECTIONS
 		*(.framebuff*)
 	} > RAM
 
-	.ramnc ALIGN(1M) (NOLOAD):
+	.ramnc ALIGN(1M):
 	{
  		PROVIDE(__RAMNC_BASE = .);
  		__bss2_start__ = .;

@@ -24,9 +24,7 @@ SRC +=	$(SRC_DIR)/aw_lib/gr.c
 SRC +=	$(SRC_DIR)/aw_lib/irq.c	
 SRC +=	$(SRC_DIR)/aw_lib/led.c
 #SRC +=	$(SRC_DIR)/aw_lib/smhc.c
-#SRC +=	$(SRC_DIR)/aw_lib/tcon_lcd.c
-SRC +=	$(SRC_DIR)/aw_lib/tcon_lcd-lvds.c
-#SRC +=	$(SRC_DIR)/aw_lib/tcon_lcd-rgb.c
+SRC +=	$(SRC_DIR)/aw_lib/tcon_lcd.c
 #SRC +=	$(SRC_DIR)/aw_lib/timer.c
 SRC +=	$(SRC_DIR)/aw_lib/twi.c
 SRC +=	$(SRC_DIR)/aw_lib/uart.c
@@ -52,8 +50,9 @@ SRC +=	$(SRC_DIR)/main.c
 SRC +=	$(SRC_DIR)/start.s
 SRC +=	$(SRC_DIR)/usb_task.c
 SRC +=	$(SRC_DIR)/axp228.c
-#SRC +=	$(SRC_DIR)/st7701s_rgb.c
-SRC +=	$(SRC_DIR)/icn9707_480x1280.c
+SRC +=	$(SRC_DIR)/st7701s_rgb.c
+SRC +=	$(SRC_DIR)/dispaly_task.c
+#SRC +=	$(SRC_DIR)/icn9707_480x1280.c
 
 
 INC +=	$(SRC_DIR)/aw_f133

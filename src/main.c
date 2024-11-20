@@ -9,16 +9,9 @@
 #include <uart.h>
 #include <irq.h>
 #include <led.h>
-#include <usb_task.h>
 #include <twi.h>
-#include <axp228.h>
-
-#include <gr.h>
-#include <de.h>
-#include <tcon_lcd.h>
-#include <icn9707_480x1280.h>
-
-
+#include <usb_task.h>
+#include <dispaly_task.h>
 
 extern unsigned int __bss_start__;
 extern unsigned int __bss_end__;
@@ -62,43 +55,10 @@ void main(void)
 
 twi_init(TWI0, 400000);   
 
-/*
-axp_USB_control(TWI0,1);
-task_usb(); 
-*/
+
+//task_usb(); 
+
 	
-////////////////////////////////////////////////////////////
-	led_init();
-	LOG_I("led init");
-
-	uint32_t h = de_layer_get_h();
-	uint32_t w = de_layer_get_w();
-
-	uint32_t size = h * w * 4;
-	uint8_t fb1[size];  //= dma_memalign(128, size);
-	uint8_t fb2[size]; // = dma_memalign(128, size);
-
-	LOG_D("fb addr: %08x and %08x\n", &fb1, &fb2);
-
-	gr_fill(&fb1, 0xff0000ff);
-	gr_fill(&fb2, 0xff0000ff);
-	gr_draw_pixel(&fb1, 100, 100, 0xffff0000);
-	gr_draw_pixel(&fb1, 101, 101, 0xffff0000);
-	gr_draw_pixel(&fb1, 101, 100, 0xffff0000);
-	gr_draw_pixel(&fb1, 100, 101, 0xffff0000);
-	gr_draw_line(&fb1, 0, 0, w-1, h-1, 0xff00ff00);
-	gr_draw_line(&fb1, w-1, 0, 0, h-1, 0xffff0000);
-
-	tcon_lcd_init();
-	tcon_lcd_enable();
-	led_set(0, 1);
-
-	LCD_panel_init();
-
-	de_init();
-	de_layer_set(&fb1, &fb2);
-
-//////////////////////////////////////////////////////////////
-
+task_display();	
 
 }

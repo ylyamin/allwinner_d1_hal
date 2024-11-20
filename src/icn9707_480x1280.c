@@ -3,21 +3,52 @@
 #include <ccu.h>
 #include <log.h>
 #include <axp228.h>
+#include <tcon_lcd.h>
 #include <dsi.h>
+
+timing_t timing = {
+	.lcd_type = DSI,
+	.pixclk = 54465120, //55000000,
+	.lcd_w = 480,
+	.lcd_h = 1280,
+	.hbp = 150, //hsync back porch(pixel) + hsync plus width(pixel)
+	.ht = 694,  //hsync total cycle(pixel)
+	.hspw = 40, //hsync plus width(pixel)
+	.vbp = 12,  //vsync back porch(line) + vysnc plus width(line)
+	.vt = 1308, //vysnc total cycle(line)
+	.vspw = 10, //vysnc plus width(pixel)
+};
 
 struct gpio_t lcd_gpio[] = {
 	{
 		.gpio = GPIOD,
-		.pin = BV(19),  //RST
+		.pin =  BV(19),  //RST
 		.mode = GPIO_MODE_OUTPUT,
         .pupd = GPIO_PUPD_DOWN,
-		.drv = GPIO_DRV_3,
+		.drv =  GPIO_DRV_3,
         .state = GPIO_SET,
+	},
+	{
+		.gpio = GPIOD,
+		.pin =  BV(20), //BL
+		.pupd = GPIO_PUPD_UP,
+		.mode = GPIO_MODE_OUTPUT,
+		.drv =  GPIO_DRV_3,
+	},
+	{
+		.gpio = GPIOD,
+		.pin =  0x3ff, // D0-D9
+		.mode = GPIO_MODE_FNC4,
+		.pupd = GPIO_PUPD_OFF,
+		.drv =  GPIO_DRV_3, 
+		.state = GPIO_SET,
 	},
 };
 
 #define panel_rst_1 gpio_set(&lcd_gpio[0], GPIO_SET)
 #define panel_rst_0 gpio_set(&lcd_gpio[0], GPIO_RESET)
+#define panel_bl_1  gpio_set(&lcd_gpio[1], GPIO_SET)
+#define panel_bl_0  gpio_set(&lcd_gpio[1], GPIO_RESET)
 
 #define REGFLAG_END_OF_TABLE     0x102
 #define REGFLAG_DELAY            0x101
@@ -61,14 +92,31 @@ static struct lcd_setting_table lcd_init_setting[] = {
 
 };
 
+timing_t LCD_get_param(void)
+{
+	return timing;
+}
+
+void LCD_gpio_init(void)
+{
+    gpio_init(lcd_gpio, ARRAY_SIZE(lcd_gpio));
+}
+
+void LCD_bl_open(void)
+{
+	panel_bl_1;
+}
+
+void LCD_bl_close(void)
+{
+	panel_bl_0;
+}
+
 void LCD_panel_init(void)
 {
 	
     uint32_t i;
     LOG_D("<0>raoyiming +++ LCD_panel_init\n");
-
-    gpio_init(lcd_gpio, ARRAY_SIZE(lcd_gpio));
-
 
     /*all off*/
     axp_LCD_control(TWI0,0);

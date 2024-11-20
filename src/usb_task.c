@@ -4,6 +4,7 @@
 #include "portable/ehci/ehci_api.h"
 #include <log.h>
 #include <irq.h>
+#include <axp228.h>
 
 #define EHCI0_BASE (0x04101000)
 #define EHCI1_BASE (0x04200000)
@@ -16,6 +17,8 @@ void task_usb()
 	LOG_D("usb_task");
 	usb_hw_init();
 	tuh_init(0);
+	axp_USB_control(TWI0,1);
+	
 	while(1)
 	{
 		tuh_task();
