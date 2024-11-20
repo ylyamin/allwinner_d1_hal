@@ -21,20 +21,7 @@ struct timing_t {
 	uint32_t vbp;
 	uint32_t vt;
 	uint32_t vspw;
- } timing = {
-	.pixclk = 55000000,
-	.w = 480,
-	.h = 1280,
-	.hbp = 150,
-	.ht = 694,
-	.hspw = 40,
-	.vbp = 12,
-	.vt = 1308,
-	.vspw = 10,
-};
-
-
-/*  } timing = {
+} timing = {
 	.pixclk = 12000000,
 	.w = 480,
 	.h = 272,
@@ -44,7 +31,7 @@ struct timing_t {
 	.vbp = 18,
 	.vt = 520,
 	.vspw = 4,
-};  */
+};
 
 
 
@@ -52,8 +39,8 @@ struct timing_t {
 struct gpio_t tcon_lcd_gpio[] = {
 	{
 		.gpio = GPIOD,
-		.pin = 0x3ff, // 0x3ff 0-9 0x3fffff, // 0-21
-		.mode = GPIO_MODE_FNC4, // 2 - rgb, 4 - lcd
+		.pin = 0x3fffff, // 0x3ff 0-9 0x3fffff, // 0-21
+		.mode = GPIO_MODE_FNC2, // 2 - rgb, 4 - lcd
 		.pupd = GPIO_PUPD_OFF,
 		.drv = GPIO_DRV_3, // highest drv?
 	},
@@ -143,8 +130,8 @@ void tcon_lcd_init(void)
 	tcon_find_clock(timing.pixclk);
 	LOG_D("tcon_lcd: tcon clk = %ldHz pixclk = %ldHz", ccu_tcon_get_clk(), timing.pixclk);
 	
-	ccu_dsi_enable();
-	ccu_lvds_enable();
+	//ccu_dsi_enable();
+	//ccu_lvds_enable();
 
 	// init iface
 	uint32_t val = timing.vt - timing.h - 8;

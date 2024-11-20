@@ -61,7 +61,7 @@ void ccu_tcon_set_video0x4_div(uint32_t div)
 
 void ccu_dsi_enable(void)
 {
-	CCU->DSI_CLK_REG = (2 << 24) | (0 << 8) | (0); //! orig 1 - pll, now 2 - video
+	CCU->DSI_CLK_REG = (2 << 24) | (0 << 8) | (3 << 0); //! orig 1 - pll, now 2 - video
 	CCU->DSI_CLK_REG |= BV(31);
 	CCU->DSI_BGR_REG |= BV(16);
 	CCU->DSI_BGR_REG |= BV(0);

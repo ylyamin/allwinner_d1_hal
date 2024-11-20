@@ -1,8 +1,8 @@
 #ifndef GR_h_
 #define GR_h_
 
-#define GR_X 480  //320
-#define GR_Y 1280  //200
+#define GR_X 480  //320 480
+#define GR_Y 1280  //200 1280 272
 #define GR_HEIGHT GR_Y
 #define GR_WIDTH GR_X
 

@@ -80,8 +80,8 @@ task_usb();
 
 	LOG_D("fb addr: %08x and %08x\n", &fb1, &fb2);
 
-	gr_fill(&fb1, 0xff000000);
-	gr_fill(&fb2, 0xff000000);
+	gr_fill(&fb1, 0xff0000ff);
+	gr_fill(&fb2, 0xff0000ff);
 	gr_draw_pixel(&fb1, 100, 100, 0xffff0000);
 	gr_draw_pixel(&fb1, 101, 101, 0xffff0000);
 	gr_draw_pixel(&fb1, 101, 100, 0xffff0000);

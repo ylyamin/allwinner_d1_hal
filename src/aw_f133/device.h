@@ -2275,9 +2275,9 @@ typedef struct TCON_LCD_Type
     volatile uint32_t LCD_SYNC_CTL_REG;               /*!< Offset 0x230 LCD Sync Control Register */
     volatile uint32_t LCD_SYNC_POS_REG;               /*!< Offset 0x234 LCD Sync Position Register */
     volatile uint32_t LCD_SLAVE_STOP_POS_REG;         /*!< Offset 0x238 LCD Slave Stop Position Register */
-	volatile uint32_t LVDS1_ANA_REG[2];
-	volatile uint32_t LVDS1_IF_REG;
-	         uint32_t reserved13 [0x006e];             //uint32_t reserved_0x23C [0x0071];
+	volatile uint32_t LVDS1_ANA_REG[2];               /*!< Offset 0x23C LCD */
+	volatile uint32_t LVDS1_IF_REG;                   /*!< Offset 0x244 LCD */
+	         uint32_t reserved13 [0x006e];            //uint32_t reserved_0x23C [0x0071];
     volatile uint32_t LCD_GAMMA_TABLE_REG [0x100];    /*!< Offset 0x400 LCD Gamma Table Register */
              uint32_t reserved_0x800 [0x0200];
 } TCON_LCD_TypeDef; /* size of structure = 0x1000 */
