@@ -53,4 +53,5 @@ void task_display(void)
 
 	de_init();
 	de_layer_set(&fb1, &fb2);
+	
 }

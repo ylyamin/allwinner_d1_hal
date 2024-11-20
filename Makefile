@@ -28,6 +28,7 @@ SRC +=	$(SRC_DIR)/aw_lib/tcon_lcd.c
 #SRC +=	$(SRC_DIR)/aw_lib/timer.c
 SRC +=	$(SRC_DIR)/aw_lib/twi.c
 SRC +=	$(SRC_DIR)/aw_lib/uart.c
+SRC +=	$(SRC_DIR)/aw_lib/dsi.c
 
 SRC +=	$(SRC_DIR)/lib/tinyprintf/tinyprintf.c
 
@@ -41,22 +42,20 @@ SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb_fork/src/host/usbh.c
 SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb_fork/src/common/tusb_fifo.c
 SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb_fork/src/portable/ehci/ehci.c
 SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb_fork/src/portable/ohci/ohci.c
-SRC +=	$(SRC_DIR)/hid_app.c
-
-#SRC +=	$(SRC_DIR)/kvm.c
-SRC +=	$(SRC_DIR)/dsi.c
 
 SRC +=	$(SRC_DIR)/main.c
 SRC +=	$(SRC_DIR)/start.s
 SRC +=	$(SRC_DIR)/usb_task.c
-SRC +=	$(SRC_DIR)/axp228.c
-SRC +=	$(SRC_DIR)/st7701s_rgb.c
 SRC +=	$(SRC_DIR)/dispaly_task.c
-#SRC +=	$(SRC_DIR)/icn9707_480x1280.c
 
+SRC +=	$(SRC_DIR)/drivers/axp228.c
+SRC +=	$(SRC_DIR)/drivers/hid_app.c
+#SRC +=	$(SRC_DIR)/drivers/icn9707_480x1280.c
+SRC +=	$(SRC_DIR)/drivers/st7701s_rgb.c
 
 INC +=	$(SRC_DIR)/aw_f133
 INC +=	$(SRC_DIR)/aw_lib
+INC +=	$(SRC_DIR)/drivers
 INC +=	$(SRC_DIR)/lib/tinyprintf
 INC +=	$(SRC_DIR)/lib/hftrx_tinyusb_fork/src
 INC +=	$(SRC_DIR)

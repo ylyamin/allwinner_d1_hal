@@ -16,6 +16,8 @@
 #define LOG_INFO            2
 #define LOG_DBG             3
 
+#define LOG_LEVEL CONFIG_LOG_LEVEL
+
 #ifndef LOG_LEVEL
 #define LOG_LEVEL         LOG_ERROR
 #endif

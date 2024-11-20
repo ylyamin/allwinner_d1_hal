@@ -37,28 +37,32 @@ void main(void)
 	uart_init(115200);
 	init_printf(NULL,uart_putc);
 	LOG_I("Hello from allwinner !");
+	irq_init();
 
-#ifdef USE_PMP
+#ifdef CONFIG_USE_PMP
 	csr_write_pmpaddr0((0x40000000 >> 2) | 0b011111111111111111);  //1M
 	csr_write_pmpaddr1((0x40100000 >> 2) | 0b0111111111111111111); //2M
 	csr_write_pmpcfg0(0x00009f9f); // LOCK | NAPOT | X | W | R
 #endif
-#ifdef USE_MMU
+
+#ifdef CONFIG_USE_MMU
 	csr_write_satp(0x00000000);
 #endif
 
-	irq_init();
-
-#ifdef USE_DCACHE
+#ifdef CONFIG_USE_DCACHE
 	dcache_enable();
 #endif
 
-twi_init(TWI0, 400000);   
+#ifdef CONFIG_USE_TWI
+	twi_init(TWI0, 400000);   
+#endif
 
+#ifdef CONFIG_USE_USB
+	task_usb(); 
+#endif
 
-//task_usb(); 
-
-	
-task_display();	
+#ifdef CONFIG_USE_DISPLAY
+	task_display();	
+#endif
 
 }
