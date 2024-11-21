@@ -4,11 +4,15 @@
 #
 
 # Variables
-VERSION_GIT=$(shell if [ -d .git ]; then git describe --all --tags 2> /dev/null; fi)
+VERSION_GIT=$(shell if [ -d .git ]; then git describe --tags 2> /dev/null; fi)
 TOOLCHAIN_INSTALL_DIR ?= $(shell pwd)/toolchain
+DEBUGGER_INSTALL_DIR ?= $(shell pwd)/debugger
 TARGET_NAME = app
 BUILD_DIR = build
 SRC_DIR = src
+SD_IMAGE = image/sd_image.img
+SD_MOUNT = /dev/sdb
+
 .DEFAULT_GOAL := all
 
 # Sources
@@ -62,22 +66,62 @@ INC +=	$(SRC_DIR)/lib/hftrx_tinyusb_fork/src
 INC +=	$(SRC_DIR)
 
 #Toolcahin
-T_HEAD_DEBUGSERVER_BIN = $(TOOLCHAIN_INSTALL_DIR)/T-HEAD_DebugServer/DebugServerConsole.elf
-RISCV64_GLIBC_GCC_BIN  = $(TOOLCHAIN_INSTALL_DIR)/riscv64-glibc-gcc-thead_20200702/bin/riscv64-unknown-linux-gnu-
-RISCV64_MUSL_BIN = $(TOOLCHAIN_INSTALL_DIR)/riscv64-linux-musleabi_for_x86_64-pc-linux-gnu/bin/riscv64-unknown-linux-musl-
-
+XFEL_DIR = $(TOOLCHAIN_INSTALL_DIR)/xfel
+T_HEAD_DEBUGSERVER_DIR = $(TOOLCHAIN_INSTALL_DIR)/T-HEAD_DebugServer
+RISCV64_MUSL_DIR = $(TOOLCHAIN_INSTALL_DIR)/riscv64-linux-musleabi_for_x86_64-pc-linux-gnu
+RISCV64_GLIBC_GCC_DIR = $(TOOLCHAIN_INSTALL_DIR)/riscv64-glibc-gcc-thead_20200702
 XUANTIE_900_GCC_ELF_NEWLIB_DIR = $(TOOLCHAIN_INSTALL_DIR)/Xuantie-900-gcc-elf-newlib-x86_64-V2.8.1
+XPACK_RISCV_NONE_ELF_GCC_DIR = $(TOOLCHAIN_INSTALL_DIR)/xpack-riscv-none-elf-gcc-14.2.0-2
+
+T_HEAD_DEBUGSERVER_BIN = $(T_HEAD_DEBUGSERVER_DIR)/DebugServerConsole.elf
+RISCV64_MUSL_BIN = $(RISCV64_MUSL_DIR)/bin/riscv64-unknown-linux-musl-
+RISCV64_GLIBC_GCC_BIN = $(RISCV64_GLIBC_GCC_DIR)/bin/riscv64-unknown-linux-gnu-
 XUANTIE_900_GCC_ELF_NEWLIB_BIN = $(XUANTIE_900_GCC_ELF_NEWLIB_DIR)/bin/riscv64-unknown-elf-
+XPACK_RISCV_NONE_ELF_GCC_BIN = $(XPACK_RISCV_NONE_ELF_GCC_DIR)/bin/riscv-none-elf-
+
+$(XFEL_DIR):
+	git clone https://github.com/xboot/xfel $(XFEL_DIR)
+	cd $(XFEL_DIR) && make && sudo make install
+
+$(XFEL_DIR)-remove:
+	rm -rf $(XFEL_DIR)
+
+$(T_HEAD_DEBUGSERVER_DIR):
+	wget -P $(TOOLCHAIN_INSTALL_DIR) https://occ-oss-prod.oss-cn-hangzhou.aliyuncs.com/resource//1666331533949/T-Head-DebugServer-linux-x86_64-V5.16.5-20221021.sh.tar.gz
+	tar -C $(TOOLCHAIN_INSTALL_DIR) -xvzf $(TOOLCHAIN_INSTALL_DIR)/T-Head-DebugServer-linux-x86_64-V5.16.5-20221021.sh.tar.gz 
+	cd $(TOOLCHAIN_INSTALL_DIR) && sudo $(TOOLCHAIN_INSTALL_DIR)/T-Head-DebugServer-linux-x86_64-V5.16.5-20221021.sh -i
+
+$(T_HEAD_DEBUGSERVER_DIR)-remove:
+	rm -rf $(TOOLCHAIN_INSTALL_DIR)/T-Head-DebugServer*
+	sudo rm -rf $(TOOLCHAIN_INSTALL_DIR)/T-HEAD_DebugServer*
 
 $(XUANTIE_900_GCC_ELF_NEWLIB_DIR):
 	wget -P $(TOOLCHAIN_INSTALL_DIR) https://occ-oss-prod.oss-cn-hangzhou.aliyuncs.com/resource//1705395512373/Xuantie-900-gcc-elf-newlib-x86_64-V2.8.1-20240115.tar.gz
 	tar -C $(TOOLCHAIN_INSTALL_DIR) -xvzf $(TOOLCHAIN_INSTALL_DIR)/Xuantie-900-gcc-elf-newlib-x86_64-V2.8.1-20240115.tar.gz
 
-#https://github.com/xpack-dev-tools/riscv-none-elf-gcc-xpack/releases/download/v14.2.0-2/xpack-riscv-none-elf-gcc-14.2.0-2-linux-x64.tar.gz
+$(XUANTIE_900_GCC_ELF_NEWLIB_DIR)-remove:
+	rm -rf $(TOOLCHAIN_INSTALL_DIR)/Xuantie-900-gcc-elf-newlib-x86_64-V2.8.1*
 
-XPACK_RISCV_NONE_ELF_GCC_BIN = $(TOOLCHAIN_INSTALL_DIR)/xpack-riscv-none-elf-gcc-14.2.0-2/bin/riscv-none-elf-
+$(XPACK_RISCV_NONE_ELF_GCC_DIR):
+	wget -P $(TOOLCHAIN_INSTALL_DIR) https://github.com/xpack-dev-tools/riscv-none-elf-gcc-xpack/releases/download/v14.2.0-2/xpack-riscv-none-elf-gcc-14.2.0-2-linux-x64.tar.gz
+	tar -C $(TOOLCHAIN_INSTALL_DIR) -xvzf $(TOOLCHAIN_INSTALL_DIR)/xpack-riscv-none-elf-gcc-14.2.0-2-linux-x64.tar.gz
 
-toolchain: $(XUANTIE_900_GCC_ELF_NEWLIB_DIR)
+$(XPACK_RISCV_NONE_ELF_GCC_DIR)-remove:
+	rm -rf $(TOOLCHAIN_INSTALL_DIR)/xpack-riscv-none-elf-gcc-14.2.0-2
+
+toolchain: $(XFEL_DIR) $(T_HEAD_DEBUGSERVER_DIR) $(XPACK_RISCV_NONE_ELF_GCC_DIR)
+
+toolchain-remove: $(XFEL_DIR)-remove $(T_HEAD_DEBUGSERVER_DIR)-remove $(XPACK_RISCV_NONE_ELF_GCC_DIR)-remove
+
+#Debugger
+$(DEBUGGER_INSTALL_DIR)/blisp:
+	wget -P $(DEBUGGER_INSTALL_DIR) https://github.com/bouffalolab/bouffalo_sdk/blob/master/tools/cklink_firmware/bl702_cklink_whole_img_v2.2.bin
+	wget -P $(DEBUGGER_INSTALL_DIR) https://github.com/pine64/blisp/releases/download/v0.0.4/blisp-linux-x86_64-v0.0.4.zip
+	unzip $(DEBUGGER_INSTALL_DIR)/blisp-linux-x86_64-v0.0.4.zip -d $(DEBUGGER_INSTALL_DIR)
+
+debug-burn: $(DEBUGGER_INSTALL_DIR)/blisp
+	@echo "Press and hold the boot pin then plug the usb in the computer to go to the boot mode."
+	$(DEBUGGER_INSTALL_DIR)/blisp iot -c bl70x --reset -s $(DEBUGGER_INSTALL_DIR)/bl702_cklink_whole_img_v2.2.bin -l 0x0
 
 # Compile
 CROSS_COMPILE = $(XPACK_RISCV_NONE_ELF_GCC_BIN)
@@ -167,6 +211,20 @@ debug:
 	xfel jtag
 	$(T_HEAD_DEBUGSERVER_BIN)&
 	$(GDB) -x $(SRC_DIR)/.gdbinit
+
+submodules:
+	git submodule update --init
+
+#SD card
+$(SD_IMAGE):
+	$(SRC_DIR)/bootloader/mkimage -T sunxi_toc1 -d $(SRC_DIR)/bootloader/toc1_D1H.cfg $(BUILD_DIR)/$(TARGET_NAME)_sd.bin
+	sudo dd if=$(SRC_DIR)/bootloader/boot0_sdcard_sun20iw1p1.bin of=$(SD_IMAGE) bs=8192 seek=16
+	sudo dd if=$(BUILD_DIR)/$(TARGET_NAME)_sd.bin of=$(SD_IMAGE) bs=512 seek=32800
+
+sd: $(SD_IMAGE)
+
+sd-burn:
+	sudo dd if=$(SD_IMAGE) of=$(SD_MOUNT)
 
 -include $(DEPS)
 
