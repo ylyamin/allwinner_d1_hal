@@ -11,8 +11,8 @@ target remote localhost:1025
 set $app_addr =  0x40000000
 
 #Load app
-restore build/app.bin binary $app_addr
-file build/app.elf
+restore build/allwinner_d1_hal.bin binary $app_addr
+file build/allwinner_d1_hal.elf
 
 echo Loading finished\n
 echo Jump to address\n

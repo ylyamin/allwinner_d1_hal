@@ -31,7 +31,7 @@ make sd_burn
 ```
 
 ## Run
-Configure UART adapter to 115200 baud rate, 8N1.<br>
+Configure UART adapter to 115200 baud rate, 8N1 (screen /dev/ttyUSB0 115200).<br>
 Insert flashed SD card to device OR flash by XFEL and power on, should see at the end of output like this:
 ```
 [INF]:
@@ -131,7 +131,7 @@ GDB connection command for CPUs(CPU0):
 Restoring binary file build/app.bin into memory (0x40000000 to 0x40600000)
 ```
 
-# TODO:
+## TODO:
 - LCD mipi
 - Uart for D1s (configured gpio)
 -

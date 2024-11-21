@@ -7,15 +7,26 @@
 VERSION_GIT=$(shell if [ -d .git ]; then git describe --tags 2> /dev/null; fi)
 TOOLCHAIN_INSTALL_DIR ?= $(shell pwd)/toolchain
 DEBUGGER_INSTALL_DIR ?= $(shell pwd)/debugger
-TARGET_NAME = app
+TARGET_NAME = allwinner_d1_hal
 BUILD_DIR = build
 SRC_DIR = src
-SD_IMAGE = image/sd_image.img
+SD_IMAGE = image/allwinner_d1_hal_sd_image.img
 SD_MOUNT = /dev/sdb
 
 .DEFAULT_GOAL := all
 
 # Sources
+
+SRC +=	$(SRC_DIR)/board_start.c
+SRC +=	$(SRC_DIR)/board_start.s
+SRC +=	$(SRC_DIR)/usb_task.c
+SRC +=	$(SRC_DIR)/dispaly_task.c
+
+SRC +=	$(SRC_DIR)/drivers/axp228.c
+SRC +=	$(SRC_DIR)/drivers/hid_app.c
+#SRC +=	$(SRC_DIR)/drivers/icn9707_480x1280.c
+SRC +=	$(SRC_DIR)/drivers/st7701s_rgb.c
+
 SRC +=	$(SRC_DIR)/aw_f133/memcpy_sunxi.c
 SRC +=	$(SRC_DIR)/aw_f133/memset_sunxi.c
 
@@ -47,16 +58,6 @@ SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb_fork/src/host/usbh.c
 SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb_fork/src/common/tusb_fifo.c
 SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb_fork/src/portable/ehci/ehci.c
 SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb_fork/src/portable/ohci/ohci.c
-
-SRC +=	$(SRC_DIR)/main.c
-SRC +=	$(SRC_DIR)/start.s
-SRC +=	$(SRC_DIR)/usb_task.c
-SRC +=	$(SRC_DIR)/dispaly_task.c
-
-SRC +=	$(SRC_DIR)/drivers/axp228.c
-SRC +=	$(SRC_DIR)/drivers/hid_app.c
-#SRC +=	$(SRC_DIR)/drivers/icn9707_480x1280.c
-SRC +=	$(SRC_DIR)/drivers/st7701s_rgb.c
 
 INC +=	$(SRC_DIR)/aw_f133
 INC +=	$(SRC_DIR)/aw_lib
