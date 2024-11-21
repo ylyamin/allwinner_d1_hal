@@ -5,13 +5,17 @@ Access to the periphery without OS.<br>
 
 Based on @robots [allwinner_t113](https://github.com/robots/allwinner_t113) and @ua1arn [hftrx](https://github.com/ua1arn/hftrx) projects. Also used some code from [xboot](https://github.com/xboot/xboot), [xfel](https://github.com/xboot/xfel) (include MIT, BSD, Apache License)
 
-# Features
+## Features
 - Working graphics with LCD RGB, (LCD MIPI not work yet)
 - USB Host with support USB 2.0/1.0 Keyboard, Mouse
 - TWI (I2C) supported AXP228
 - UART, GPIO
 
-# Executed at hardware such as:
+## Details
+- USB not work from SD card image, from xfel work ok
+- UART output is blocking 
+
+## Executed at hardware such as:
 - [ClockworkPi DevTerm R-01](https://www.clockworkpi.com/home-devterm)
 - [Sipeed Lichee RV + Dock](https://wiki.sipeed.com/hardware/en/lichee/RV/Dock.html)
 
@@ -26,7 +30,7 @@ Could use https://etcher.balena.io/#download-etcher for flash image to SD card.
 make sd_burn
 ```
 
-# Run
+## Run
 Configure UART adapter to 115200 baud rate, 8N1.<br>
 Insert flashed SD card to device OR flash by XFEL and power on, should see at the end of output like this:
 ```
@@ -127,14 +131,14 @@ GDB connection command for CPUs(CPU0):
 Restoring binary file build/app.bin into memory (0x40000000 to 0x40600000)
 ```
 
-
-
-## TODO:
+# TODO:
 - LCD mipi
 - Uart for D1s (configured gpio)
 -
 - Do as library and external main function
+- Makefiles in sub-folders
 - ehci/ohci auto switch
+- LCD output double buffered
 - MMU
 - No libc ?
 - simple linker script ?
