@@ -38,4 +38,5 @@ typedef struct{
 void tcon_lcd_init(timing_t timing);
 void tcon_lcd_enable(void);
 void tcon_lcd_disable(void);
+void tcon_dump_regs(void);
 #endif

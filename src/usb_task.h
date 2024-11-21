@@ -2,6 +2,6 @@
 #define USB_TASK_h_
 
 void usb_task_init(void);
-void task_usb(void);
+void usb_task_exec(void);
 
 #endif

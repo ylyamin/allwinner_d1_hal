@@ -4,6 +4,7 @@
 #
 
 # Variables
+VERSION_GIT=$(shell if [ -d .git ]; then git describe --all --tags 2> /dev/null; fi)
 TOOLCHAIN_INSTALL_DIR ?= $(shell pwd)/toolchain
 TARGET_NAME = app
 BUILD_DIR = build
@@ -91,9 +92,9 @@ SIZE = ${CROSS_COMPILE}size
 #DEVICE = -march=rv64gcv0p7_xtheadc -mabi=lp64d -mtune=c906 -mcmodel=medlow  
 
 DEVICE = -march=rv64imafd_zicsr -mabi=lp64d -mcmodel=medany  
-CFLAGS = $(DEVICE) -fno-stack-protector -ffunction-sections -fdata-sections -fdiagnostics-color=always -Wno-cpp -Wno-int-conversion
+CFLAGS = $(DEVICE)  -D VERSION_GIT="\"$(VERSION_GIT)\"" -fno-stack-protector -ffunction-sections -fdata-sections -fdiagnostics-color=always -Wno-cpp -Wno-int-conversion
 AFLAGS = -c $(DEVICE) -x assembler-with-cpp
-LFLAGS = $(DEVICE) -T $(SRC_DIR)/link.ld -Wl,--cref,-Map=$(BUILD_DIR)/$(TARGET_NAME).map,--print-memory-usage -nostartfiles
+LFLAGS = $(DEVICE) -T $(SRC_DIR)/link.ld -Wl,--cref,-Map=$(BUILD_DIR)/$(TARGET_NAME).map,--print-memory-usage -nostartfiles 
 
 # -ffreestanding -std=gnu99 
 # -mstrict-align

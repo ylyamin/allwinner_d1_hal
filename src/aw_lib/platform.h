@@ -9,7 +9,7 @@
 #define LIKELY(x)          __builtin_expect(!!(x), 1)
 #define UNLIKELY(x)        __builtin_expect(!!(x), 0)
 #define ARRAY_SIZE(x)      ((sizeof(x)/sizeof(x[0])))
-#define BV(x)              (1 << (x))
+#define BV(x)              (1UL << (x))
 #define ABS(x)             (((x)>0)?(x):(-(x)))
 #define MAX(x,y)           ((x)>(y)?(x):(y))
 #define MIN(x,y)           ((x)>(y)?(y):(x))

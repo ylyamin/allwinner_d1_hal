@@ -12,17 +12,17 @@
 
 static void usb_hw_init(void);
 
-void task_usb()
+void usb_task_init(void)
 {
-	LOG_D("usb_task");
+	LOG_D("usb_task_init");
 	usb_hw_init();
 	tuh_init(0);
 	axp_USB_control(TWI0,1);
-	
-	while(1)
-	{
-		tuh_task();
-	}
+}
+
+void usb_task_exec(void)
+{
+	tuh_task();
 }
 
 void usb_int_handler(void)

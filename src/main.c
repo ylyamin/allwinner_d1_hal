@@ -36,7 +36,13 @@ void main(void)
 	ccu_init();
 	uart_init(115200);
 	init_printf(NULL,uart_putc);
-	LOG_I("Hello from allwinner !");
+
+	LOG_I("");
+	LOG_I("	\\ | /");
+	LOG_I("	- Allwinner D1 HAL [ver: %s]",VERSION_GIT);
+	LOG_I("	/ | \\");
+	LOG_I("");
+
 	irq_init();
 
 #ifdef CONFIG_USE_PMP
@@ -58,11 +64,24 @@ void main(void)
 #endif
 
 #ifdef CONFIG_USE_USB
-	task_usb(); 
+	usb_task_init();
 #endif
 
 #ifdef CONFIG_USE_DISPLAY
-	task_display();	
+	display_task_init();	
 #endif
+
+while(1)
+{
+#ifdef CONFIG_USE_USB
+	usb_task_exec();
+#endif
+
+#ifdef CONFIG_USE_DISPLAY
+	display_task_exec();	
+#endif
+
+}
+
 
 }

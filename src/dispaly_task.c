@@ -5,9 +5,15 @@
 #include <de.h>
 #include <tcon_lcd.h>
 #include <icn9707_480x1280.h>
+#include <ccu.h>
 
-void task_display(void)
+uint8_t fb1[1280 * 480 * 4];  //= dma_memalign(128, size);
+uint8_t fb2[1280 * 480 * 4]; // = dma_memalign(128, size);
+
+void display_task_init(void)
 {
+	LOG_D("display_task_init");
+
 	timing_t timing = LCD_get_param();
 
 	struct layer_t layer = {
@@ -30,10 +36,6 @@ void task_display(void)
 	uint32_t h = de_layer_get_h();
 	uint32_t w = de_layer_get_w();
 
-	uint32_t size = h * w * 4;
-	uint8_t fb1[size];  //= dma_memalign(128, size);
-	uint8_t fb2[size]; // = dma_memalign(128, size);
-
 	gr_fill(&fb1,w,h, 0xff0000ff);
 	gr_fill(&fb2,w,h, 0xff0000ff);
 	gr_draw_pixel(&fb1,w,h, 100, 100, 0xffff0000);
@@ -48,10 +50,37 @@ void task_display(void)
 	tcon_lcd_init(timing);
 	tcon_lcd_enable();
 	
+	tcon_dump_regs();
+
 	LCD_bl_open();
 	LCD_panel_init();
 
 	de_init();
 	de_layer_set(&fb1, &fb2);
-	
+}
+
+uint32_t line_x = 0;
+uint32_t line_y = 0;
+
+void display_task_exec(void)
+{
+	uint32_t h = de_layer_get_h();
+	uint32_t w = de_layer_get_w();
+	unsigned long ms = get_time_ms();
+
+	if (!(ms % 50))
+	{
+		gr_draw_line(&fb1, w, h, line_x, 0, line_x, h-1, 0xff0000ff);	// clean previous
+		gr_draw_line(&fb1, w, h, 0, line_y, w-1, line_y, 0xff0000ff);	// clean previous
+
+		line_x += w / 20;
+		line_y += h / 20;
+
+		gr_draw_line(&fb1, w, h, line_x, 0, line_x, h-1, 0xff00ff00);	// draw new
+		gr_draw_line(&fb1, w, h, 0, line_y, w-1, line_y, 0xffff0000);	// draw new
+
+		if (line_x > w) line_x = 0; 									//reset in the end
+		if (line_y > h) line_y = 0; 									//reset in the end
+	}	
+
 }

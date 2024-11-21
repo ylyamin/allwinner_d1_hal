@@ -8,7 +8,7 @@
 
 timing_t timing = {
 	.lcd_type = DSI,
-	.pixclk = 54465120, //55000000,
+	.pixclk = 55000000, //907752
 	.lcd_w = 480,
 	.lcd_h = 1280,
 	.hbp = 150, //hsync back porch(pixel) + hsync plus width(pixel)
