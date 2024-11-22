@@ -1,7 +1,6 @@
 # Overview
 
-Elementary HAL (Hardware Abstraction Layer) for [Allwinner D1H](https://d1.docs.aw-ol.com/en/) RISC-V SOC.<br>
-Simple access to the periphery. No OS, No IDE-generated libs.<br>
+Elementary HAL (Hardware Abstraction Layer) for [Allwinner D1H](https://d1.docs.aw-ol.com/en/)/D1s/F133 RISC-V SOC.<br>
 
 Based on @robots [allwinner_t113](https://github.com/robots/allwinner_t113) and @ua1arn [hftrx](https://github.com/ua1arn/hftrx) projects. Also used some code from [xboot](https://github.com/xboot/xboot), [xfel](https://github.com/xboot/xfel) (MIT, BSD, Apache Licenses)
 
@@ -16,8 +15,8 @@ Based on @robots [allwinner_t113](https://github.com/robots/allwinner_t113) and 
 - UART output is blocking 
 
 ## Executed at hardware such as:
-- [ClockworkPi DevTerm R-01](https://www.clockworkpi.com/home-devterm)
 - [Sipeed Lichee RV + Dock](https://wiki.sipeed.com/hardware/en/lichee/RV/Dock.html)
+- [ClockworkPi DevTerm R-01](https://www.clockworkpi.com/home-devterm)
 
 # Build
 
@@ -28,7 +27,7 @@ make
 
 Compile firmware for specific platform ClockworkPi Devterm R-01 platform
 ```sh
-make soc=d1s platform=devterm
+make soc=d1h platform=devterm
 ```
 **soc** could be: d1h, d1s <br>
 **platform** could be: sipeed, devterm
@@ -58,11 +57,13 @@ make sd_burn
 Configure UART adapter to 115200 baud rate, 8N1 (screen /dev/ttyUSB0 115200).<br>
 Insert flashed SD card to device OR flash by XFEL and power on, should see at the end of output like this:
 ```
-[INF]:
 [INF]:  \ | /
-[INF]:  - Allwinner D1 HAL [ver: 0.0.1]
+[INF]:  - Allwinner D1 HAL [ver: 0.0.1-5-gd69c9f1]
 [INF]:  / | \
-[INF]:
+[INF]:  SoC: D1H
+[INF]:  Platform: ClockworkPi Devterm R-01
+[DBG]:irq_init
+[DBG]:twi_init
 ```
 
 ## Environment
@@ -76,7 +77,7 @@ If needed to specify installation folders for toolchain please modify environmen
 
 Then execute due each session:
 ```sh
- source ./environment.sh
+source ./environment.sh
 ```
 Or add to ~/.bashrc
 
@@ -103,7 +104,7 @@ make sd
 
 To create SD card image for ClockworkPi Devterm platform
 ```sh
-make sd p=devterm
+make sd platform=devterm
 ```
 
 For flash to SD card:

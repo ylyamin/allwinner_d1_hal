@@ -198,3 +198,11 @@ Step 5-7 Set and open interrupt function
                                                                          9:
                                                                          1:
         TCON_LCD0->LCD_GINT1_REG    0x008               00000000
+
+
+# RTT with uConsole
+
+# RTT with RGB
+
+
+
