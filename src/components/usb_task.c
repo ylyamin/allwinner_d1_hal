@@ -13,9 +13,9 @@ void usb_task_init(void)
 	usb_hw_init();
 	tuh_init(0);
 
-if (strcmp(PLATFORM,PLATFORM_DEVTERM) == 0)
+#if (PLATFORM == PLATFORM_DEVTERM)
 	axp_USB_control(TWI0,1);
-
+#endif
 }
 
 void usb_task_exec(void)

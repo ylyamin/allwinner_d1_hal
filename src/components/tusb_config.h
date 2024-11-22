@@ -32,8 +32,16 @@
 // HOST CONFIGURATION
 //--------------------------------------------------------------------
 
-//#define TUP_USBIP_EHCI 1
+#if (PLATFORM == PLATFORM_DEVTERM)
+
+#define TUP_USBIP_EHCI 1
+
+#elif (PLATFORM == PLATFORM_SIPEED)
+
 #define TUP_USBIP_OHCI 1
+
+#endif
+
 #define LPC_USB_BASE  (0x04200000+0x400)
 
 #define CFG_TUH_ENDPOINT_MAX 	16

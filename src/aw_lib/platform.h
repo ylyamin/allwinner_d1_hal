@@ -5,6 +5,24 @@
 #include <stddef.h>
 #include <allwnr_f133.h>
 
+#define SOC_D1H 'h'
+#define SOC_D1S 's'
+
+#ifndef SOC
+#define SOC SOC_D1H
+#endif
+
+#define PLATFORM_SIPEED     's'
+#define PLATFORM_DEVTERM    'd'
+
+#ifndef PLATFORM
+#define PLATFORM PLATFORM_SIPEED
+#endif
+
+#ifndef VERSION_GIT
+#define VERSION_GIT "NA"
+#endif
+
 #define __IO volatile
 #define LIKELY(x)          __builtin_expect(!!(x), 1)
 #define UNLIKELY(x)        __builtin_expect(!!(x), 0)

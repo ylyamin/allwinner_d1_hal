@@ -10,15 +10,43 @@ DEBUGGER_INSTALL_DIR ?= $(shell pwd)/debugger
 TARGET_NAME = allwinner_d1_hal
 BUILD_DIR = build
 SRC_DIR = src
+
+SOC = d1h
 PLATFORM = sipeed
 SD_IMAGE = image/$(PLATFORM)_sd_image.img
 SD_MOUNT = /dev/sdb
+BOOTLOADER_NAME = boot0_sdcard_sun20iw1p1_d1h.bin
 
 .DEFAULT_GOAL := all
 
+# SoC: d1h or d1s
+
+SOC_D = h
+ifeq ("$(origin soc)", "command line")
+	SOC = $(soc)
+	ifeq ("$(SOC)","d1h")
+		SOC_D = h
+		BOOTLOADER_NAME = boot0_sdcard_sun20iw1p1_d1h.bin
+	endif
+
+	ifeq ("$(SOC)","d1s")
+		SOC_D = s
+		BOOTLOADER_NAME = boot0_sdcard_sun20iw1p1_d1s.bin
+	endif
+endif
+
 # Platform: devterm or sipeed
-ifeq ("$(origin p)", "command line")
-	PLATFORM = $(p)
+
+PLATFORM_D = s
+ifeq ("$(origin platform)", "command line")
+	PLATFORM = $(platform)
+	ifeq ("$(PLATFORM)","sipeed")
+		PLATFORM_D = s
+	endif
+
+	ifeq ("$(PLATFORM)","devterm")
+		PLATFORM_D = d
+	endif
 endif
 
 # Check if verbosity is ON (v=1) for build process
@@ -32,6 +60,7 @@ endif
 # Sources
 SRC +=	$(SRC_DIR)/board_start.c
 SRC +=	$(SRC_DIR)/board_start.s
+SRC +=	$(SRC_DIR)/main.c
 
 INC +=	$(SRC_DIR)
 
@@ -120,10 +149,11 @@ SIZE = ${CROSS_COMPILE}size
 
 #DEVICE = -march=rv64gcv0p7_xtheadc -mabi=lp64d -mtune=c906 -mcmodel=medlow  
 
-DEVICE = -march=rv64imafd_zicsr -mabi=lp64d -mcmodel=medany  
-CFLAGS = $(DEVICE)  -D VERSION_GIT="\"$(VERSION_GIT)\"" -D PLATFORM="\"$(PLATFORM)\"" -fno-stack-protector -ffunction-sections -fdata-sections -fdiagnostics-color=always -Wno-cpp -Wno-int-conversion
-AFLAGS = -c $(DEVICE) -x assembler-with-cpp
-LFLAGS = $(DEVICE) -T $(SRC_DIR)/link.ld -Wl,--cref,-Map=$(BUILD_DIR)/$(TARGET_NAME).map,--print-memory-usage -nostartfiles 
+DEVICE = -march=rv64imafd_zicsr -mabi=lp64d -mcmodel=medany
+VARS   = -D VERSION_GIT="\"$(VERSION_GIT)\"" -D SOC="'$(SOC_D)'" -D PLATFORM="'$(PLATFORM_D)'"
+CFLAGS = $(DEVICE) $(VARS) -fno-stack-protector -ffunction-sections -fdata-sections -fdiagnostics-color=always -Wno-cpp -Wno-int-conversion
+AFLAGS = $(DEVICE) $(VARS) -x assembler-with-cpp
+LFLAGS = $(DEVICE) $(VARS) -T $(SRC_DIR)/link.ld -Wl,--cref,-Map=$(BUILD_DIR)/$(TARGET_NAME).map,--print-memory-usage -nostartfiles 
 
 # -ffreestanding -std=gnu99 
 # -mstrict-align
@@ -149,17 +179,17 @@ INC_FLAGS += -MMD -MP
 $(BUILD_DIR)/%.c.o: %.c
 	@echo CC $<
 	$(CMD_PREFIX)mkdir -p $(dir $@)
-	$(CMD_PREFIX)$(CC) -o $@ -c $(INC_FLAGS) $(CFLAGS) $< 
+	$(CMD_PREFIX)$(CC) $(INC_FLAGS) $(CFLAGS) -c $< -o $@ 
 
 $(BUILD_DIR)/%.s.o: %.s
 	@echo AS $<
 	$(CMD_PREFIX)mkdir -p $(dir $@)
-	$(CMD_PREFIX)$(AS) $(INC_FLAGS) $(AFLAGS) -c -o $@ $<
+	$(CMD_PREFIX)$(AS) $(INC_FLAGS) $(AFLAGS) -c  $< -o $@
 
 $(BUILD_DIR)/%.S.o: %.S
 	@echo AS $<
 	$(CMD_PREFIX)mkdir -p $(dir $@)
-	$(CMD_PREFIX)$(AS) $(INC_FLAGS) $(AFLAGS) -c -o $@ $<
+	$(CMD_PREFIX)$(AS) $(INC_FLAGS) $(AFLAGS) -c  $< -o $@
 
 $(BUILD_DIR)/$(TARGET_NAME).bin: $(OBJS)
 	@echo LD $(BUILD_DIR)/$(TARGET_NAME).elf
@@ -197,7 +227,7 @@ submodules:
 $(SD_IMAGE):
 	@echo SD $(SD_IMAGE)
 	$(CMD_PREFIX)$(SRC_DIR)/bootloader/mkimage -T sunxi_toc1 -d $(SRC_DIR)/bootloader/toc1_D1H.cfg $(BUILD_DIR)/$(TARGET_NAME)_sd.bin
-	$(CMD_PREFIX)dd if=$(SRC_DIR)/bootloader/boot0_sdcard_sun20iw1p1.bin of=$(SD_IMAGE) bs=8192 seek=16
+	$(CMD_PREFIX)dd if=$(SRC_DIR)/bootloader/$(BOOTLOADER_NAME) of=$(SD_IMAGE) bs=8192 seek=16
 	$(CMD_PREFIX)dd if=$(BUILD_DIR)/$(TARGET_NAME)_sd.bin of=$(SD_IMAGE) bs=512 seek=32800
 
 sd: $(SD_IMAGE)

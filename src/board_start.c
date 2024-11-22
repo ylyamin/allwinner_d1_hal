@@ -8,15 +8,14 @@
 #include <ccu.h>
 #include <uart.h>
 #include <irq.h>
-#include <led.h>
 #include <twi.h>
-#include <usb_task.h>
-#include <dispaly_task.h>
 
 extern unsigned int __bss_start__;
 extern unsigned int __bss_end__;
 extern unsigned int __bss2_start__;
 extern unsigned int __bss2_end__;
+
+extern void main(void);
 
 void init_bss(int start, int end)
 {
@@ -30,10 +29,19 @@ void init_bss(int start, int end)
 
 void logo(void)
 {
+	char * soc = "NA";
+	char * platform = "NA";
+
+	if (SOC == SOC_D1H) soc = "D1H";
+	if (SOC == SOC_D1S) soc = "D1s";
+	if (PLATFORM == PLATFORM_SIPEED)  platform = "Sipeed Lichee RV";
+	if (PLATFORM == PLATFORM_DEVTERM) platform = "ClockworkPi Devterm R-01";
+
 	LOG_I("	\\ | /");
 	LOG_I("	- Allwinner D1 HAL [ver: %s]",VERSION_GIT);
 	LOG_I("	/ | \\");
-	LOG_I("	Platform: %s",PLATFORM);
+	LOG_I("	SoC: %s",soc);
+	LOG_I("	Platform: %s",platform);
 }
 
 void board_start(void)
@@ -42,7 +50,7 @@ void board_start(void)
 	init_bss(__bss2_start__ , __bss2_end__);
 
 	ccu_init();
-	uart_init(115200);
+	uart_init(CONFIG_UART_NUM, CONFIG_UART_BAUDRATE);
 	init_printf(NULL,uart_putc);
 	logo();
 
@@ -66,25 +74,6 @@ void board_start(void)
 	twi_init(TWI0, 400000);   
 #endif
 
-#ifdef CONFIG_USE_USB
-	usb_task_init();
-#endif
-
-#ifdef CONFIG_USE_DISPLAY
-	display_task_init();	
-#endif
-
-while(1)
-{
-#ifdef CONFIG_USE_USB
-	usb_task_exec();
-#endif
-
-#ifdef CONFIG_USE_DISPLAY
-	display_task_exec();	
-#endif
-
-}
-
+	main();
 
 }

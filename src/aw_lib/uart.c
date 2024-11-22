@@ -12,6 +12,7 @@
 // and scheduler start, there can be no uart output) otherwise you get freeze.
 //
 #include "platform.h"
+#include <config.h>
 
 #include <stdarg.h>
 #include <stdio.h>
@@ -44,14 +45,14 @@ static int uart_dma_mode = 0;
 
 struct gpio_t uart_gpio[] = {
 	{
-		.gpio = GPIOB,
-		.pin = BV(8),
+		.gpio = CONFIG_UART_PIN_GROUP,
+		.pin = BV(CONFIG_UART_PIN_TX),
 		.mode = GPIO_MODE_FNC6,
 		.drv = GPIO_DRV_0,
 	},
 	{
-		.gpio = GPIOB,
-		.pin = BV(9),
+		.gpio = CONFIG_UART_PIN_GROUP,
+		.pin = BV(CONFIG_UART_PIN_RX),
 		.mode = GPIO_MODE_FNC6,
 		.drv = GPIO_DRV_0,
 	},
@@ -59,34 +60,34 @@ struct gpio_t uart_gpio[] = {
 
 static void uart_dmac_handler(uint8_t ch, void *arg);
 
-void uart_init(uint32_t baudrate)
+void uart_init(UART_TypeDef *uart, uint32_t baudrate)
 {
 	gpio_init(uart_gpio, ARRAY_SIZE(uart_gpio));
 
-	ccu_uart_enable(UART0);
+	ccu_uart_enable(uart);
 
 	// calculare baudrate divisor
 	uint32_t clk = ccu_apb1_clk_get();
 
 	uint32_t br = clk/16/baudrate;
 
-	UART0->UART_DLH_IER = 0x0;
-	UART0->UART_IIR_FCR = 0xf7;
-	UART0->UART_MCR = 0x0;
+	uart->UART_DLH_IER = 0x0;
+	uart->UART_IIR_FCR = 0xf7;
+	uart->UART_MCR = 0x0;
 
 	// enable access to DLL DLH
-	UART0->UART_LCR |= (1 << 7);
+	uart->UART_LCR |= (1 << 7);
 
 	// configure baudrate prescaler
-	UART0->UART_RBR_THR_DLL = br & 0xff;
-	UART0->UART_DLH_IER = (br >> 8) & 0xff;
+	uart->UART_RBR_THR_DLL = br & 0xff;
+	uart->UART_DLH_IER = (br >> 8) & 0xff;
 
 	// disable access to DLL DLH
-	UART0->UART_LCR &= ~(1 << 7);
+	uart->UART_LCR &= ~(1 << 7);
 
 	// configure line config 8,n,1
-	UART0->UART_LCR &= ~0x1f;
-	UART0->UART_LCR |= (0x3 << 0) | (0 << 2) | (0x0 << 3);
+	uart->UART_LCR &= ~0x1f;
+	uart->UART_LCR |= (0x3 << 0) | (0 << 2) | (0x0 << 3);
 }
 
 /* void uart_init_dma(void)
@@ -191,11 +192,13 @@ static void uart_send_dma(const char *buf, size_t count)
 }
  */
 
+UART_TypeDef *uart = CONFIG_UART_NUM;
+
 void _uart_putchar(char c)
 {
-	while ((UART0->UART_USR & 2) == 0);
-	UART0->UART_RBR_THR_DLL = c;
-	while ((UART0->UART_USR & 2) == 0);
+	while ((uart->UART_USR & 2) == 0);
+	uart->UART_RBR_THR_DLL = c;
+	while ((uart->UART_USR & 2) == 0);
 }
 
 void uart_putchar(char c)

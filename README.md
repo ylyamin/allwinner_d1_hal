@@ -21,15 +21,17 @@ Based on @robots [allwinner_t113](https://github.com/robots/allwinner_t113) and 
 
 # Build
 
-Compile firmware (for Sipeed platform by default)
+Compile firmware ('D1H' SoC and 'Sipeed Lichee RV' platform by default)
 ```sh
 make
 ```
 
-Compile firmware for ClockworkPi Devterm platform
+Compile firmware for specific platform ClockworkPi Devterm R-01 platform
 ```sh
-make p=devterm
+make soc=d1s platform=devterm
 ```
+**soc** could be: d1h, d1s <br>
+**platform** could be: sipeed, devterm
 
 Clean all objects
 ```sh
@@ -144,7 +146,6 @@ Restoring binary file build/app.bin into memory (0x40000000 to 0x40600000)
 
 ## TODO:
 - LCD mipi
-- Uart for D1s (configured gpio)
 - USB not work from SD card image
 -
 - Do as library and external main function
