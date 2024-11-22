@@ -149,7 +149,7 @@ Step 2 Clock configuration
         TCON_LCD0->LCD_DCLK_REG     0x044               f0000004        28: dclk all
                                                                         0:  Div: 4
 
-                                                                        81Mz?
+                                                                        81Mz
 
         CCU->DSI_CLK_REG            0xB24               81000004        31: On
                                                                         24: PERI_1x
@@ -202,7 +202,187 @@ Step 5-7 Set and open interrupt function
 
 # RTT with uConsole
 
+Step 1 Select HV interface type
+
+        TCON_LCD0->LCD_CTL_REG      0x040               81000000        31: LCD_EN 
+                                                                        24: 8080 I/F
+        TCON_LCD0->LCD_HV_IF_REG    0x058               00000000
+
+Step 2 Clock configuration
+
+        CCU->PLL_PERI_CTRL_REG      0x020               f8216300     
+                                                                        PLL_PERI(2X) = 1.2Gz
+                                                                        PLL_PERI(1X) = 600Mz
+                                                                        PLL_PERI(800M) = 800Mz
+        CCU->PLL_VIDEO0_CTRL_REG    0x040               f8002002        
+                                                                        13:1
+                                                                        8:0 N = 32+1
+                                                                        1:1 M = 1+1
+                                                                        InputFreq *N/M
+
+                                                                        PLL_VIDEO0(4X)= 396Mz
+                                                                        PLL_VIDEO0(2X)= 198Mz
+                                                                        PLL_VIDEO0(1X)= 99Mz
+
+        CCU->TCONLCD_CLK_REG        0xB60               81000000        24: PLL_VIDEO0(4X) 
+        CCU->TCONLCD_BGR_REG        0xB7C               00010001
+        TCON_LCD0->LCD_DCLK_REG     0x044               f0000004        28: dclk all
+                                                                        0:  Div: 4
+
+                                                                        99Mz
+
+        CCU->DSI_CLK_REG            0xB24               81000004        31: On
+                                                                        24: PERI_1x
+                                                                         0: 4+1     
+
+                                                                        120Mz   
+        CCU->DSI_BGR_REG            0xB4C               00010001
+        CCU->LVDS_BGR_REG           0xBAC               00000000
+
+Step 3 Set sequence parameters
+
+        TCON_LCD0->LCD_BASIC0_REG   0x048               02cf04ff
+        TCON_LCD0->LCD_BASIC1_REG   0x04C               00000000
+        TCON_LCD0->LCD_BASIC2_REG   0x050               00000000
+        TCON_LCD0->LCD_BASIC3_REG   0x054               00000000
+
+Step 4 Open IO output
+
+        TCON_LCD0->LCD_IO_TRI_REG   0x08C               00000000
+        TCON_LCD0->LCD_IO_POL_REG   0x088               00000000
+
+Step 5 LVDS digital logic configuration
+
+        TCON_LCD0->LCD_LVDS_IF_REG  0x084               00000
+
+Step 4 Open IO output
+
+        TCON_LCD0->LCD_IO_TRI_REG   0x08C               00000000
+        TCON_LCD0->LCD_IO_POL_REG   0x088               00000000
+
+Step 5 LVDS digital logic configuration
+
+        TCON_LCD0->LCD_LVDS_IF_REG  0x084               00000000
+        TCON_LCD0->LVDS1_IF_REG     0x244               00000000
+
+Step 6 LVDS controller configuration
+
+PHY0 COMBO_PHY_REG
+
+        DSI0_PHY->combo_phy_reg1    0x114               00000000
+        DSI0_PHY->combo_phy_reg0    0x110               0000000b
+        DSI0_PHY->dphy_ana4         0x05c               844635ee
+        DSI0_PHY->dphy_ana3         0x058               ff040000
+        DSI0_PHY->dphy_ana2         0x054               0f000012
+        DSI0_PHY->dphy_ana1         0x050               80000000
+
+PHY1 LCD_LVDS0_ANA_REG
+
+        TCON_LCD0->LCD_LVDS_ANA_REG[0]  0x220           00000000
+
+Step 5-7 Set and open interrupt function
+
+        TCON_LCD0->LCD_GINT0_REG    0x004           00000a02
+        TCON_LCD0->LCD_GINT1_REG    0x008           00000000
+
 # RTT with RGB
 
+Step 1 Select HV interface type
+
+        TCON_LCD0->LCD_CTL_REG      0x040               800001f0
+                                                                        24: HV
+        TCON_LCD0->LCD_HV_IF_REG    0x058               00000000
+
+Step 2 Clock configuration
+
+        CCU->PLL_PERI_CTRL_REG      0x020               f8216300
+        CCU->PLL_VIDEO0_CTRL_REG    0x040               f8001102
+                                                                        12:
+                                                                         8:  N = 17+1
+                                                                         1:  M = 1+1
+
+                                                                        PLL_VIDEO0(4X)= 216Mz
+                                                                        PLL_VIDEO0(2X)= 108Mz
+                                                                        PLL_VIDEO0(1X)= 54Mz
+
+        CCU->TCONLCD_CLK_REG        0xB60               81000000
+        CCU->TCONLCD_BGR_REG        0xB7C               00010001
+        TCON_LCD0->LCD_DCLK_REG     0x044               f0000012
+
+                                                                        28: dclk all
+                                                                        0:  Div: 18
+                                                                        12Mz
 
 
+        CCU->DSI_CLK_REG            0xB24               00000000
+        CCU->DSI_BGR_REG            0xB4C               00000000
+        CCU->LVDS_BGR_REG           0xBAC               00000000
+
+Step 3 Set sequence parameters
+
+        TCON_LCD0->LCD_BASIC0_REG   0x048               01df010f
+        TCON_LCD0->LCD_BASIC1_REG   0x04C               0263003b
+        TCON_LCD0->LCD_BASIC2_REG   0x050               04100011
+        TCON_LCD0->LCD_BASIC3_REG   0x054               000b0003
+
+Step 4 Open IO output
+
+        TCON_LCD0->LCD_IO_TRI_REG   0x08C               00000000
+        TCON_LCD0->LCD_IO_POL_REG   0x088               00000000
+
+Step 5 LVDS digital logic configuration
+
+        TCON_LCD0->LCD_LVDS_IF_REG  0x084               00000000
+        TCON_LCD0->LVDS1_IF_REG     0x244               00000000
+
+Step 6 LVDS controller configuration
+
+PHY0 COMBO_PHY_REG
+
+        DSI0_PHY->combo_phy_reg1    0x114               00000000
+        DSI0_PHY->combo_phy_reg0    0x110               00000000
+        DSI0_PHY->dphy_ana4         0x05c               00000000
+        DSI0_PHY->dphy_ana3         0x058               00000000
+        DSI0_PHY->dphy_ana2         0x054               00000000
+        DSI0_PHY->dphy_ana1         0x050               00000000
+
+PHY1 LCD_LVDS0_ANA_REG
+
+        TCON_LCD0->LCD_LVDS_ANA_REG[0]  0x220           00000000
+
+Step 5-7 Set and open interrupt function
+
+        TCON_LCD0->LCD_GINT0_REG    0x004           80000002
+        TCON_LCD0->LCD_GINT1_REG    0x008           00000000
+
+
+
+# icn9707
+lcd_ht = 694
+lcd_vt = 1308
+54465120
+
+lcd_dclk = 55Mz * 5
+
+PLL_VIDEO0(4X)= 324Mz
+LCD_DCLK_REG = 81Mz /4
+
+# cwu50
+lcd_ht = 790
+lcd_vt = 1306
+61904400
+
+lcd_dclk = 67Mz * 5
+
+PLL_VIDEO0(4X)= 396Mz
+LCD_DCLK_REG = 99Mz /4
+
+# rgb
+lcd_ht = 612
+lcd_vt = 520
+19094400
+
+lcd_dclk = 12Mz * 18
+
+PLL_VIDEO0(4X)= 216Mz
+LCD_DCLK_REG = 12Mz /18

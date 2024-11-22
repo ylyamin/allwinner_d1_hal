@@ -106,18 +106,18 @@ if (timing.lcd_type == DSI)
 	TCON_LCD0->LCD_HV_IF_REG &= ~(0x0 << 28); 	// 24bit/1cycle parallel mode
 
 // Step 2 Clock configuration 
-	uint32_t tcon_div = 6; /// 6 or 7 ?
-	tcon_find_clock(timing.pixclk * tcon_div);
+/* 	uint32_t tcon_div = 6; /// 6 or 7 ?
+	tcon_find_clock(timing.pixclk * tcon_div); */
 
-/* 	ccu_video0_pll_set(27, 2);
+ 	ccu_video0_pll_set(27, 2);
 	ccu_tcon_set_video0x4_div(1);
-	ccu_tcon_lcd_enable(); */
+	ccu_tcon_lcd_enable();
 
-	//TCON_LCD0->LCD_CTL_REG |= (1 << 24);			// 8080 I/F - apply here
+	TCON_LCD0->LCD_CTL_REG |= (1 << 24);			// 8080 I/F - apply here
 
 
-	TCON_LCD0->LCD_DCLK_REG = tcon_div * 2;// !!!!!!
-	//TCON_LCD0->LCD_DCLK_REG = 4;
+	//TCON_LCD0->LCD_DCLK_REG = tcon_div * 2;// !!!!!!
+	TCON_LCD0->LCD_DCLK_REG = 4;
 	TCON_LCD0->LCD_DCLK_REG |= (0x0f << 28);
 	delay_us(20);
 
@@ -127,12 +127,12 @@ if (timing.lcd_type == DSI)
 
 if (timing.lcd_type == DSI) 
 {	
-	ccu_dsi_enable(); //600Mhz
-/* 
+	//ccu_dsi_enable(); //600Mhz
+
 	CCU->DSI_CLK_REG = (1 << 24) | (4 << 0);
 	CCU->DSI_CLK_REG |= BV(31);
 	CCU->DSI_BGR_REG |= BV(16);
-	CCU->DSI_BGR_REG |= BV(0); */
+	CCU->DSI_BGR_REG |= BV(0);
 }
 // ?? init iface
 	uint32_t val = timing.vt - timing.lcd_h - 8;
@@ -158,16 +158,12 @@ if (timing.lcd_type == DSI)
 
 if (timing.lcd_type == DSI) 
 {	
-/* 	TCON_LCD0->LCD_LVDS_IF_REG &= ~BV(27); 
-	TCON_LCD0->LCD_LVDS_IF_REG |= BV(20); //! LVDS_MODE_JEIDA  LVDS_18BIT, BV(30) dual
-	TCON_LCD0->LCD_LVDS_IF_REG |= BV(31);
-	TCON_LCD0->LVDS1_IF_REG = TCON_LCD0->LCD_LVDS_IF_REG; */
 
 //Step 6 LVDS controller configuration
 // TCON  LCD0  PHY0 is controlled by COMBO_PHY_REG  (reg0x1110,  reg0x1114)
 //enable_lvds();
 
- 	DSI0_PHY->combo_phy_reg1 = 0x43;
+/*  	DSI0_PHY->combo_phy_reg1 = 0x43;
 	DSI0_PHY->combo_phy_reg0 = 0x1;
 	delay_ms(1);
 	DSI0_PHY->combo_phy_reg0 = 0x5;
@@ -178,35 +174,18 @@ if (timing.lcd_type == DSI)
 	DSI0_PHY->dphy_ana4 = 0x84000000;
 	DSI0_PHY->dphy_ana3 = 0x01040000;
 	DSI0_PHY->dphy_ana2 &= (0 << 1);
-	DSI0_PHY->dphy_ana1 = 0;
+	DSI0_PHY->dphy_ana1 = 0; */
 
 
-/* 	DSI0_PHY->combo_phy_reg1 = 0x00000000;
+ 	DSI0_PHY->combo_phy_reg1 = 0x00000000;
 	DSI0_PHY->combo_phy_reg0 = 0x0000000b;
 	DSI0_PHY->dphy_ana4 = 0x844635ee;
 	DSI0_PHY->dphy_ana3 = 0xff040000;
 	DSI0_PHY->dphy_ana2 = 0x0f000012;
 	DSI0_PHY->dphy_ana1 = 0x80000000;
- */
+ 
 
 // TCON  LCD0  PHY1 is controlled by LCD_LVDS0_ANA_REG (reg0x220)
-
-/* 	TCON_LCD0->LCD_LVDS_ANA_REG[0] =
-		(0x0F << 20) |	// When LVDS signal is 18-bit, LVDS_HPREN_DRV=0x7; when LVDS signal is 24-bit, LVDS_HPREN_DRV=0xF;
-		(1 << 24) |	// LVDS_HPREN_DRVC
-		(0x04 << 17) |	// Configure LVDS0_REG_C (differential mode voltage) to 4; 100: 336 mV
-		(3 << 8) |	// ?LVDS_REG_R Configure LVDS0_REG_V (common mode voltage) to 3;
-		0;
-
-	TCON_LCD0->LCD_LVDS_ANA_REG[0] |= (1 << 30);	// en_ldo
-	delay_ms(1);
-	// 	Lastly, start module voltage, and enable EN_LVDS and EN_24M.
-	TCON_LCD0->LCD_LVDS_ANA_REG[0] |= (1 << 31);	// ?LVDS_EN_MB start module voltage
-	delay_ms(1);
-	TCON_LCD0->LCD_LVDS_ANA_REG[0] |= (1 << 29);	// enable EN_LVDS
-	delay_ms(1);
-	TCON_LCD0->LCD_LVDS_ANA_REG[0] |= (1 << 28);	// EN_24M
-	delay_ms(1); */
 }
 //Step 5-7 Set and open interrupt function
 	//TCON_LCD0->LCD_GINT0_REG = BV(29); //V interrupt

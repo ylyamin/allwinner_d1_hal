@@ -5,12 +5,13 @@ Elementary HAL (Hardware Abstraction Layer) for [Allwinner D1H](https://d1.docs.
 Based on @robots [allwinner_t113](https://github.com/robots/allwinner_t113) and @ua1arn [hftrx](https://github.com/ua1arn/hftrx) projects. Also used some code from [xboot](https://github.com/xboot/xboot), [xfel](https://github.com/xboot/xfel) (MIT, BSD, Apache Licenses)
 
 ## Features
-- Working graphics with LCD RGB, (LCD MIPI not work yet)
+- Working graphics with LCD RGB 4.3 inch (043026-N6(ML) ST7701S SPI)
 - USB Host with support USB 2.0/1.0 Keyboard, Mouse
 - TWI (I2C) supported AXP228 Power management chip
 - UART, GPIO
 
 ## Details
+- LCD MIPI not work yet (6.86 inch icnl9707)
 - USB not work from SD card image, from xfel work ok
 - UART output is blocking 
 
@@ -91,7 +92,7 @@ make toolchain
   Could be seted as $HOME/toolchain or RT-Thread-on-Allwinner-D1H/toolchain folder
 ```
 Will be installed:
-- riscv64-glibc-gcc-thead_20200702 (for compiling)
+- xpack-riscv-none-elf-gcc-14.2.0-2-linux-x64 (for compiling)
 - xfel                  (for flash MCU by USB)
 - T-HEAD_DebugServer    (for JTAG)
 
@@ -146,7 +147,7 @@ Restoring binary file build/app.bin into memory (0x40000000 to 0x40600000)
 ```
 
 ## TODO:
-- LCD mipi
+- LCD mipi (take dsi driver from Linux or RTT)
 - USB not work from SD card image
 -
 - Do as library and external main function
@@ -158,7 +159,7 @@ Restoring binary file build/app.bin into memory (0x40000000 to 0x40600000)
 - FreeRTOS ?
 - Own bootloader
 - Changelog
-- Kbuild ?
+- Kbuild ? obj-y ?
 - Common for T113 ?
 - spi-nand ?
 
