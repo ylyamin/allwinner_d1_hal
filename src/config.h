@@ -5,9 +5,20 @@
 #ifndef CONFIG_H_
 #define CONFIG_H_
 
-#ifndef VERSION_GIT
-#define VERSION_GIT "0"
+#define PLATFORM_SIPEED     "sipeed"
+#define PLATFORM_DEVTERM    "devterm"
+
+#ifndef PLATFORM
+#define PLATFORM "sipeed"
 #endif
+
+#ifndef VERSION_GIT
+#define VERSION_GIT "NA"
+#endif
+
+/* #ifndef PLATFORM
+#define PLATFORM    PLATFORM_SIPEED
+#endif */
 
 #define CONFIG_LOG_LEVEL    LOG_DBG
 //#define CONFIG_USE_DCACHE 1

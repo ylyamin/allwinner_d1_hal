@@ -10,22 +10,42 @@ DEBUGGER_INSTALL_DIR ?= $(shell pwd)/debugger
 TARGET_NAME = allwinner_d1_hal
 BUILD_DIR = build
 SRC_DIR = src
-SD_IMAGE = image/allwinner_d1_hal_sd_image.img
+PLATFORM = sipeed
+SD_IMAGE = image/$(PLATFORM)_sd_image.img
 SD_MOUNT = /dev/sdb
 
 .DEFAULT_GOAL := all
 
-# Sources
+# Platform: devterm or sipeed
+ifeq ("$(origin p)", "command line")
+	PLATFORM = $(p)
+endif
 
+# Check if verbosity is ON (v=1) for build process
+CMD_PREFIX_DEFAULT := @
+ifeq ($(v), 1)
+	CMD_PREFIX :=
+else
+	CMD_PREFIX := $(CMD_PREFIX_DEFAULT)
+endif
+
+# Sources
 SRC +=	$(SRC_DIR)/board_start.c
 SRC +=	$(SRC_DIR)/board_start.s
-SRC +=	$(SRC_DIR)/usb_task.c
-SRC +=	$(SRC_DIR)/dispaly_task.c
 
-SRC +=	$(SRC_DIR)/drivers/axp228.c
+SRC +=	$(SRC_DIR)/components/usb_task.c
+SRC +=	$(SRC_DIR)/components/dispaly_task.c
+
 SRC +=	$(SRC_DIR)/drivers/hid_app.c
-#SRC +=	$(SRC_DIR)/drivers/icn9707_480x1280.c
+SRC +=	$(SRC_DIR)/drivers/axp228.c
+
+ifeq ("$(PLATFORM)", "sipeed")
 SRC +=	$(SRC_DIR)/drivers/st7701s_rgb.c
+endif
+
+ifeq ("$(PLATFORM)", "devterm")
+SRC +=	$(SRC_DIR)/drivers/icn9707_480x1280.c
+endif
 
 SRC +=	$(SRC_DIR)/aw_f133/memcpy_sunxi.c
 SRC +=	$(SRC_DIR)/aw_f133/memset_sunxi.c
@@ -44,6 +64,7 @@ SRC +=	$(SRC_DIR)/aw_lib/tcon_lcd.c
 #SRC +=	$(SRC_DIR)/aw_lib/timer.c
 SRC +=	$(SRC_DIR)/aw_lib/twi.c
 SRC +=	$(SRC_DIR)/aw_lib/uart.c
+SRC +=	$(SRC_DIR)/aw_lib/usb.c
 SRC +=	$(SRC_DIR)/aw_lib/dsi.c
 
 SRC +=	$(SRC_DIR)/lib/tinyprintf/tinyprintf.c
@@ -59,12 +80,13 @@ SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb_fork/src/common/tusb_fifo.c
 SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb_fork/src/portable/ehci/ehci.c
 SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb_fork/src/portable/ohci/ohci.c
 
+INC +=	$(SRC_DIR)
 INC +=	$(SRC_DIR)/aw_f133
 INC +=	$(SRC_DIR)/aw_lib
 INC +=	$(SRC_DIR)/drivers
+INC +=	$(SRC_DIR)/components
 INC +=	$(SRC_DIR)/lib/tinyprintf
 INC +=	$(SRC_DIR)/lib/hftrx_tinyusb_fork/src
-INC +=	$(SRC_DIR)
 
 #Toolcahin
 XFEL_DIR = $(TOOLCHAIN_INSTALL_DIR)/xfel
@@ -81,34 +103,42 @@ XUANTIE_900_GCC_ELF_NEWLIB_BIN = $(XUANTIE_900_GCC_ELF_NEWLIB_DIR)/bin/riscv64-u
 XPACK_RISCV_NONE_ELF_GCC_BIN = $(XPACK_RISCV_NONE_ELF_GCC_DIR)/bin/riscv-none-elf-
 
 $(XFEL_DIR):
-	git clone https://github.com/xboot/xfel $(XFEL_DIR)
-	cd $(XFEL_DIR) && make && sudo make install
+	@echo XFEL INSTALL
+	$(CMD_PREFIX)git clone https://github.com/xboot/xfel $(XFEL_DIR)
+	$(CMD_PREFIX)cd $(XFEL_DIR) && make && sudo make install
 
 $(XFEL_DIR)-remove:
-	rm -rf $(XFEL_DIR)
+	@echo XFEL REMOVE
+	$(CMD_PREFIX)rm -rf $(XFEL_DIR)
 
 $(T_HEAD_DEBUGSERVER_DIR):
-	wget -P $(TOOLCHAIN_INSTALL_DIR) https://occ-oss-prod.oss-cn-hangzhou.aliyuncs.com/resource//1666331533949/T-Head-DebugServer-linux-x86_64-V5.16.5-20221021.sh.tar.gz
-	tar -C $(TOOLCHAIN_INSTALL_DIR) -xvzf $(TOOLCHAIN_INSTALL_DIR)/T-Head-DebugServer-linux-x86_64-V5.16.5-20221021.sh.tar.gz 
-	cd $(TOOLCHAIN_INSTALL_DIR) && sudo $(TOOLCHAIN_INSTALL_DIR)/T-Head-DebugServer-linux-x86_64-V5.16.5-20221021.sh -i
+	@echo T_HEAD_DEBUGSERVER INSTALL
+	$(CMD_PREFIX)wget -P $(TOOLCHAIN_INSTALL_DIR) https://occ-oss-prod.oss-cn-hangzhou.aliyuncs.com/resource//1666331533949/T-Head-DebugServer-linux-x86_64-V5.16.5-20221021.sh.tar.gz
+	$(CMD_PREFIX)tar -C $(TOOLCHAIN_INSTALL_DIR) -xvzf $(TOOLCHAIN_INSTALL_DIR)/T-Head-DebugServer-linux-x86_64-V5.16.5-20221021.sh.tar.gz 
+	$(CMD_PREFIX)cd $(TOOLCHAIN_INSTALL_DIR) && sudo $(TOOLCHAIN_INSTALL_DIR)/T-Head-DebugServer-linux-x86_64-V5.16.5-20221021.sh -i
 
 $(T_HEAD_DEBUGSERVER_DIR)-remove:
-	rm -rf $(TOOLCHAIN_INSTALL_DIR)/T-Head-DebugServer*
-	sudo rm -rf $(TOOLCHAIN_INSTALL_DIR)/T-HEAD_DebugServer*
+	@echo T_HEAD_DEBUGSERVER REMOVE
+	$(CMD_PREFIX)rm -rf $(TOOLCHAIN_INSTALL_DIR)/T-Head-DebugServer*
+	$(CMD_PREFIX)sudo rm -rf $(TOOLCHAIN_INSTALL_DIR)/T-HEAD_DebugServer*
 
 $(XUANTIE_900_GCC_ELF_NEWLIB_DIR):
-	wget -P $(TOOLCHAIN_INSTALL_DIR) https://occ-oss-prod.oss-cn-hangzhou.aliyuncs.com/resource//1705395512373/Xuantie-900-gcc-elf-newlib-x86_64-V2.8.1-20240115.tar.gz
-	tar -C $(TOOLCHAIN_INSTALL_DIR) -xvzf $(TOOLCHAIN_INSTALL_DIR)/Xuantie-900-gcc-elf-newlib-x86_64-V2.8.1-20240115.tar.gz
+	@echo XUANTIE_900_GCC_ELF_NEWLIB INSTALL
+	$(CMD_PREFIX)wget -P $(TOOLCHAIN_INSTALL_DIR) https://occ-oss-prod.oss-cn-hangzhou.aliyuncs.com/resource//1705395512373/Xuantie-900-gcc-elf-newlib-x86_64-V2.8.1-20240115.tar.gz
+	$(CMD_PREFIX)tar -C $(TOOLCHAIN_INSTALL_DIR) -xvzf $(TOOLCHAIN_INSTALL_DIR)/Xuantie-900-gcc-elf-newlib-x86_64-V2.8.1-20240115.tar.gz
 
 $(XUANTIE_900_GCC_ELF_NEWLIB_DIR)-remove:
-	rm -rf $(TOOLCHAIN_INSTALL_DIR)/Xuantie-900-gcc-elf-newlib-x86_64-V2.8.1*
+	@echo XUANTIE_900_GCC_ELF_NEWLIB REMOVE
+	$(CMD_PREFIX)rm -rf $(TOOLCHAIN_INSTALL_DIR)/Xuantie-900-gcc-elf-newlib-x86_64-V2.8.1*
 
 $(XPACK_RISCV_NONE_ELF_GCC_DIR):
-	wget -P $(TOOLCHAIN_INSTALL_DIR) https://github.com/xpack-dev-tools/riscv-none-elf-gcc-xpack/releases/download/v14.2.0-2/xpack-riscv-none-elf-gcc-14.2.0-2-linux-x64.tar.gz
-	tar -C $(TOOLCHAIN_INSTALL_DIR) -xvzf $(TOOLCHAIN_INSTALL_DIR)/xpack-riscv-none-elf-gcc-14.2.0-2-linux-x64.tar.gz
+	@echo XPACK_RISCV_NONE_ELF_GCC INSTALL
+	$(CMD_PREFIX)wget -P $(TOOLCHAIN_INSTALL_DIR) https://github.com/xpack-dev-tools/riscv-none-elf-gcc-xpack/releases/download/v14.2.0-2/xpack-riscv-none-elf-gcc-14.2.0-2-linux-x64.tar.gz
+	$(CMD_PREFIX)tar -C $(TOOLCHAIN_INSTALL_DIR) -xvzf $(TOOLCHAIN_INSTALL_DIR)/xpack-riscv-none-elf-gcc-14.2.0-2-linux-x64.tar.gz
 
 $(XPACK_RISCV_NONE_ELF_GCC_DIR)-remove:
-	rm -rf $(TOOLCHAIN_INSTALL_DIR)/xpack-riscv-none-elf-gcc-14.2.0-2
+	@echo XPACK_RISCV_NONE_ELF_GCC REMOVE
+	$(CMD_PREFIX)rm -rf $(TOOLCHAIN_INSTALL_DIR)/xpack-riscv-none-elf-gcc-14.2.0-2
 
 toolchain: $(XFEL_DIR) $(T_HEAD_DEBUGSERVER_DIR) $(XPACK_RISCV_NONE_ELF_GCC_DIR)
 
@@ -116,13 +146,14 @@ toolchain-remove: $(XFEL_DIR)-remove $(T_HEAD_DEBUGSERVER_DIR)-remove $(XPACK_RI
 
 #Debugger
 $(DEBUGGER_INSTALL_DIR)/blisp:
-	wget -P $(DEBUGGER_INSTALL_DIR) https://github.com/bouffalolab/bouffalo_sdk/blob/master/tools/cklink_firmware/bl702_cklink_whole_img_v2.2.bin
-	wget -P $(DEBUGGER_INSTALL_DIR) https://github.com/pine64/blisp/releases/download/v0.0.4/blisp-linux-x86_64-v0.0.4.zip
-	unzip $(DEBUGGER_INSTALL_DIR)/blisp-linux-x86_64-v0.0.4.zip -d $(DEBUGGER_INSTALL_DIR)
+	$(CMD_PREFIX)wget -P $(DEBUGGER_INSTALL_DIR) https://github.com/bouffalolab/bouffalo_sdk/blob/master/tools/cklink_firmware/bl702_cklink_whole_img_v2.2.bin
+	$(CMD_PREFIX)wget -P $(DEBUGGER_INSTALL_DIR) https://github.com/pine64/blisp/releases/download/v0.0.4/blisp-linux-x86_64-v0.0.4.zip
+	$(CMD_PREFIX)unzip $(DEBUGGER_INSTALL_DIR)/blisp-linux-x86_64-v0.0.4.zip -d $(DEBUGGER_INSTALL_DIR)
 
 debug-burn: $(DEBUGGER_INSTALL_DIR)/blisp
+	@echo DEBUGGER BURN
 	@echo "Press and hold the boot pin then plug the usb in the computer to go to the boot mode."
-	$(DEBUGGER_INSTALL_DIR)/blisp iot -c bl70x --reset -s $(DEBUGGER_INSTALL_DIR)/bl702_cklink_whole_img_v2.2.bin -l 0x0
+	$(CMD_PREFIX)$(DEBUGGER_INSTALL_DIR)/blisp iot -c bl70x --reset -s $(DEBUGGER_INSTALL_DIR)/bl702_cklink_whole_img_v2.2.bin -l 0x0
 
 # Compile
 CROSS_COMPILE = $(XPACK_RISCV_NONE_ELF_GCC_BIN)
@@ -137,7 +168,7 @@ SIZE = ${CROSS_COMPILE}size
 #DEVICE = -march=rv64gcv0p7_xtheadc -mabi=lp64d -mtune=c906 -mcmodel=medlow  
 
 DEVICE = -march=rv64imafd_zicsr -mabi=lp64d -mcmodel=medany  
-CFLAGS = $(DEVICE)  -D VERSION_GIT="\"$(VERSION_GIT)\"" -fno-stack-protector -ffunction-sections -fdata-sections -fdiagnostics-color=always -Wno-cpp -Wno-int-conversion
+CFLAGS = $(DEVICE)  -D VERSION_GIT="\"$(VERSION_GIT)\"" -D PLATFORM="\"$(PLATFORM)\"" -fno-stack-protector -ffunction-sections -fdata-sections -fdiagnostics-color=always -Wno-cpp -Wno-int-conversion
 AFLAGS = -c $(DEVICE) -x assembler-with-cpp
 LFLAGS = $(DEVICE) -T $(SRC_DIR)/link.ld -Wl,--cref,-Map=$(BUILD_DIR)/$(TARGET_NAME).map,--print-memory-usage -nostartfiles 
 
@@ -161,14 +192,6 @@ INC_FLAGS = $(addprefix -I,$(INC))
 INC_FLAGS += -MMD -MP
 
 # Targets
-
-# Check if verbosity is ON (v=1) for build process
-CMD_PREFIX_DEFAULT := @
-ifeq ($(v), 1)
-	CMD_PREFIX :=
-else
-	CMD_PREFIX := $(CMD_PREFIX_DEFAULT)
-endif
 
 $(BUILD_DIR)/%.c.o: %.c
 	@echo CC $<
@@ -214,18 +237,25 @@ debug:
 	$(GDB) -x $(SRC_DIR)/.gdbinit
 
 submodules:
+	@echo SUBMODULES
 	git submodule update --init
 
 #SD card
 $(SD_IMAGE):
-	$(SRC_DIR)/bootloader/mkimage -T sunxi_toc1 -d $(SRC_DIR)/bootloader/toc1_D1H.cfg $(BUILD_DIR)/$(TARGET_NAME)_sd.bin
-	sudo dd if=$(SRC_DIR)/bootloader/boot0_sdcard_sun20iw1p1.bin of=$(SD_IMAGE) bs=8192 seek=16
-	sudo dd if=$(BUILD_DIR)/$(TARGET_NAME)_sd.bin of=$(SD_IMAGE) bs=512 seek=32800
+	@echo SD
+	$(CMD_PREFIX)$(SRC_DIR)/bootloader/mkimage -T sunxi_toc1 -d $(SRC_DIR)/bootloader/toc1_D1H.cfg $(BUILD_DIR)/$(TARGET_NAME)_sd.bin
+	$(CMD_PREFIX)dd if=$(SRC_DIR)/bootloader/boot0_sdcard_sun20iw1p1.bin of=$(SD_IMAGE) bs=8192 seek=16
+	$(CMD_PREFIX)dd if=$(BUILD_DIR)/$(TARGET_NAME)_sd.bin of=$(SD_IMAGE) bs=512 seek=32800
 
 sd: $(SD_IMAGE)
 
 sd-burn:
-	sudo dd if=$(SD_IMAGE) of=$(SD_MOUNT)
+	@echo SD BURN
+	$(CMD_PREFIX)dd if=$(SD_IMAGE) of=$(SD_MOUNT)
+
+sd-clean:
+	@echo REMOVE $(SD_IMAGE)
+	$(CMD_PREFIX)rm -rf $(SD_IMAGE)
 
 -include $(DEPS)
 

@@ -1,14 +1,14 @@
 # Overview
 
-Elementary HAL (Hardware Abstraction Layer) for Allwinner D1H SOC.<br>
-Access to the periphery without OS.<br>
+Elementary HAL (Hardware Abstraction Layer) for [Allwinner D1H](https://d1.docs.aw-ol.com/en/) RISC-V SOC.<br>
+Simple access to the periphery. No OS, No IDE-generated libs.<br>
 
-Based on @robots [allwinner_t113](https://github.com/robots/allwinner_t113) and @ua1arn [hftrx](https://github.com/ua1arn/hftrx) projects. Also used some code from [xboot](https://github.com/xboot/xboot), [xfel](https://github.com/xboot/xfel) (include MIT, BSD, Apache License)
+Based on @robots [allwinner_t113](https://github.com/robots/allwinner_t113) and @ua1arn [hftrx](https://github.com/ua1arn/hftrx) projects. Also used some code from [xboot](https://github.com/xboot/xboot), [xfel](https://github.com/xboot/xfel) (MIT, BSD, Apache Licenses)
 
 ## Features
 - Working graphics with LCD RGB, (LCD MIPI not work yet)
 - USB Host with support USB 2.0/1.0 Keyboard, Mouse
-- TWI (I2C) supported AXP228
+- TWI (I2C) supported AXP228 Power management chip
 - UART, GPIO
 
 ## Details
@@ -18,6 +18,28 @@ Based on @robots [allwinner_t113](https://github.com/robots/allwinner_t113) and 
 ## Executed at hardware such as:
 - [ClockworkPi DevTerm R-01](https://www.clockworkpi.com/home-devterm)
 - [Sipeed Lichee RV + Dock](https://wiki.sipeed.com/hardware/en/lichee/RV/Dock.html)
+
+# Build
+
+Compile firmware (for Sipeed platform by default)
+```sh
+make
+```
+
+Compile firmware for ClockworkPi Devterm platform
+```sh
+make p=devterm
+```
+
+Clean all objects
+```sh
+make clean
+```
+
+Flash firmware to MCU by XFEL
+```sh
+make flash
+```
 
 # Installation
 In repository exist pre-builded images for SD card in folder [image](image), need to flash it to SD card and install to device.
@@ -39,23 +61,6 @@ Insert flashed SD card to device OR flash by XFEL and power on, should see at th
 [INF]:  - Allwinner D1 HAL [ver: 0.0.1]
 [INF]:  / | \
 [INF]:
-```
-
-# Build
-
-Compile firmware
-```sh
-make all
-```
-
-Clean all objects
-```sh
-make clean
-```
-
-Flash firmware to MCU by XFEL
-```sh
-make flash
 ```
 
 ## Environment
@@ -113,7 +118,7 @@ To start GDB session in device that have FEL button (Sipeed Lichee RV) - press a
 make debug
 ```
 
-Should see at the output the like this:
+Should see at the output like this:
 ```
 +---                                                    ---+
 |  T-Head Debugger Server (Build: Oct 21 2022)             |
@@ -134,8 +139,9 @@ Restoring binary file build/app.bin into memory (0x40000000 to 0x40600000)
 ## TODO:
 - LCD mipi
 - Uart for D1s (configured gpio)
+- USB not work from SD card image
 -
-- Do as library and external main function
+- Do as library and external main function, components, platform
 - Makefiles in sub-folders
 - ehci/ohci auto switch
 - LCD output double buffered
@@ -146,6 +152,7 @@ Restoring binary file build/app.bin into memory (0x40000000 to 0x40600000)
 - Own bootloader
 - Changelog
 - Kbuild ?
-- Common for D1s / T113
+- Common for T113 ?
+- nand ?
 
 

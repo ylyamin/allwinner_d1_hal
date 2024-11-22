@@ -28,6 +28,14 @@ void init_bss(int start, int end)
     }
 }
 
+void logo(void)
+{
+	LOG_I("	\\ | /");
+	LOG_I("	- Allwinner D1 HAL [ver: %s]",VERSION_GIT);
+	LOG_I("	/ | \\");
+	LOG_I("	Platform: %s",PLATFORM);
+}
+
 void board_start(void)
 {
 	init_bss(__bss_start__ , __bss_end__);
@@ -36,12 +44,7 @@ void board_start(void)
 	ccu_init();
 	uart_init(115200);
 	init_printf(NULL,uart_putc);
-
-	LOG_I("");
-	LOG_I("	\\ | /");
-	LOG_I("	- Allwinner D1 HAL [ver: %s]",VERSION_GIT);
-	LOG_I("	/ | \\");
-	LOG_I("");
+	logo();
 
 	irq_init();
 
