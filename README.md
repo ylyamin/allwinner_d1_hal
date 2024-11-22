@@ -98,6 +98,12 @@ To create SD card image in [image](image) folder:
 ```sh
 make sd
 ```
+
+To create SD card image for ClockworkPi Devterm platform
+```sh
+make sd p=devterm
+```
+
 For flash to SD card:
 ```sh
 make sd_burn
@@ -141,8 +147,7 @@ Restoring binary file build/app.bin into memory (0x40000000 to 0x40600000)
 - Uart for D1s (configured gpio)
 - USB not work from SD card image
 -
-- Do as library and external main function, components, platform
-- Makefiles in sub-folders
+- Do as library and external main function
 - ehci/ohci auto switch
 - LCD output double buffered
 - MMU
@@ -153,6 +158,6 @@ Restoring binary file build/app.bin into memory (0x40000000 to 0x40600000)
 - Changelog
 - Kbuild ?
 - Common for T113 ?
-- nand ?
+- spi-nand ?
 
 

@@ -33,60 +33,13 @@ endif
 SRC +=	$(SRC_DIR)/board_start.c
 SRC +=	$(SRC_DIR)/board_start.s
 
-SRC +=	$(SRC_DIR)/components/usb_task.c
-SRC +=	$(SRC_DIR)/components/dispaly_task.c
-
-SRC +=	$(SRC_DIR)/drivers/hid_app.c
-SRC +=	$(SRC_DIR)/drivers/axp228.c
-
-ifeq ("$(PLATFORM)", "sipeed")
-SRC +=	$(SRC_DIR)/drivers/st7701s_rgb.c
-endif
-
-ifeq ("$(PLATFORM)", "devterm")
-SRC +=	$(SRC_DIR)/drivers/icn9707_480x1280.c
-endif
-
-SRC +=	$(SRC_DIR)/aw_f133/memcpy_sunxi.c
-SRC +=	$(SRC_DIR)/aw_f133/memset_sunxi.c
-
-#SRC +=	$(SRC_DIR)/aw_lib/cache-c906.c
-SRC +=	$(SRC_DIR)/aw_lib/ccu.c
-SRC +=	$(SRC_DIR)/aw_lib/de.c
-SRC +=	$(SRC_DIR)/aw_lib/de_scaler_table.c
-#SRC +=	$(SRC_DIR)/aw_lib/dmac.c
-SRC +=	$(SRC_DIR)/aw_lib/gpio.c
-SRC +=	$(SRC_DIR)/aw_lib/gr.c
-SRC +=	$(SRC_DIR)/aw_lib/irq.c	
-SRC +=	$(SRC_DIR)/aw_lib/led.c
-#SRC +=	$(SRC_DIR)/aw_lib/smhc.c
-SRC +=	$(SRC_DIR)/aw_lib/tcon_lcd.c
-#SRC +=	$(SRC_DIR)/aw_lib/timer.c
-SRC +=	$(SRC_DIR)/aw_lib/twi.c
-SRC +=	$(SRC_DIR)/aw_lib/uart.c
-SRC +=	$(SRC_DIR)/aw_lib/usb.c
-SRC +=	$(SRC_DIR)/aw_lib/dsi.c
-
-SRC +=	$(SRC_DIR)/lib/tinyprintf/tinyprintf.c
-
-SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb_fork/src/tusb.c
-SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb_fork/src/typec/usbc.c
-SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb_fork/src/class/cdc/cdc_host.c
-SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb_fork/src/class/hid/hid_host.c
-SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb_fork/src/class/msc/msc_host.c
-SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb_fork/src/host/hub.c
-SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb_fork/src/host/usbh.c
-SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb_fork/src/common/tusb_fifo.c
-SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb_fork/src/portable/ehci/ehci.c
-SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb_fork/src/portable/ohci/ohci.c
-
 INC +=	$(SRC_DIR)
-INC +=	$(SRC_DIR)/aw_f133
-INC +=	$(SRC_DIR)/aw_lib
-INC +=	$(SRC_DIR)/drivers
-INC +=	$(SRC_DIR)/components
-INC +=	$(SRC_DIR)/lib/tinyprintf
-INC +=	$(SRC_DIR)/lib/hftrx_tinyusb_fork/src
+
+include $(SRC_DIR)/components/Makefile
+include $(SRC_DIR)/drivers/Makefile
+include $(SRC_DIR)/aw_f133/Makefile
+include $(SRC_DIR)/aw_lib/Makefile
+include $(SRC_DIR)/lib/Makefile
 
 #Toolcahin
 XFEL_DIR = $(TOOLCHAIN_INSTALL_DIR)/xfel
@@ -242,7 +195,7 @@ submodules:
 
 #SD card
 $(SD_IMAGE):
-	@echo SD
+	@echo SD $(SD_IMAGE)
 	$(CMD_PREFIX)$(SRC_DIR)/bootloader/mkimage -T sunxi_toc1 -d $(SRC_DIR)/bootloader/toc1_D1H.cfg $(BUILD_DIR)/$(TARGET_NAME)_sd.bin
 	$(CMD_PREFIX)dd if=$(SRC_DIR)/bootloader/boot0_sdcard_sun20iw1p1.bin of=$(SD_IMAGE) bs=8192 seek=16
 	$(CMD_PREFIX)dd if=$(BUILD_DIR)/$(TARGET_NAME)_sd.bin of=$(SD_IMAGE) bs=512 seek=32800

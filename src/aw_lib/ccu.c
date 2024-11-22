@@ -151,7 +151,7 @@ static void ccu_mbus_enable(void)
 {
 	// deassert reset
 	CCU->MBUS_CLK_REG |= BV(30);
-	//delay_us(1);
+	delay_us(1);
 	// enable clock to all mbus peripherals
 	CCU->MBUS_MAT_CLK_GATING_REG = 0x00000d87;
 }
@@ -200,8 +200,8 @@ static void ccu_cpu_pll_set(uint8_t n)
 	CCU->PLL_CPU_CTRL_REG |= BV(27);
 
 	// Lock disable - is this needed ? 
-//	CCU->PLL_CPU_CTRL_REG &= ~(1 << 29);
-//	delay_us(1);
+	CCU->PLL_CPU_CTRL_REG &= ~(1 << 29);
+	delay_us(1);
 
 	// change CPU clock source
 	reg = CCU->RISC_CLK_REG;
@@ -227,19 +227,19 @@ uint32_t ccu_perip_x1_to_clk(void)
 static void ccu_perip_pll_set(void)
 {
 	/* Periph0 has been enabled */
-	if (CCU->PLL_PERI_CTRL_REG & (1 << 31)) {
+/* 	if (CCU->PLL_PERI_CTRL_REG & (1 << 31)) {
 		// already setup by ddr enable code
 		ccu_clk_perip_x1 = ccu_perip_x1_to_clk();
 		return;
-	}
+	} */
 
 	//! Change psi src to osc24m
-	//CCU->PSI_CLK_REG &= ~(0x3 << 24);
-	//ccu_clk_ahb = ccu_clk_hosc24;
+	CCU->PSI_CLK_REG &= ~(0x3 << 24);
+	ccu_clk_ahb = ccu_clk_hosc24;
 
 	// leave default value of 1.2GHz
 	//CCU->PLL_PERI_CTRL_REG = 0x48216300;
-	//CCU->PLL_PERI_CTRL_REG |= (0x63 << 8);
+	CCU->PLL_PERI_CTRL_REG |= (0x63 << 8);
 
 	// Lock enable
 	CCU->PLL_PERI_CTRL_REG |= (1 << 29);
@@ -252,7 +252,7 @@ static void ccu_perip_pll_set(void)
 	delay_us(20);
 
 	// Lock disable - needed ?
-	//CCU->PLL_PERI_CTRL_REG &= ~(1 << 29);
+	CCU->PLL_PERI_CTRL_REG &= ~(1 << 29);
 }
 
 uint32_t ccu_video0_x4_to_clk(void)
@@ -408,8 +408,8 @@ void ccu_init(void)
 {
 	ccu_cpu_pll_set(42);
 
-	ccu_clk_ahb_set(1);
-	ccu_clk_apb0_set(1);
+	//ccu_clk_ahb_set(1);
+	//ccu_clk_apb0_set(1);
 
 	ccu_perip_pll_set();
 
