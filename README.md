@@ -163,6 +163,6 @@ Restoring binary file build/app.bin into memory (0x40000000 to 0x40600000)
 - Common for T113 ?
 - spi-nand ?
 
-https://forum.clockworkpi.com/t/r-01-library-for-small-os/15602
-https://bbs.aw-ol.com/topic/6113/r-01-library-for-small-os
-https://whycan.com/t_11784.html
+https://forum.clockworkpi.com/t/r-01-library-for-small-os/15602 <br>
+https://bbs.aw-ol.com/topic/6113/r-01-library-for-small-os <br>
+https://whycan.com/t_11784.html <br>
