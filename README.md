@@ -21,6 +21,11 @@ Based on @robots [allwinner_t113](https://github.com/robots/allwinner_t113) and 
 
 # Build
 
+Clone all needed libs
+```sh
+make submodules
+```
+
 Compile firmware ('D1H' SoC and 'Sipeed Lichee RV' platform by default)
 ```sh
 make
@@ -69,7 +74,18 @@ Insert flashed SD card to device OR flash by XFEL and power on, should see at th
 
 ## Environment
 
-Tested on Ubuntu 22.04.3 64x. On machine need to be installed make environment:
+Tested on Ubuntu 22.04.3 64x.
+In my case I was use Windows 10 64x as a host with and Ubuntu virtual machine as a guest for compilation.
+Repo was downloaded to a shared folder in Windows mounted in Ubuntu:
+```sh
+sudo apt install open-vm-tools
+sudo mkdir /mnt/hgfs/
+sudo vmhgfs-fuse .host:/share /mnt/hgfs/ -o allow_other -o uid=1000
+
+sudo nano /etc/fstab
+.host:/    /mnt/hgfs/    fuse.vmhgfs-fuse    defaults,allow_other,uid=1000     0    0
+```
+On machine need to be installed make environment:
 ```sh
 sudo apt install git make build-essential libusb-1.0-0-dev libncurses5-dev
 ```
@@ -100,7 +116,7 @@ Will be installed:
 
 To create SD card image in [image](image) folder:
 ```sh
-make sd
+make -i sd
 ```
 
 To create SD card image for ClockworkPi Devterm platform
