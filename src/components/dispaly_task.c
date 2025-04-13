@@ -55,7 +55,7 @@ void display_task_init(void)
 	tcon_lcd_init(timing);
 	tcon_lcd_enable();
 	
-	tcon_dump_regs();
+	//tcon_dump_regs();
 
 	LCD_bl_open();
 	LCD_panel_init();

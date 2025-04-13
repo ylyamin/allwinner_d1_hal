@@ -16,10 +16,76 @@ Based on @robots [allwinner_t113](https://github.com/robots/allwinner_t113) and 
 - UART output is blocking 
 
 ## Executed at hardware such as:
-- [Sipeed Lichee RV + Dock](https://wiki.sipeed.com/hardware/en/lichee/RV/Dock.html)
 - [ClockworkPi DevTerm R-01](https://www.clockworkpi.com/home-devterm)
+- [Sipeed Lichee RV + Dock](https://wiki.sipeed.com/hardware/en/lichee/RV/Dock.html)
 
-# Build
+
+# Installation
+In repository exist pre-builded images for SD card in folder [image](image), need to flash it to SD card and install to device.
+
+## Windows
+Could use https://etcher.balena.io/#download-etcher for flash image to SD card.
+
+## Linux
+```sh
+dd if=image/<platform>_sd_image.img of=/dev/sdb
+```
+
+## Run
+Configure UART adapter to 115200 baud rate, 8N1 (screen /dev/ttyUSB0 115200).<br>
+Insert flashed SD card to device OR flash by XFEL and power on, should see at the end of output like this:
+```
+[INF]:  \ | /
+[INF]:  - Allwinner D1 HAL [ver: 0.0.1-5-gd69c9f1]
+[INF]:  / | \
+[INF]:  SoC: D1H
+[INF]:  Platform: ClockworkPi Devterm R-01
+[DBG]:irq_init
+[DBG]:twi_init
+```
+
+## Environment
+
+Tested on Ubuntu 22.04.3 64x.
+In my case I was use Windows 10 64x as a host with and Ubuntu virtual machine as a guest for compilation.
+Repo was downloaded to a shared folder in Windows mounted in Ubuntu:
+```sh
+sudo apt install open-vm-tools
+sudo mkdir /mnt/hgfs/
+sudo vmhgfs-fuse .host:/share /mnt/hgfs/ -o allow_other -o uid=1000
+```
+/etc/fstab example
+```sh
+.host:/    /mnt/hgfs/    fuse.vmhgfs-fuse    defaults,allow_other,uid=1000     0    0
+```
+On machine need to be installed make environment:
+```sh
+sudo apt install git make build-essential pkg-config libusb-1.0-0-dev libncurses5-dev unzip screen
+```
+If needed to specify installation folders for toolchain please modify environment.sh script to specify this variable
+- TOOLCHAIN_INSTALL_DIR - path for installation dir for toolchain ex.: $HOME/toolchain
+
+Then execute due each session:
+```sh
+source ./environment.sh
+```
+Or add to ~/.bashrc
+
+## Build toolchain
+
+Installing toolchain
+```sh
+make toolchain
+
+* T-HEAD_DebugServer will request specify installation dir: 'Set full installing path:'
+  Could be seted as $HOME/toolchain or RT-Thread-on-Allwinner-D1H/toolchain folder
+```
+Will be installed:
+- xpack-riscv-none-elf-gcc-14.2.0-2-linux-x64 (for compiling)
+- xfel                  (for flash MCU by USB)
+- T-HEAD_DebugServer    (for JTAG)
+
+## Build project
 
 Clone all needed libs
 ```sh
@@ -47,70 +113,6 @@ Flash firmware to MCU by XFEL
 ```sh
 make flash
 ```
-
-# Installation
-In repository exist pre-builded images for SD card in folder [image](image), need to flash it to SD card and install to device.
-
-## Windows
-Could use https://etcher.balena.io/#download-etcher for flash image to SD card.
-
-## Linux
-```sh
-make sd_burn
-```
-
-## Run
-Configure UART adapter to 115200 baud rate, 8N1 (screen /dev/ttyUSB0 115200).<br>
-Insert flashed SD card to device OR flash by XFEL and power on, should see at the end of output like this:
-```
-[INF]:  \ | /
-[INF]:  - Allwinner D1 HAL [ver: 0.0.1-5-gd69c9f1]
-[INF]:  / | \
-[INF]:  SoC: D1H
-[INF]:  Platform: ClockworkPi Devterm R-01
-[DBG]:irq_init
-[DBG]:twi_init
-```
-
-## Environment
-
-Tested on Ubuntu 22.04.3 64x.
-In my case I was use Windows 10 64x as a host with and Ubuntu virtual machine as a guest for compilation.
-Repo was downloaded to a shared folder in Windows mounted in Ubuntu:
-```sh
-sudo apt install open-vm-tools
-sudo mkdir /mnt/hgfs/
-sudo vmhgfs-fuse .host:/share /mnt/hgfs/ -o allow_other -o uid=1000
-
-sudo nano /etc/fstab
-.host:/    /mnt/hgfs/    fuse.vmhgfs-fuse    defaults,allow_other,uid=1000     0    0
-```
-On machine need to be installed make environment:
-```sh
-sudo apt install git make build-essential libusb-1.0-0-dev libncurses5-dev
-```
-If needed to specify installation folders for toolchain please modify environment.sh script to specify this variable
-- TOOLCHAIN_INSTALL_DIR - path for installation dir for toolchain ex.: $HOME/toolchain
-
-Then execute due each session:
-```sh
-source ./environment.sh
-```
-Or add to ~/.bashrc
-
-## Build toolchain
-
-Installing toolchain
-```sh
-make toolchain
-
-* T-HEAD_DebugServer will request specify installation dir: 'Set full installing path:'
-  Could be seted as $HOME/toolchain or RT-Thread-on-Allwinner-D1H/toolchain folder
-```
-Will be installed:
-- xpack-riscv-none-elf-gcc-14.2.0-2-linux-x64 (for compiling)
-- xfel                  (for flash MCU by USB)
-- T-HEAD_DebugServer    (for JTAG)
 
 ## Build SD card image
 
@@ -165,7 +167,6 @@ Restoring binary file build/app.bin into memory (0x40000000 to 0x40600000)
 ## TODO:
 - LCD mipi (take dsi driver from Linux or RTT)
 - USB not work from SD card image
--
 - Do as library and external main function
 - ehci/ohci auto switch
 - LCD output double buffered

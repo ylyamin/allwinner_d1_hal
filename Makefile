@@ -12,7 +12,7 @@ BUILD_DIR = build
 SRC_DIR = src
 
 SOC = d1h
-PLATFORM = sipeed
+PLATFORM = devterm
 SD_IMAGE = image/$(PLATFORM)_sd_image.img
 SD_MOUNT = /dev/sdb
 BOOTLOADER_NAME = boot0_sdcard_sun20iw1p1_d1h.bin
@@ -135,7 +135,7 @@ $(DEBUGGER_INSTALL_DIR)/blisp:
 debug-burn: $(DEBUGGER_INSTALL_DIR)/blisp
 	@echo DEBUGGER BURN
 	@echo "Press and hold the boot pin then plug the usb in the computer to go to the boot mode."
-	$(CMD_PREFIX)$(DEBUGGER_INSTALL_DIR)/blisp iot -c bl70x --reset -s $(DEBUGGER_INSTALL_DIR)/bl702_cklink_whole_img_v2.2.bin -l 0x0
+	$(CMD_PREFIX)sudo $(DEBUGGER_INSTALL_DIR)/blisp iot -c bl70x --reset -s $(DEBUGGER_INSTALL_DIR)/bl702_cklink_whole_img_v2.2.bin -l 0x0
 
 # Compile
 CROSS_COMPILE = $(XPACK_RISCV_NONE_ELF_GCC_BIN)

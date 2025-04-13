@@ -88,28 +88,7 @@ static void tcon_int_handler(void *arg)
 void tcon_lcd_init(timing_t timing)
 {
 	LOG_D("tcon: init");
-
-// Step 2 Clock configuration 
-/* 	uint32_t tcon_div = 6; /// 6 or 7 ?
-	tcon_find_clock(timing.pixclk * tcon_div); */
-
-	ccu_video0_pll_set(27, 2);
-	ccu_tcon_set_video0x4_div(1);
-	ccu_tcon_lcd_enable();
-
-	if (timing.lcd_type == DSI) 
-	{	
-		//ccu_dsi_enable(); //600Mhz
-	
-		CCU->DSI_CLK_REG = (1 << 24) | (4 << 0);
-		CCU->DSI_CLK_REG |= BV(31);
-		CCU->DSI_BGR_REG |= BV(16);
-		CCU->DSI_BGR_REG |= BV(0);
-	}
-
-
 	tcon_lcd_disable();
-
 
 // Step 1 Select HV interface type 
 
@@ -126,7 +105,13 @@ if (timing.lcd_type == DSI)
 	TCON_LCD0->LCD_CTL_REG &= ~BV(0);			// src = DE/color/grayscale/
 	TCON_LCD0->LCD_HV_IF_REG &= ~(0x0 << 28); 	// 24bit/1cycle parallel mode
 
+// Step 2 Clock configuration 
+/* 	uint32_t tcon_div = 6; /// 6 or 7 ?
+	tcon_find_clock(timing.pixclk * tcon_div); */
 
+ 	ccu_video0_pll_set(27, 2);
+	ccu_tcon_set_video0x4_div(1);
+	ccu_tcon_lcd_enable();
 
 	TCON_LCD0->LCD_CTL_REG |= (1 << 24);			// 8080 I/F - apply here
 
@@ -140,7 +125,15 @@ if (timing.lcd_type == DSI)
 	//LOG_D("tcon_lcd: tcon clk = %dHz pixclk = %dHz", ccu_tcon_get_clk() / tcon_div / 2, timing.pixclk);
 	LOG_D("tcon_lcd: tcon clk = %dHz pixclk = %dHz", ccu_tcon_get_clk(), timing.pixclk);
 
+if (timing.lcd_type == DSI) 
+{	
+	//ccu_dsi_enable(); //600Mhz
 
+	CCU->DSI_CLK_REG = (1 << 24) | (4 << 0);
+	CCU->DSI_CLK_REG |= BV(31);
+	CCU->DSI_BGR_REG |= BV(16);
+	CCU->DSI_BGR_REG |= BV(0);
+}
 // ?? init iface
 	uint32_t val = timing.vt - timing.lcd_h - 8;
 	if (val > 31) val = 31;
@@ -157,8 +150,8 @@ if (timing.lcd_type == DSI)
 
 //Step 4 Open IO output
 	// io polarity for h,v,de,clk
-	//TCON_LCD0->LCD_IO_TRI_REG = 0; // default is 0xffffff (very bad :-)
-	//TCON_LCD0->LCD_IO_POL_REG = 0; // 2/3phase offset ?! why ?
+	TCON_LCD0->LCD_IO_TRI_REG = 0; // default is 0xffffff (very bad :-)
+	TCON_LCD0->LCD_IO_POL_REG = 0; // 2/3phase offset ?! why ?
 
 //Step 5 LVDS digital logic configuration 
 //setup_lvds()
