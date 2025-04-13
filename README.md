@@ -48,7 +48,7 @@ Insert flashed SD card to device OR flash by XFEL and power on, should see at th
 
 Tested on Ubuntu 22.04.3 64x.
 In my case I was use Windows 10 64x as a host with and Ubuntu virtual machine as a guest for compilation.
-Repo was downloaded to a shared folder in Windows mounted in Ubuntu:
+Repo was downloaded to a shared folder in Windows and then mounted in Ubuntu:
 ```sh
 sudo apt install open-vm-tools
 sudo mkdir /mnt/hgfs/
@@ -78,7 +78,7 @@ Installing toolchain
 make toolchain
 
 * T-HEAD_DebugServer will request specify installation dir: 'Set full installing path:'
-  Could be seted as $HOME/toolchain or RT-Thread-on-Allwinner-D1H/toolchain folder
+  Could be seted as $HOME/toolchain or allwinner_d1_hal/toolchain folder
 ```
 Will be installed:
 - xpack-riscv-none-elf-gcc-14.2.0-2-linux-x64 (for compiling)
