@@ -8,7 +8,15 @@ SRC +=	$(SRC_DIR)/aw_lib/gr.c
 SRC +=	$(SRC_DIR)/aw_lib/irq.c	
 SRC +=	$(SRC_DIR)/aw_lib/led.c
 #SRC +=	$(SRC_DIR)/aw_lib/smhc.c
-SRC +=	$(SRC_DIR)/aw_lib/tcon_lcd.c
+
+ifeq ("$(PLATFORM)", "devterm")
+SRC +=	$(SRC_DIR)/aw_lib/tcon_lcd_dsi.c
+endif
+
+ifeq ("$(PLATFORM)", "sipeed")
+SRC +=	$(SRC_DIR)/aw_lib/tcon_lcd_rgb.c
+endif
+
 #SRC +=	$(SRC_DIR)/aw_lib/timer.c
 SRC +=	$(SRC_DIR)/aw_lib/twi.c
 SRC +=	$(SRC_DIR)/aw_lib/uart.c

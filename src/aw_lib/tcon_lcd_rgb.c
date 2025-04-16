@@ -14,7 +14,7 @@ void tcon_find_clock(uint32_t tgt_freq)
 	uint32_t osc = ccu_clk_hosc_get();
 	uint32_t best_n = 12;
 	uint32_t best_m = 1;
-//	uint32_t best_d = 6;
+	uint32_t best_d = 6;
 	uint32_t best_err = 0xffffffff;
 
 	LOG_D("tcon: looking up pll parameters for %dHz", tgt_freq);
@@ -23,15 +23,14 @@ void tcon_find_clock(uint32_t tgt_freq)
 
 	for (uint32_t n = 12; n < 100; n ++) {
 		for (uint32_t m = 1; m < 3; m++) {
-			/*for (uint32_t d = 6; d < 128; d ++) */{
-				uint32_t freq = osc * n / m;
-				//uint32_t freq = osc * n / m / d;
+			for (uint32_t d = 6; d < 128; d ++) {
+				uint32_t freq = osc * n / m / d;
 				
 				uint32_t err = ABS(freq - tgt_freq);
 				if (err < best_err) {
 					best_n = n;
 					best_m = m;
-					//best_d = d;
+					best_d = d;
 					best_err = err;
 
 					if (err == 0) {
@@ -47,6 +46,7 @@ end:
 	ccu_video0_pll_set(best_n, best_m);
 	ccu_tcon_set_video0x4_div(1);
 	ccu_tcon_lcd_enable();
+	TCON_LCD0->LCD_DCLK_REG = best_d*2;
 }
 
 void tcon_dither(void)
@@ -97,43 +97,16 @@ if (timing.lcd_type == RGB)
 	TCON_LCD0->LCD_CTL_REG &= ~(0 << 24);			// HV(Sync+DE); 
 }
 
-if (timing.lcd_type == DSI)
-{
-	//TCON_LCD0->LCD_CTL_REG |= (1 << 24);			// 8080 I/F - not appled here by some reason
-}
 
 	TCON_LCD0->LCD_CTL_REG &= ~BV(0);			// src = DE/color/grayscale/
 	TCON_LCD0->LCD_HV_IF_REG &= ~(0x0 << 28); 	// 24bit/1cycle parallel mode
 
 // Step 2 Clock configuration 
-/* 	uint32_t tcon_div = 6; /// 6 or 7 ?
-	tcon_find_clock(timing.pixclk * tcon_div); */
+	tcon_find_clock(timing.pixclk); 
 
- 	ccu_video0_pll_set(27, 2);
-	ccu_tcon_set_video0x4_div(1);
-	ccu_tcon_lcd_enable();
-
-	TCON_LCD0->LCD_CTL_REG |= (1 << 24);			// 8080 I/F - apply here
-
-
-	//TCON_LCD0->LCD_DCLK_REG = tcon_div * 2;// !!!!!!
-	TCON_LCD0->LCD_DCLK_REG = 4;
-	TCON_LCD0->LCD_DCLK_REG |= (0x0f << 28);
-	delay_us(20);
-
-	// TODO: where does this 2 come from ?
-	//LOG_D("tcon_lcd: tcon clk = %dHz pixclk = %dHz", ccu_tcon_get_clk() / tcon_div / 2, timing.pixclk);
 	LOG_D("tcon_lcd: tcon clk = %dHz pixclk = %dHz", ccu_tcon_get_clk(), timing.pixclk);
 
-if (timing.lcd_type == DSI) 
-{	
-	//ccu_dsi_enable(); //600Mhz
 
-	CCU->DSI_CLK_REG = (1 << 24) | (4 << 0);
-	CCU->DSI_CLK_REG |= BV(31);
-	CCU->DSI_BGR_REG |= BV(16);
-	CCU->DSI_BGR_REG |= BV(0);
-}
 // ?? init iface
 	uint32_t val = timing.vt - timing.lcd_h - 8;
 	if (val > 31) val = 31;
@@ -151,42 +124,8 @@ if (timing.lcd_type == DSI)
 //Step 4 Open IO output
 	// io polarity for h,v,de,clk
 	TCON_LCD0->LCD_IO_TRI_REG = 0; // default is 0xffffff (very bad :-)
-	TCON_LCD0->LCD_IO_POL_REG = 0; // 2/3phase offset ?! why ?
+	TCON_LCD0->LCD_IO_POL_REG = 2 < 28; // 2/3phase offset ?! why ?
 
-//Step 5 LVDS digital logic configuration 
-//setup_lvds()
-
-if (timing.lcd_type == DSI) 
-{	
-
-//Step 6 LVDS controller configuration
-// TCON  LCD0  PHY0 is controlled by COMBO_PHY_REG  (reg0x1110,  reg0x1114)
-//enable_lvds();
-
-/*  	DSI0_PHY->combo_phy_reg1 = 0x43;
-	DSI0_PHY->combo_phy_reg0 = 0x1;
-	delay_ms(1);
-	DSI0_PHY->combo_phy_reg0 = 0x5;
-	delay_ms(1);
-	DSI0_PHY->combo_phy_reg0 = 0x7;
-	delay_ms(1);
-	DSI0_PHY->combo_phy_reg0 = 0xf;
-	DSI0_PHY->dphy_ana4 = 0x84000000;
-	DSI0_PHY->dphy_ana3 = 0x01040000;
-	DSI0_PHY->dphy_ana2 &= (0 << 1);
-	DSI0_PHY->dphy_ana1 = 0; */
-
-
- 	DSI0_PHY->combo_phy_reg1 = 0x00000000;
-	DSI0_PHY->combo_phy_reg0 = 0x0000000b;
-	DSI0_PHY->dphy_ana4 = 0x844635ee;
-	DSI0_PHY->dphy_ana3 = 0xff040000;
-	DSI0_PHY->dphy_ana2 = 0x0f000012;
-	DSI0_PHY->dphy_ana1 = 0x80000000;
- 
-
-// TCON  LCD0  PHY1 is controlled by LCD_LVDS0_ANA_REG (reg0x220)
-}
 //Step 5-7 Set and open interrupt function
 	//TCON_LCD0->LCD_GINT0_REG = BV(29); //V interrupt
 	//TCON_LCD0->LCD_GINT1_REG = line << 16; // Line interrupt 
@@ -201,12 +140,14 @@ if (timing.lcd_type == DSI)
 void tcon_lcd_enable(void)
 {
 //Step 6-8 Open module enable
+	TCON_LCD0->LCD_DCLK_REG |= (0x0f << 28);
 	TCON_LCD0->LCD_CTL_REG |= BV(31);
 	TCON_LCD0->LCD_GCTL_REG |= BV(31);
 }
 
 void tcon_lcd_disable(void)
 {
+	TCON_LCD0->LCD_DCLK_REG &= ~(0xf << 28);
 	TCON_LCD0->LCD_CTL_REG = 0;
 	TCON_LCD0->LCD_GCTL_REG &= ~BV(31);
 }
