@@ -11,8 +11,9 @@ TARGET_NAME = allwinner_d1_hal
 BUILD_DIR = build
 SRC_DIR = src
 
+# PLATFORM devterm or sipeed
 SOC = d1h
-PLATFORM = sipeed
+PLATFORM = devterm
 SD_IMAGE = image/$(PLATFORM)_sd_image.img
 SD_MOUNT = /dev/sdb
 BOOTLOADER_NAME = boot0_sdcard_sun20iw1p1_d1h.bin

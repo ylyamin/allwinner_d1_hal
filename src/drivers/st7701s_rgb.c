@@ -68,7 +68,7 @@ LCD             RV_Dock_EXT_3517    GPIO Function
 
 timing_t timing = {
     .lcd_type = RGB,
-	.pixclk = 12000000,
+	.pixclk = 12000000,//12Mhz
 	.lcd_w = 480,
 	.lcd_h = 272,
 	.hbp = 60,

@@ -88,56 +88,44 @@ static void tcon_int_handler(void *arg)
 void tcon_lcd_init(timing_t timing)
 {
 	LOG_D("tcon: init");
+	tcon_lcd_disable();
+
+// Step 1 Select HV interface type 
+
+	TCON_LCD0->LCD_CTL_REG &= ~(0 << 24);			// Set the interface type of LCD controlle: 0 - HV(Sync+DE), 1 - 8080 I/F; 
+	TCON_LCD0->LCD_CTL_REG |= (1 << 24);
+
+	TCON_LCD0->LCD_CTL_REG &= ~BV(0);			// Source Select: 0 - DE, Color - 1
+	TCON_LCD0->LCD_CTL_REG |= BV(0);
+
+	TCON_LCD0->LCD_HV_IF_REG &= ~(0x0 << 28); 	// Set the HV mode of LCD controller: 0 = 24bit/1cycle parallel mode
 
 // Step 2 Clock configuration 
-/* 	uint32_t tcon_div = 6; /// 6 or 7 ?
-	tcon_find_clock(timing.pixclk * tcon_div); */
+//When using MIPI DSI as display interface, the data clk of TCON needs be started firstly
+
+#if 0
+ 	uint32_t tcon_div = 7; 
+	tcon_find_clock(timing.pixclk * tcon_div); 
+
+	TCON_LCD0->LCD_DCLK_REG = tcon_div;
+	TCON_LCD0->LCD_DCLK_REG |= (0x0f << 28); // 1111: dclk_en = 1; dclk1_en = 1; dclk2_en = 1; dclkm2_en = 1; 
+
+	ccu_dsi_enable(); //600Mhz
+#else
 
 	ccu_video0_pll_set(27, 2);
 	ccu_tcon_set_video0x4_div(1);
 	ccu_tcon_lcd_enable();
 
-	if (timing.lcd_type == DSI) 
-	{	
-		//ccu_dsi_enable(); //600Mhz
-	
-		CCU->DSI_CLK_REG = (1 << 24) | (4 << 0);
-		CCU->DSI_CLK_REG |= BV(31);
-		CCU->DSI_BGR_REG |= BV(16);
-		CCU->DSI_BGR_REG |= BV(0);
-	}
-
-
-	tcon_lcd_disable();
-
-
-// Step 1 Select HV interface type 
-
-if (timing.lcd_type == RGB) 
-{
-	TCON_LCD0->LCD_CTL_REG &= ~(0 << 24);			// HV(Sync+DE); 
-}
-
-if (timing.lcd_type == DSI)
-{
-	//TCON_LCD0->LCD_CTL_REG |= (1 << 24);			// 8080 I/F - not appled here by some reason
-}
-
-	TCON_LCD0->LCD_CTL_REG &= ~BV(0);			// src = DE/color/grayscale/
-	TCON_LCD0->LCD_HV_IF_REG &= ~(0x0 << 28); 	// 24bit/1cycle parallel mode
-
-
-
-	TCON_LCD0->LCD_CTL_REG |= (1 << 24);			// 8080 I/F - apply here
-
-
-	//TCON_LCD0->LCD_DCLK_REG = tcon_div * 2;// !!!!!!
 	TCON_LCD0->LCD_DCLK_REG = 4;
 	TCON_LCD0->LCD_DCLK_REG |= (0x0f << 28);
-	delay_us(20);
 
-	// TODO: where does this 2 come from ?
-	//LOG_D("tcon_lcd: tcon clk = %dHz pixclk = %dHz", ccu_tcon_get_clk() / tcon_div / 2, timing.pixclk);
+	CCU->DSI_CLK_REG = (1 << 24) | (4 << 0);
+	CCU->DSI_CLK_REG |= BV(31);
+	CCU->DSI_BGR_REG |= BV(16);
+	CCU->DSI_BGR_REG |= BV(0);
+
+#endif
 	LOG_D("tcon_lcd: tcon clk = %dHz pixclk = %dHz", ccu_tcon_get_clk(), timing.pixclk);
 
 
@@ -157,45 +145,63 @@ if (timing.lcd_type == DSI)
 
 //Step 4 Open IO output
 	// io polarity for h,v,de,clk
-	//TCON_LCD0->LCD_IO_TRI_REG = 0; // default is 0xffffff (very bad :-)
-	//TCON_LCD0->LCD_IO_POL_REG = 0; // 2/3phase offset ?! why ?
+	TCON_LCD0->LCD_IO_TRI_REG = 0; // all 0 default is 0xffffff (very bad :-)
+	TCON_LCD0->LCD_IO_POL_REG = 0; // 2/3phase offset ?! why ?
 
 //Step 5 LVDS digital logic configuration 
-//setup_lvds()
-
-if (timing.lcd_type == DSI) 
-{	
+//	setup_lvds();
+	TCON_LCD0->LCD_LVDS_IF_REG = BV(26) | BV(27) | BV(20); //LVDS_18BIT | LVDS_MODE_JEIDA | LVDS_CLK_SEL
+	TCON_LCD0->LCD_LVDS_IF_REG |= BV(31);  //Enable
+	TCON_LCD0->LVDS1_IF_REG = TCON_LCD0->LCD_LVDS_IF_REG; 
 
 //Step 6 LVDS controller configuration
-// TCON  LCD0  PHY0 is controlled by COMBO_PHY_REG  (reg0x1110,  reg0x1114)
-//enable_lvds();
+//TCON LCD0 PHY0 is controlled by COMBO_PHY_REG  (reg0x1110,  reg0x1114).  The  TCON  LCD0 
+//TCON LCD0 PHY1 is controlled by LCD_LVDS0_ANA_REG (reg0x220)
+//	enable_lvds();
 
-/*  	DSI0_PHY->combo_phy_reg1 = 0x43;
-	DSI0_PHY->combo_phy_reg0 = 0x1;
+	TCON_LCD0->LCD_LVDS_IF_REG |= BV(31); //Enable
+
+	DSI0_PHY->combo_phy_reg1 = 0x43; //reg0x1114
+	DSI0_PHY->combo_phy_reg0 = 0x1; //0x1110
 	delay_ms(1);
 	DSI0_PHY->combo_phy_reg0 = 0x5;
 	delay_ms(1);
 	DSI0_PHY->combo_phy_reg0 = 0x7;
 	delay_ms(1);
 	DSI0_PHY->combo_phy_reg0 = 0xf;
-	DSI0_PHY->dphy_ana4 = 0x84000000;
-	DSI0_PHY->dphy_ana3 = 0x01040000;
-	DSI0_PHY->dphy_ana2 &= (0 << 1);
-	DSI0_PHY->dphy_ana1 = 0; */
+
+	#define LVDS_ANA_C(x) (x << 13)
+	#define LVDS_ANA_V(x) (x << 22)
+	#define LVDS_ANA_PD(x) (x << 26)
+	#define LVDS_ANA_EN_LDO(x) (x << 1)
+	#define LVDS_ANA_EN_MB(x) ( x << 0)
+	#define LVDS_ANA_EN_DRVC(x) (x << 7)
+	#define LVDS_ANA_EN_DRVD(x) (x << 8)
+	#define LVDS_ANA_EN_24M(x) (x << 3)
+	#define LVDS_ANA_EN_LVDS(x) (x << 2)
+	
+	TCON_LCD0->LCD_LVDS_ANA_REG[0] = 
+		LVDS_ANA_C(2) |
+		LVDS_ANA_V(3) |
+		LVDS_ANA_PD(2);
+
+		delay_ms(1);
+
+	TCON_LCD0->LCD_LVDS_ANA_REG[0] |=
+		LVDS_ANA_EN_24M(1) |
+		LVDS_ANA_EN_LVDS(1) |
+		LVDS_ANA_EN_MB(1);
+
+		delay_ms(1);
+
+	TCON_LCD0->LCD_LVDS_ANA_REG[0] |=
+		LVDS_ANA_EN_DRVC(1) |
+		LVDS_ANA_EN_DRVD(0x07); // 18bit colors
 
 
- 	DSI0_PHY->combo_phy_reg1 = 0x00000000;
-	DSI0_PHY->combo_phy_reg0 = 0x0000000b;
-	DSI0_PHY->dphy_ana4 = 0x844635ee;
-	DSI0_PHY->dphy_ana3 = 0xff040000;
-	DSI0_PHY->dphy_ana2 = 0x0f000012;
-	DSI0_PHY->dphy_ana1 = 0x80000000;
- 
 
-// TCON  LCD0  PHY1 is controlled by LCD_LVDS0_ANA_REG (reg0x220)
-}
 //Step 5-7 Set and open interrupt function
-	//TCON_LCD0->LCD_GINT0_REG = BV(29); //V interrupt
+	TCON_LCD0->LCD_GINT0_REG = BV(31); //V interrupt
 	//TCON_LCD0->LCD_GINT1_REG = line << 16; // Line interrupt 
 
 	irq_assign(LCD_IRQn, (void *) tcon_int_handler);
@@ -210,6 +216,8 @@ void tcon_lcd_enable(void)
 //Step 6-8 Open module enable
 	TCON_LCD0->LCD_CTL_REG |= BV(31);
 	TCON_LCD0->LCD_GCTL_REG |= BV(31);
+	//TCON_LCD0->LCD_DCLK_REG |= (0x0f << 28); // 1111: dclk_en = 1; dclk1_en = 1; dclk2_en = 1; dclkm2_en = 1; 
+
 }
 
 void tcon_lcd_disable(void)

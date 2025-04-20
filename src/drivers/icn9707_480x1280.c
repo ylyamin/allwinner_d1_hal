@@ -6,9 +6,13 @@
 #include <tcon_lcd.h>
 #include <dsi.h>
 
+extern void dsi_init(void);
+extern ssize_t mipi_dsi_dcs_write(const uint8_t *data, size_t len);
+
+
 timing_t timing = {
 	.lcd_type = DSI,
-	.pixclk = 55000000, //907752
+	.pixclk = 55000000, //Mhz 907752
 	.lcd_w = 480,
 	.lcd_h = 1280,
 	.hbp = 150, //hsync back porch(pixel) + hsync plus width(pixel)
@@ -41,7 +45,7 @@ struct gpio_t lcd_gpio[] = {
 		.mode = GPIO_MODE_FNC4,
 		.pupd = GPIO_PUPD_OFF,
 		.drv =  GPIO_DRV_3, 
-		.state = GPIO_SET,
+		.state = GPIO_SET,//RESET ?
 	},
 };
 
@@ -143,9 +147,10 @@ void LCD_panel_init(void)
         } else if (lcd_init_setting[i].cmd == REGFLAG_DELAY) {
             delay_ms(lcd_init_setting[i].count);
         } else {
-            //!dsi_dcs_wr(sel, (uint8_t)lcd_init_setting[i].cmd, lcd_init_setting[i].para_list, lcd_init_setting[i].count);
+			mipi_dsi_dcs_write(sel, (uint8_t)lcd_init_setting[i].cmd, lcd_init_setting[i].para_list, lcd_init_setting[i].count);
+            //dsi_dcs_wr(sel, (uint8_t)lcd_init_setting[i].cmd, lcd_init_setting[i].para_list, lcd_init_setting[i].count);
         }
-    } */
+    }   */
 
     //!sunxi_lcd_dsi_clk_enable(sel);
 	/* T6 */

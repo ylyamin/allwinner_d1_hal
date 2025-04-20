@@ -45,8 +45,9 @@ end:
 	LOG_D("tcon: best: n=%d m=%d err=%d", best_n, best_m, best_err);
 	ccu_video0_pll_set(best_n, best_m);
 	ccu_tcon_set_video0x4_div(1);
-	ccu_tcon_lcd_enable();
-	TCON_LCD0->LCD_DCLK_REG = best_d*2;
+	ccu_tcon_lcd_enable(); 
+	TCON_LCD0->LCD_DCLK_REG = best_d*2; //dclk div. if LVDS div = 7
+	// When using MIPI DSI as display interface, the data clk of TCON needs be started firstly.
 }
 
 void tcon_dither(void)
@@ -71,19 +72,27 @@ static void tcon_int_handler(void *arg)
 
 	uint32_t gint0 = TCON_LCD0->LCD_GINT0_REG;
 
-	if (gint0 & BV(15)) {
+	if (gint0 & BV(15)) { //LCD_VB_INT_FLAG
 		TCON_LCD0->LCD_GINT0_REG = BV(15);
 
 		de_int_vblank();
 	}
 
-	if (gint0 & BV(13)) {
+	if (gint0 & BV(13)) { //LCD_LINE_INT_FLAG
 		TCON_LCD0->LCD_GINT0_REG = BV(13);
 
-		//de_int_vblank();
+		de_int_vblank();
 
 	}
 }
+
+void tcon_lcd_disable(void)
+{
+	TCON_LCD0->LCD_DCLK_REG &= ~(0xf << 28); 
+	TCON_LCD0->LCD_CTL_REG = 0;
+	TCON_LCD0->LCD_GCTL_REG &= ~BV(31);
+}
+
 
 void tcon_lcd_init(timing_t timing)
 {
@@ -94,15 +103,14 @@ void tcon_lcd_init(timing_t timing)
 
 if (timing.lcd_type == RGB) 
 {
-	TCON_LCD0->LCD_CTL_REG &= ~(0 << 24);			// HV(Sync+DE); 
+	TCON_LCD0->LCD_CTL_REG &= ~(0 << 24);		// Set the interface type of LCD controlle: 0 - HV(Sync+DE), 1 - 8080 I/F; 
 }
 
-
-	TCON_LCD0->LCD_CTL_REG &= ~BV(0);			// src = DE/color/grayscale/
-	TCON_LCD0->LCD_HV_IF_REG &= ~(0x0 << 28); 	// 24bit/1cycle parallel mode
+	TCON_LCD0->LCD_CTL_REG &= ~BV(0);			// Source Select: 0 - DE, Color - 1
+	TCON_LCD0->LCD_HV_IF_REG &= ~(0xf << 28); 	// Set the HV mode of LCD controller: 0 = 24bit/1cycle parallel mode
 
 // Step 2 Clock configuration 
-	tcon_find_clock(timing.pixclk); 
+	tcon_find_clock(timing.pixclk); //displayed pixel clock (pixel_CLK) is required to be consistent with the DCLK
 
 	LOG_D("tcon_lcd: tcon clk = %dHz pixclk = %dHz", ccu_tcon_get_clk(), timing.pixclk);
 
@@ -124,11 +132,14 @@ if (timing.lcd_type == RGB)
 //Step 4 Open IO output
 	// io polarity for h,v,de,clk
 	TCON_LCD0->LCD_IO_TRI_REG = 0; // default is 0xffffff (very bad :-)
-	TCON_LCD0->LCD_IO_POL_REG = 2 < 28; // 2/3phase offset ?! why ?
+	TCON_LCD0->LCD_IO_POL_REG = 2 < 28; // 2/3phase offset, why ? Phase offset of clock: 0 - DCLK0 (normal phase offset), 1 - CLK1 (1/3 phase offset), 2 - DCLK2 (2/3 phase offset)
+
+	// LVDS digital logic configuration
+
 
 //Step 5-7 Set and open interrupt function
-	//TCON_LCD0->LCD_GINT0_REG = BV(29); //V interrupt
-	//TCON_LCD0->LCD_GINT1_REG = line << 16; // Line interrupt 
+	TCON_LCD0->LCD_GINT0_REG = BV(31); // 31 - Enable the Vb interrupt, 29 - Enable the line interrupt. (V interrupt)
+	//TCON_LCD0->LCD_GINT1_REG = line << 16; // Line number 
 
 	irq_assign(LCD_IRQn, (void *) tcon_int_handler);
 	irq_enable(LCD_IRQn);
@@ -140,18 +151,10 @@ if (timing.lcd_type == RGB)
 void tcon_lcd_enable(void)
 {
 //Step 6-8 Open module enable
-	TCON_LCD0->LCD_DCLK_REG |= (0x0f << 28);
-	TCON_LCD0->LCD_CTL_REG |= BV(31);
-	TCON_LCD0->LCD_GCTL_REG |= BV(31);
+	TCON_LCD0->LCD_DCLK_REG |= (0x0f << 28); // 1111: dclk_en = 1; dclk1_en = 1; dclk2_en = 1; dclkm2_en = 1; 
+	TCON_LCD0->LCD_CTL_REG |= BV(31); // LCD enable
+	TCON_LCD0->LCD_GCTL_REG |= BV(31); // LCD enable
 }
-
-void tcon_lcd_disable(void)
-{
-	TCON_LCD0->LCD_DCLK_REG &= ~(0xf << 28);
-	TCON_LCD0->LCD_CTL_REG = 0;
-	TCON_LCD0->LCD_GCTL_REG &= ~BV(31);
-}
-
 
 void tcon_dump_regs(void)
 {

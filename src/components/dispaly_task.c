@@ -50,15 +50,18 @@ void display_task_init(void)
 	gr_draw_line(&fb1,w,h, 0, 0, w-1, h-1, 0xff00ff00);
 	gr_draw_line(&fb1,w,h, w-1, 0, 0, h-1, 0xffff0000);
 
+	//1
 	LCD_gpio_init();
-
+	LCD_bl_open();
+	
+	//2
 	tcon_lcd_init(timing);
 	tcon_lcd_enable();
-	
-	//tcon_dump_regs();
 
-	LCD_bl_open();
+	//3
 	LCD_panel_init();
+	
+	tcon_dump_regs();
 
 	de_init();
 	de_layer_set(&fb1, &fb2);

@@ -11,6 +11,7 @@ SRC +=	$(SRC_DIR)/aw_lib/led.c
 
 ifeq ("$(PLATFORM)", "devterm")
 SRC +=	$(SRC_DIR)/aw_lib/tcon_lcd_dsi.c
+SRC +=	$(SRC_DIR)/aw_lib/dsi.c
 endif
 
 ifeq ("$(PLATFORM)", "sipeed")
@@ -21,6 +22,6 @@ endif
 SRC +=	$(SRC_DIR)/aw_lib/twi.c
 SRC +=	$(SRC_DIR)/aw_lib/uart.c
 SRC +=	$(SRC_DIR)/aw_lib/usb.c
-SRC +=	$(SRC_DIR)/aw_lib/dsi.c
+
 
 INC +=	$(SRC_DIR)/aw_lib
