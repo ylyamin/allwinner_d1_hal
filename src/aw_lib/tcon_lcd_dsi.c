@@ -93,10 +93,10 @@ void tcon_lcd_init(timing_t timing)
 // Step 1 Select HV interface type 
 
 	TCON_LCD0->LCD_CTL_REG &= ~(0 << 24);			// Set the interface type of LCD controlle: 0 - HV(Sync+DE), 1 - 8080 I/F; 
-	TCON_LCD0->LCD_CTL_REG |= (1 << 24);
+	//TCON_LCD0->LCD_CTL_REG |= (1 << 24);
 
 	TCON_LCD0->LCD_CTL_REG &= ~BV(0);			// Source Select: 0 - DE, Color - 1
-	TCON_LCD0->LCD_CTL_REG |= BV(0);
+	//TCON_LCD0->LCD_CTL_REG |= BV(0);
 
 	TCON_LCD0->LCD_HV_IF_REG &= ~(0x0 << 28); 	// Set the HV mode of LCD controller: 0 = 24bit/1cycle parallel mode
 
@@ -117,10 +117,10 @@ void tcon_lcd_init(timing_t timing)
 	ccu_tcon_set_video0x4_div(1);
 	ccu_tcon_lcd_enable();
 
-	TCON_LCD0->LCD_DCLK_REG = 4;
+	TCON_LCD0->LCD_DCLK_REG = 4; // (324Mz / 4) = 81Mz 
 	TCON_LCD0->LCD_DCLK_REG |= (0x0f << 28);
 
-	CCU->DSI_CLK_REG = (1 << 24) | (4 << 0);
+	CCU->DSI_CLK_REG = (1 << 24) | (4 << 0); //120Mz 
 	CCU->DSI_CLK_REG |= BV(31);
 	CCU->DSI_BGR_REG |= BV(16);
 	CCU->DSI_BGR_REG |= BV(0);
@@ -201,7 +201,7 @@ void tcon_lcd_init(timing_t timing)
 
 
 //Step 5-7 Set and open interrupt function
-	TCON_LCD0->LCD_GINT0_REG = BV(31); //V interrupt
+	//TCON_LCD0->LCD_GINT0_REG = BV(31); //V interrupt
 	//TCON_LCD0->LCD_GINT1_REG = line << 16; // Line interrupt 
 
 	irq_assign(LCD_IRQn, (void *) tcon_int_handler);

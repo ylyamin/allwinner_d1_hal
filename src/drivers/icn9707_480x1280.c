@@ -45,7 +45,7 @@ struct gpio_t lcd_gpio[] = {
 		.mode = GPIO_MODE_FNC4,
 		.pupd = GPIO_PUPD_OFF,
 		.drv =  GPIO_DRV_3, 
-		.state = GPIO_SET,//RESET ?
+		.state = GPIO_RESET,//GPIO_SET ?
 	},
 };
 

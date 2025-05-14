@@ -56,12 +56,14 @@ void display_task_init(void)
 	
 	//2
 	tcon_lcd_init(timing);
-	tcon_lcd_enable();
 
 	//3
 	LCD_panel_init();
 	
-	tcon_dump_regs();
+	tcon_lcd_enable();
+
+
+	//tcon_dump_regs();
 
 	de_init();
 	de_layer_set(&fb1, &fb2);
