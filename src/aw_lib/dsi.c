@@ -147,7 +147,7 @@ static inline uint32_t readl(const volatile void *addr)
 #define PANEL_VSYNC_END		(1280 + 16 + 10)
 #define PANEL_VTOTAL		(1280 + 16 + 10 + 2)
 //#define PANEL_CLOCK		(PANEL_HTOTAL * PANEL_VTOTAL * 60 / 1000)
-#define PANEL_CLOCK			(55000)
+#define PANEL_CLOCK			54465 //(55000)
 #define PANEL_LANES			4
 #define PANEL_DSI_BPP		24
 #define PANEL_BURST			0
@@ -1243,21 +1243,11 @@ void dsi_init(void)
 	LOG_D("};\n");
 #endif
 
-	dphy_enable();
+	//dphy_enable();
 
-
-#if DUMP_DSI_INIT
-	LOG_D("\nstruct reg_inst dsi_panel_init_seq[] = {\n");
-#endif
 	panel_init();
 
-#if DUMP_DSI_INIT
-	LOG_D("};\n");
-#endif
-
-        sun6i_dsi_start(DSI_START_HSC);
-
-        delay_us(1000);
-
-        sun6i_dsi_start(DSI_START_HSD);
+	sun6i_dsi_start(DSI_START_HSC);
+	delay_us(1000);
+	sun6i_dsi_start(DSI_START_HSD); 
 }

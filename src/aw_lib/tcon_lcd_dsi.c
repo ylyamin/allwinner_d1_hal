@@ -90,16 +90,6 @@ void tcon_lcd_init(timing_t timing)
 	LOG_D("tcon: init");
 	tcon_lcd_disable();
 
-// Step 1 Select HV interface type 
-
-	TCON_LCD0->LCD_CTL_REG &= ~(0 << 24);			// Set the interface type of LCD controlle: 0 - HV(Sync+DE), 1 - 8080 I/F; 
-	//TCON_LCD0->LCD_CTL_REG |= (1 << 24);
-
-	TCON_LCD0->LCD_CTL_REG &= ~BV(0);			// Source Select: 0 - DE, Color - 1
-	//TCON_LCD0->LCD_CTL_REG |= BV(0);
-
-	TCON_LCD0->LCD_HV_IF_REG &= ~(0x0 << 28); 	// Set the HV mode of LCD controller: 0 = 24bit/1cycle parallel mode
-
 // Step 2 Clock configuration 
 //When using MIPI DSI as display interface, the data clk of TCON needs be started firstly
 
@@ -113,12 +103,17 @@ void tcon_lcd_init(timing_t timing)
 	ccu_dsi_enable(); //600Mhz
 #else
 
+	//int clock = 54465 * 1000 * 24 / (4 * 4); //81697500
+
 	ccu_video0_pll_set(27, 2);
 	ccu_tcon_set_video0x4_div(1);
 	ccu_tcon_lcd_enable();
 
 	TCON_LCD0->LCD_DCLK_REG = 4; // (324Mz / 4) = 81Mz 
-	TCON_LCD0->LCD_DCLK_REG |= (0x0f << 28);
+	//TCON_LCD0->LCD_DCLK_REG |= (0x0f << 28);
+
+	CCU->DPSS_TOP_BGR_REG |= (1 << 16);	// DPSS_TOP_RST De-assert reset
+	CCU->DPSS_TOP_BGR_REG |= (1 << 0);	// DPSS_TOP_GATING Open the clock gate
 
 	CCU->DSI_CLK_REG = (1 << 24) | (4 << 0); //120Mz 
 	CCU->DSI_CLK_REG |= BV(31);
@@ -128,80 +123,81 @@ void tcon_lcd_init(timing_t timing)
 #endif
 	LOG_D("tcon_lcd: tcon clk = %dHz pixclk = %dHz", ccu_tcon_get_clk(), timing.pixclk);
 
+//DPHY
+
+	DSI_DPHY->COMBO_PHY_REG1 = 0x43;
+	DSI_DPHY->COMBO_PHY_REG0 = 0x1;
+	delay_us(5);
+	DSI_DPHY->COMBO_PHY_REG0 = 0x5;
+	delay_us(5);
+	DSI_DPHY->COMBO_PHY_REG0 = 0x7;
+	delay_us(5);
+	DSI_DPHY->COMBO_PHY_REG0 = 0xf;
+	delay_us(5);
+
+	DSI_DPHY->DPHY_ANA4 = 0x84000000;
+	DSI_DPHY->DPHY_ANA3 = 0x01040000;
+	DSI_DPHY->DPHY_ANA2 = DSI_DPHY->DPHY_ANA2 & (0 << 1);
+	DSI_DPHY->DPHY_ANA1 = 0x0;
+
+// Step 1 Select HV interface type 
+	//TCON_LCD0->LCD_CTL_REG &= ~(0 << 24);			// Set the interface type of LCD controlle: 0 - HV(Sync+DE), 1 - 8080 I/F; 
+	TCON_LCD0->LCD_CTL_REG |= (1 << 24);
+	TCON_LCD0->LCD_CTL_REG &= ~BV(0);			// Source Select: 0 - DE, Color - 1
+	//TCON_LCD0->LCD_CTL_REG |= BV(0);
+	//TCON_LCD0->LCD_HV_IF_REG &= ~(0x0 << 28); 	// Set the HV mode of LCD controller: 0 = 24bit/1cycle parallel mode
+    *(uint32_t *)( 0x05461000 + 0x0f8) = (1 << 3);
+	TCON_LCD0->LCD_CPU_IF_REG = (1 << 28) | (1 << 16) | (1 << 2) | (1 << 0);
 
 // ?? init iface
-	uint32_t val = timing.vt - timing.lcd_h - 8;
+/* 	uint32_t val = timing.vt - timing.lcd_h - 8;
 	if (val > 31) val = 31;
 	if (val < 10) val = 10;
-	TCON_LCD0->LCD_CTL_REG |= ((val & 0x1f) << 4);
+	TCON_LCD0->LCD_CTL_REG |= ((val & 0x1f) << 4); */
 
 //Step 3 Set sequence parameters 
+	int bpp			= 24;
+	int clock		= 54465;
+	int hdisplay	= 480;
+	int hsync_start	= 480 + 64;
+	int hsync_end	= 480 + 64 + 40;
+	int htotal		= 480 + 64 + 40 + 110;
+	int vdisplay	= 1280;
+	int vsync_start	= 1280 + 16;
+	int vsync_end	= 1280 + 16 + 10;
+	int vtotal		= 1280 + 16 + 10 + 2;
 
-	// init timing
+	int block_space = htotal * bpp / (4 * 4);
+	block_space -= hdisplay + 40;
+
+	TCON_LCD0->LCD_CPU_TRIx_REG[0] = ((block_space  - 1) << 16) | (hdisplay - 1);
+	TCON_LCD0->LCD_CPU_TRIx_REG[1] = (vdisplay  - 1);
+
+	int start_delay = (vtotal - vdisplay - 10 - 1);
+	start_delay = start_delay * htotal * 149;
+	start_delay = start_delay / (clock / 1000) / 8;
+	TCON_LCD0->LCD_CPU_TRIx_REG[2] = (10) | (start_delay << 16);
+
+
+	TCON_LCD0->LCD_SAFE_PERIOD_REG = (3000 << 16) | (3);
+
+	// init timing 
 	TCON_LCD0->LCD_BASIC0_REG = ((timing.lcd_w  - 1) << 16) | (timing.lcd_h - 1);
- 	TCON_LCD0->LCD_BASIC1_REG = ((timing.ht - 1) << 16) | (timing.hbp - 1);
+ 	
+	/*
+	TCON_LCD0->LCD_BASIC1_REG = ((timing.ht - 1) << 16) | (timing.hbp - 1);
 	TCON_LCD0->LCD_BASIC2_REG = ((timing.vt * 2) << 16) | (timing.vbp - 1);
 	TCON_LCD0->LCD_BASIC3_REG = ((timing.hspw)   << 16) | (timing.vspw); 
+ 	*/
+
 
 //Step 4 Open IO output
 	// io polarity for h,v,de,clk
-	TCON_LCD0->LCD_IO_TRI_REG = 0; // all 0 default is 0xffffff (very bad :-)
-	TCON_LCD0->LCD_IO_POL_REG = 0; // 2/3phase offset ?! why ?
-
-//Step 5 LVDS digital logic configuration 
-//	setup_lvds();
-	TCON_LCD0->LCD_LVDS_IF_REG = BV(26) | BV(27) | BV(20); //LVDS_18BIT | LVDS_MODE_JEIDA | LVDS_CLK_SEL
-	TCON_LCD0->LCD_LVDS_IF_REG |= BV(31);  //Enable
-	TCON_LCD0->LVDS1_IF_REG = TCON_LCD0->LCD_LVDS_IF_REG; 
-
-//Step 6 LVDS controller configuration
-//TCON LCD0 PHY0 is controlled by COMBO_PHY_REG  (reg0x1110,  reg0x1114).  The  TCON  LCD0 
-//TCON LCD0 PHY1 is controlled by LCD_LVDS0_ANA_REG (reg0x220)
-//	enable_lvds();
-
-	TCON_LCD0->LCD_LVDS_IF_REG |= BV(31); //Enable
-
-	DSI0_PHY->combo_phy_reg1 = 0x43; //reg0x1114
-	DSI0_PHY->combo_phy_reg0 = 0x1; //0x1110
-	delay_ms(1);
-	DSI0_PHY->combo_phy_reg0 = 0x5;
-	delay_ms(1);
-	DSI0_PHY->combo_phy_reg0 = 0x7;
-	delay_ms(1);
-	DSI0_PHY->combo_phy_reg0 = 0xf;
-
-	#define LVDS_ANA_C(x) (x << 13)
-	#define LVDS_ANA_V(x) (x << 22)
-	#define LVDS_ANA_PD(x) (x << 26)
-	#define LVDS_ANA_EN_LDO(x) (x << 1)
-	#define LVDS_ANA_EN_MB(x) ( x << 0)
-	#define LVDS_ANA_EN_DRVC(x) (x << 7)
-	#define LVDS_ANA_EN_DRVD(x) (x << 8)
-	#define LVDS_ANA_EN_24M(x) (x << 3)
-	#define LVDS_ANA_EN_LVDS(x) (x << 2)
-	
-	TCON_LCD0->LCD_LVDS_ANA_REG[0] = 
-		LVDS_ANA_C(2) |
-		LVDS_ANA_V(3) |
-		LVDS_ANA_PD(2);
-
-		delay_ms(1);
-
-	TCON_LCD0->LCD_LVDS_ANA_REG[0] |=
-		LVDS_ANA_EN_24M(1) |
-		LVDS_ANA_EN_LVDS(1) |
-		LVDS_ANA_EN_MB(1);
-
-		delay_ms(1);
-
-	TCON_LCD0->LCD_LVDS_ANA_REG[0] |=
-		LVDS_ANA_EN_DRVC(1) |
-		LVDS_ANA_EN_DRVD(0x07); // 18bit colors
-
-
+	TCON_LCD0->LCD_IO_TRI_REG = 0xe0000000; // all 0 default is 0xffffff (very bad :-)
+	//TCON_LCD0->LCD_IO_POL_REG = 0; // 2/3phase offset ?! why ?
 
 //Step 5-7 Set and open interrupt function
-	//TCON_LCD0->LCD_GINT0_REG = BV(31); //V interrupt
+	TCON_LCD0->LCD_GINT0_REG = BV(31) | BV(27); //V interrupt
 	//TCON_LCD0->LCD_GINT1_REG = line << 16; // Line interrupt 
 
 	irq_assign(LCD_IRQn, (void *) tcon_int_handler);
@@ -216,8 +212,7 @@ void tcon_lcd_enable(void)
 //Step 6-8 Open module enable
 	TCON_LCD0->LCD_CTL_REG |= BV(31);
 	TCON_LCD0->LCD_GCTL_REG |= BV(31);
-	//TCON_LCD0->LCD_DCLK_REG |= (0x0f << 28); // 1111: dclk_en = 1; dclk1_en = 1; dclk2_en = 1; dclkm2_en = 1; 
-
+	TCON_LCD0->LCD_DCLK_REG |= (0x0f << 28); // 1111: dclk_en = 1; dclk1_en = 1; dclk2_en = 1; dclkm2_en = 1; 
 }
 
 void tcon_lcd_disable(void)

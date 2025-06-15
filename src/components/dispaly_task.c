@@ -5,6 +5,7 @@
 #include <de.h>
 #include <tcon_lcd.h>
 #include <ccu.h>
+#include <dsi.h>
 
 extern timing_t LCD_get_param(void);
 extern void LCD_gpio_init(void);
@@ -61,9 +62,6 @@ void display_task_init(void)
 	LCD_panel_init();
 	
 	tcon_lcd_enable();
-
-
-	//tcon_dump_regs();
 
 	de_init();
 	de_layer_set(&fb1, &fb2);

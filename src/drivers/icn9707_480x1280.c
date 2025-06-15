@@ -154,6 +154,6 @@ void LCD_panel_init(void)
 
     //!sunxi_lcd_dsi_clk_enable(sel);
 	/* T6 */
-	delay_ms(120);
+	//delay_ms(120);
     LOG_D("<0>raoyiming +++ LCD_panel_init finish\n");
 }
