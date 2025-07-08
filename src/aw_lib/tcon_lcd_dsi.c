@@ -67,7 +67,7 @@ void tcon_dither(void)
 static void tcon_int_handler(void *arg)
 {
 	(void)arg;
-	LOG_D("tcon int handler");
+	//LOG_D("tcon int handler");
 
 	uint32_t gint0 = TCON_LCD0->LCD_GINT0_REG;
 
@@ -80,7 +80,7 @@ static void tcon_int_handler(void *arg)
 	if (gint0 & BV(13)) {
 		TCON_LCD0->LCD_GINT0_REG = BV(13);
 
-		//de_int_vblank();
+		de_int_vblank();
 
 	}
 }
@@ -96,26 +96,24 @@ void tcon_lcd_init(timing_t timing)
 #if 0
  	uint32_t tcon_div = 7; 
 	tcon_find_clock(timing.pixclk * tcon_div); 
-
 	TCON_LCD0->LCD_DCLK_REG = tcon_div;
 	TCON_LCD0->LCD_DCLK_REG |= (0x0f << 28); // 1111: dclk_en = 1; dclk1_en = 1; dclk2_en = 1; dclkm2_en = 1; 
-
 	ccu_dsi_enable(); //600Mhz
 #else
 
 	//int clock = 54465 * 1000 * 24 / (4 * 4); //81697500
 
-	ccu_video0_pll_set(27, 2);
+	ccu_video0_pll_set(27, 1);
 	ccu_tcon_set_video0x4_div(1);
 	ccu_tcon_lcd_enable();
 
-	TCON_LCD0->LCD_DCLK_REG = 4; // (324Mz / 4) = 81Mz 
-	//TCON_LCD0->LCD_DCLK_REG |= (0x0f << 28);
+	TCON_LCD0->LCD_DCLK_REG = 4; // (324Mz / 4) = 81Mz  //0x044
+	TCON_LCD0->LCD_DCLK_REG |= (0x0f << 28);
 
 	CCU->DPSS_TOP_BGR_REG |= (1 << 16);	// DPSS_TOP_RST De-assert reset
 	CCU->DPSS_TOP_BGR_REG |= (1 << 0);	// DPSS_TOP_GATING Open the clock gate
 
-	CCU->DSI_CLK_REG = (1 << 24) | (4 << 0); //120Mz 
+	CCU->DSI_CLK_REG = (1 << 24) | (4 << 0); //120Mz 	//0xB24
 	CCU->DSI_CLK_REG |= BV(31);
 	CCU->DSI_BGR_REG |= BV(16);
 	CCU->DSI_BGR_REG |= BV(0);
@@ -125,7 +123,7 @@ void tcon_lcd_init(timing_t timing)
 
 //DPHY
 
-	DSI_DPHY->COMBO_PHY_REG1 = 0x43;
+/*  	DSI_DPHY->COMBO_PHY_REG1 = 0x43;
 	DSI_DPHY->COMBO_PHY_REG0 = 0x1;
 	delay_us(5);
 	DSI_DPHY->COMBO_PHY_REG0 = 0x5;
@@ -139,6 +137,36 @@ void tcon_lcd_init(timing_t timing)
 	DSI_DPHY->DPHY_ANA3 = 0x01040000;
 	DSI_DPHY->DPHY_ANA2 = DSI_DPHY->DPHY_ANA2 & (0 << 1);
 	DSI_DPHY->DPHY_ANA1 = 0x0;
+
+
+	#define LVDS_ANA_C(x) (x << 13)
+	#define LVDS_ANA_V(x) (x << 22)
+	#define LVDS_ANA_PD(x) (x << 26)
+	#define LVDS_ANA_EN_LDO(x) (x << 1)
+	#define LVDS_ANA_EN_MB(x) ( x << 0)
+	#define LVDS_ANA_EN_DRVC(x) (x << 7)
+	#define LVDS_ANA_EN_DRVD(x) (x << 8)
+	#define LVDS_ANA_EN_24M(x) (x << 3)
+	#define LVDS_ANA_EN_LVDS(x) (x << 2)
+
+	TCON_LCD0->LVDS1_ANA_REG[0] = 
+		LVDS_ANA_C(2) |
+		LVDS_ANA_V(3) |
+		LVDS_ANA_PD(2);
+
+	delay_us(1);
+
+	TCON_LCD0->LVDS1_ANA_REG[0] |=
+		LVDS_ANA_EN_24M(1) |
+		LVDS_ANA_EN_LVDS(1) |
+		LVDS_ANA_EN_MB(1);
+
+	delay_us(1);
+
+	TCON_LCD0->LVDS1_ANA_REG[0] |=
+		LVDS_ANA_EN_DRVC(1) |
+		LVDS_ANA_EN_DRVD(0x07); // 18bit colors */
+
 
 // Step 1 Select HV interface type 
 	//TCON_LCD0->LCD_CTL_REG &= ~(0 << 24);			// Set the interface type of LCD controlle: 0 - HV(Sync+DE), 1 - 8080 I/F; 
@@ -224,8 +252,15 @@ void tcon_lcd_disable(void)
 
 void tcon_dump_regs(void)
 {
+small_printf("	SUN50I_DPHY_PLL_REG0		0x104 		%08x\n\r", *(uint32_t *)(0x05450000 + 0x1000 + 0x104)	);
+small_printf("	CCU->PLL_PERI_CTRL_REG      0x020       %08x\n\r",  *(uint32_t *)( 0x02001000 + 0x020)	);
+small_printf("	CCU->PLL_VIDEO0_CTRL_REG    0x040       %08x\n\r",  *(uint32_t *)( 0x02001000 + 0x040)	);
+small_printf("	TCON_LCD0->LCD_DCLK_REG     0x044		%08x\n\r",  *(uint32_t *)( 0x05461000 + 0x044)	);
+small_printf("	CCU->DSI_CLK_REG            0xB24		%08x\n\r",  *(uint32_t *)( 0x02001000 + 0xB24)	);
 
-small_printf("\n\rStep 1 Select HV interface type\n\n\r");
+
+
+/* small_printf("\n\rStep 1 Select HV interface type\n\n\r");
 
 small_printf("	TCON_LCD0->LCD_CTL_REG		0x040 	%08x\n\r", *(uint32_t *)( 0x05461000 + 0x040)	);
 small_printf("	TCON_LCD0->LCD_HV_IF_REG	0x058	%08x\n\r", *(uint32_t *)( 0x05461000 + 0x058)	);
@@ -276,6 +311,6 @@ small_printf("	TCON_LCD0->LCD_LVDS_ANA_REG[0]	0x220	%08x\n\r", *(uint32_t *)( 0x
 small_printf("\n\rStep 5-7 Set and open interrupt function\n\n\r");
 
 small_printf("	TCON_LCD0->LCD_GINT0_REG	0x004	%08x\n\r", *(uint32_t *)( 0x05461000 + 0x004) 	);		
-small_printf("	TCON_LCD0->LCD_GINT1_REG	0x008	%08x\n\r", *(uint32_t *)( 0x05461000 + 0x008) 	);	
+small_printf("	TCON_LCD0->LCD_GINT1_REG	0x008	%08x\n\r", *(uint32_t *)( 0x05461000 + 0x008) 	);	 */
 
 }

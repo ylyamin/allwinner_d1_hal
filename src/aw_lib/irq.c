@@ -61,7 +61,7 @@ void handle_trap(void)
     if (mcause >> 63) {
 		if((mcause & ~(1UL << 63)) < ARRAY_SIZE(interrupt_names))
 		{
-			LOG_D("Interrupt %d: %s", (mcause & ~(1UL << 63)), interrupt_names[mcause & ~(1UL << 63)]);
+			//LOG_D("Interrupt %d: %s", (mcause & ~(1UL << 63)), interrupt_names[mcause & ~(1UL << 63)]);
 			handle_interrupt(mcause);
 		}
 		else
@@ -104,7 +104,7 @@ void handle_interrupt(uint64_t mcause) {
 		uint32_t irq = PLIC->PLIC_MCLAIM_REG;
 		if(irq > IRQ_NUM_MIN & irq < IRQ_NUM_MAX)
 		{
-			LOG_D("Handle irq: %d",irq);
+			//LOG_D("Handle irq: %d",irq);
 			(irq_handlers_array[irq])();
 		}else{
 			LOG_E("Unknown irq: %d",irq);

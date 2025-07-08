@@ -60,11 +60,17 @@ void display_task_init(void)
 
 	//3
 	LCD_panel_init();
-	
+	tcon_dump_regs();
+
 	tcon_lcd_enable();
+	
+delay_ms(120);
 
 	de_init();
 	de_layer_set(&fb1, &fb2);
+
+
+
 }
 
 uint32_t line_x = 0;

@@ -147,7 +147,7 @@ static inline uint32_t readl(const volatile void *addr)
 #define PANEL_VSYNC_END		(1280 + 16 + 10)
 #define PANEL_VTOTAL		(1280 + 16 + 10 + 2)
 //#define PANEL_CLOCK		(PANEL_HTOTAL * PANEL_VTOTAL * 60 / 1000)
-#define PANEL_CLOCK			54465 //(55000)
+#define PANEL_CLOCK			54465 //(55000000)
 #define PANEL_LANES			4
 #define PANEL_DSI_BPP		24
 #define PANEL_BURST			0
@@ -283,8 +283,37 @@ static void panel_init(void)
 #define DPHY_ANA4_REG_TXPUSC(n)           (((n) & 3) << 2)
 #define DPHY_ANA4_REG_TXPUSD(n)           ((n) & 3)
 
+#define DPHY_ANA4_REG_IB(n)		(((n) & 3) << 25)
+#define DPHY_ANA4_REG_VTT_SET(n)		(((n) & 0x7) << 17)
+#define SUN6I_DPHY_ANA4_REG_EN_MIPI		BV(31)
+
+#define DPHY_ANA0_REG_PLR(n)		(((n) & 0xf) << 4)
+#define DPHY_ANA0_REG_SFB(n)		(((n) & 3) << 2)
+
 #define DPHY_DBG5_REG             0xf4
 
+#define SUN50I_DPHY_PLL_REG0		0x104
+#define SUN50I_DPHY_PLL_REG0_CP36_EN		BV(23)
+#define SUN50I_DPHY_PLL_REG0_LDO_EN		BV(22)
+#define SUN50I_DPHY_PLL_REG0_EN_LVS		BV(21)
+#define SUN50I_DPHY_PLL_REG0_PLL_EN		BV(20)
+#define SUN50I_DPHY_PLL_REG0_P(n)		(((n) & 0xf) << 16)
+#define SUN50I_DPHY_PLL_REG0_N(n)		(((n) & 0xff) << 8)
+#define SUN50I_DPHY_PLL_REG0_NDET		BV(7)
+#define SUN50I_DPHY_PLL_REG0_TDIV		BV(6)
+#define SUN50I_DPHY_PLL_REG0_M0(n)		(((n) & 3) << 4)
+#define SUN50I_DPHY_PLL_REG0_M1(n)		((n) & 0xf)
+
+#define SUN50I_DPHY_PLL_REG2		0x10c
+
+#define SUN50I_COMBO_PHY_REG0		0x110
+#define SUN50I_COMBO_PHY_REG0_EN_MIPI		BV(3)
+#define SUN50I_COMBO_PHY_REG0_EN_LVDS		BV(2)
+#define SUN50I_COMBO_PHY_REG0_EN_COMBOLDO	BV(1)
+#define SUN50I_COMBO_PHY_REG0_EN_CP		BV(0)
+
+#define SUN50I_COMBO_PHY_REG2		0x118
+#define SUN50I_COMBO_PHY_REG2_HS_STOP_DLY(n)	((n) & 0xff)
 
 static void dphy_write(unsigned long reg, uint32_t val)
 {
@@ -309,6 +338,8 @@ static void dphy_enable(void)
 	       ((4 - 1) << 0) // M-1 ,
 	       CCU_MIPI_DSI_CLK);
  */
+
+//dphy tx power on 
 	dphy_write(DPHY_TX_CTL_REG,
 		   DPHY_TX_CTL_HS_TX_CLK_CONT);
 
@@ -331,12 +362,84 @@ static void dphy_enable(void)
 	dphy_write(DPHY_TX_TIME4_REG,
 		   DPHY_TX_TIME4_HS_TX_ANA0(3) |
 		   DPHY_TX_TIME4_HS_TX_ANA1(3));
-
+////
 	dphy_write(DPHY_GCTL_REG,
 		   DPHY_GCTL_LANE_NUM(PANEL_LANES) |
 		   DPHY_GCTL_EN);
 
+///A100
+	unsigned long mipi_symbol_rate = PANEL_CLOCK;
+	unsigned int div, n;
+
+	dphy_write(DPHY_ANA4_REG,
+		    DPHY_ANA4_REG_IB(2) |
+		    DPHY_ANA4_REG_DMPLVD(4) |
+		    DPHY_ANA4_REG_VTT_SET(3) |
+		    DPHY_ANA4_REG_CKDV(3) |
+		    DPHY_ANA4_REG_TMSD(1) |
+		    DPHY_ANA4_REG_TMSC(1) |
+		    DPHY_ANA4_REG_TXPUSD(2) |
+		    DPHY_ANA4_REG_TXPUSC(3) |
+		    DPHY_ANA4_REG_TXDNSD(2) |
+		    DPHY_ANA4_REG_TXDNSC(3));
+
+	dphy_update_BVs(DPHY_ANA2_REG,
+			DPHY_ANA2_EN_CK_CPU,
+			DPHY_ANA2_EN_CK_CPU);
+
+	dphy_update_BVs(DPHY_ANA2_REG,
+			DPHY_ANA2_REG_ENIB,
+			DPHY_ANA2_REG_ENIB);
+
+	dphy_write(DPHY_ANA3_REG,
+		    DPHY_ANA3_EN_LDOR |
+		    DPHY_ANA3_EN_LDOC |
+		    DPHY_ANA3_EN_LDOD);
+
 	dphy_write(DPHY_ANA0_REG,
+		    DPHY_ANA0_REG_PLR(4) |
+		    DPHY_ANA0_REG_SFB(1));
+
+	dphy_write(SUN50I_COMBO_PHY_REG0,
+		    SUN50I_COMBO_PHY_REG0_EN_CP);
+
+	/* Choose a divider to limit the VCO frequency to around 2 GHz. */
+	//div = 16 >> order_base_2(DIV_ROUND_UP(mipi_symbol_rate, 264000000));
+	//n = mipi_symbol_rate * div / 24000000;
+
+//M1 =2, M0 = 0, DIV =0, DET = 1, N = 110, P = 7
+	
+	dphy_write(SUN50I_DPHY_PLL_REG0,
+		     SUN50I_DPHY_PLL_REG0_CP36_EN |
+		     SUN50I_DPHY_PLL_REG0_LDO_EN |
+		     SUN50I_DPHY_PLL_REG0_EN_LVS |
+		     SUN50I_DPHY_PLL_REG0_PLL_EN |
+		     SUN50I_DPHY_PLL_REG0_NDET |
+		     SUN50I_DPHY_PLL_REG0_P(7) |
+		     SUN50I_DPHY_PLL_REG0_N(110) |
+		     SUN50I_DPHY_PLL_REG0_M0(0) |
+		     SUN50I_DPHY_PLL_REG0_M1(2));
+
+	/* Disable sigma-delta modulation. */
+	dphy_write(SUN50I_DPHY_PLL_REG2, 0);
+
+	dphy_update_BVs(DPHY_ANA4_REG,
+			   SUN6I_DPHY_ANA4_REG_EN_MIPI,
+			   SUN6I_DPHY_ANA4_REG_EN_MIPI);
+
+	dphy_update_BVs(SUN50I_COMBO_PHY_REG0,
+			   SUN50I_COMBO_PHY_REG0_EN_MIPI |
+			   SUN50I_COMBO_PHY_REG0_EN_COMBOLDO,
+			   SUN50I_COMBO_PHY_REG0_EN_MIPI |
+			   SUN50I_COMBO_PHY_REG0_EN_COMBOLDO);
+
+	dphy_write(SUN50I_COMBO_PHY_REG2,
+		     SUN50I_COMBO_PHY_REG2_HS_STOP_DLY(20));
+	delay_us(1);
+
+
+///A31
+/* 	dphy_write(DPHY_ANA0_REG,
 		   DPHY_ANA0_REG_PWS |
 		   DPHY_ANA0_REG_DMPC |
 		   DPHY_ANA0_REG_SLV(7) |
@@ -366,8 +469,8 @@ static void dphy_enable(void)
 		   DPHY_ANA3_EN_LDOR |
 		   DPHY_ANA3_EN_LDOC |
 		   DPHY_ANA3_EN_LDOD);
-	delay_us(1);
-
+	delay_us(1); */
+/////
 	dphy_update_BVs(DPHY_ANA3_REG,
 			 DPHY_ANA3_EN_VTTC |
 			 DPHY_ANA3_EN_VTTD_MASK,
@@ -1243,7 +1346,7 @@ void dsi_init(void)
 	LOG_D("};\n");
 #endif
 
-	//dphy_enable();
+	dphy_enable();
 
 	panel_init();
 
