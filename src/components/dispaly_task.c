@@ -13,8 +13,8 @@ extern void LCD_bl_open(void);
 extern void LCD_bl_close(void);
 extern void LCD_panel_init(void);
 
-uint8_t fb1[1280 * 480 * 4];  //= dma_memalign(128, size);
-uint8_t fb2[1280 * 480 * 4]; // = dma_memalign(128, size);
+uint8_t fb1[1280 * 600 * 4];  //= dma_memalign(128, size);
+uint8_t fb2[1280 * 600 * 4]; // = dma_memalign(128, size);
 
 void display_task_init(void)
 {
@@ -49,28 +49,23 @@ void display_task_init(void)
 	gr_draw_pixel(&fb1,w,h, 101, 100, 0xffff0000);
 	gr_draw_pixel(&fb1,w,h, 100, 101, 0xffff0000);
 	gr_draw_line(&fb1,w,h, 0, 0, w-1, h-1, 0xff00ff00);
-	gr_draw_line(&fb1,w,h, w-1, 0, 0, h-1, 0xffff0000);
+	gr_draw_line(&fb1,w,h, w-1, 0, 0, h-1, 0xffff0000); 
 
 	//1
 	LCD_gpio_init();
 	LCD_bl_open();
-	
+
 	//2
 	tcon_lcd_init(timing);
-
+	
 	//3
 	LCD_panel_init();
-	tcon_dump_regs();
 
+	//4
 	tcon_lcd_enable();
 	
-delay_ms(120);
-
 	de_init();
 	de_layer_set(&fb1, &fb2);
-
-
-
 }
 
 uint32_t line_x = 0;

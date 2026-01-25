@@ -1,10 +1,9 @@
 Plan:
 
 1. TCON - need to check frequency from RTT
-2. To found out how DSI dphy init in RTT/Linux. Is combo or lvds ?
+2. To found out how DSI dphy init in RTT/Linux.
 3. DSI stack - check register addresses
 4. DSI stack - long short package to check with RTT/Linux
-
 
 sunxi-linux\drivers\gpu\drm\sun4i\sun4i_tcon.c
 
@@ -21,7 +20,6 @@ sun4i_rgb_init
 sun4i_tcon0_mode_set_cpu
 
 
-
 DISPLAY_TOP 0x05460000---0x05460FFF
 
 dsi: dsi@5450000 {
@@ -29,7 +27,6 @@ dsi: dsi@5450000 {
 				     "allwinner,sun50i-a100-mipi-dsi";
 
 sunxi-linux\drivers\phy\allwinner\phy-sun6i-mipi-dphy.c
-
 
 
 SUN50I_DPHY_PLL_REG0_CP36_EN	23
@@ -70,3 +67,19 @@ M1 =2, M0 = 0, DIV =0, DET = 1, N = 110, P = 7
 Clk = 330 Mhz
 
 
+Shenzhen Tianxianwei Technology 
+
+TTW686VVC-01 181x66.6x4.5
+
+Devterm:
+TXV686001/1 202205200778 181x66.5x4.5 MIPI ICNL9707
+
+Txw site:
+TXW686005B0 66.7*181*4.8 MIPI ICNL9707
+TXW686003B0 66.7*181*4.8 LVDS NV3051F1
+
+Ali:
+TXW686013B0 66.7*181.2*4.4 RGB NV3052C
+TXW686017B0 66.7*181.2*4.4 LVDS NV3051F1
+TXW686003B0 66.7*181*4.8 LVDS NV3051F1
+TXW686005B0 66.7*181*4.8 MIPI  ICNL9707

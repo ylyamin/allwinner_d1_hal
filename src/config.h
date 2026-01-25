@@ -29,7 +29,7 @@
 //#define CONFIG_USE_DCACHE 1
 //#define CONFIG_USE_PMP    1
 //#define CONFIG_USE_MMU    1
-#define CONFIG_USE_TWI      1
+//#define CONFIG_USE_TWI      1
 //#define CONFIG_USE_USB      1
 #define CONFIG_USE_DISPLAY  1
 

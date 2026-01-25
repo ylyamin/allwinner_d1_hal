@@ -20,6 +20,7 @@ enum lcd_type
 {
 	RGB,
 	DSI,
+	LVDS
 };
 
 typedef struct{

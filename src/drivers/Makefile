@@ -1,7 +1,8 @@
 SRC +=	$(SRC_DIR)/drivers/hid_app.c
 
 ifeq ("$(PLATFORM)", "sipeed")
-SRC +=	$(SRC_DIR)/drivers/st7701s_rgb.c
+#SRC +=	$(SRC_DIR)/drivers/st7701s_rgb.c
+SRC +=	$(SRC_DIR)/drivers/nv3051f.c
 endif
 
 ifeq ("$(PLATFORM)", "devterm")

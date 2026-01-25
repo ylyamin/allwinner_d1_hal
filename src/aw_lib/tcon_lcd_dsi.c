@@ -226,6 +226,9 @@ void tcon_lcd_init(timing_t timing)
 
 //Step 5-7 Set and open interrupt function
 	TCON_LCD0->LCD_GINT0_REG = BV(31) | BV(27); //V interrupt
+	TCON_LCD0->LCD_GINT0_REG = BV(15) | BV(10);
+
+
 	//TCON_LCD0->LCD_GINT1_REG = line << 16; // Line interrupt 
 
 	irq_assign(LCD_IRQn, (void *) tcon_int_handler);

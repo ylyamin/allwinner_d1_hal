@@ -15,7 +15,8 @@ SRC +=	$(SRC_DIR)/aw_lib/dsi.c
 endif
 
 ifeq ("$(PLATFORM)", "sipeed")
-SRC +=	$(SRC_DIR)/aw_lib/tcon_lcd_rgb.c
+#SRC +=	$(SRC_DIR)/aw_lib/tcon_lcd_rgb.c
+SRC +=	$(SRC_DIR)/aw_lib/tcon_lcd_lvds.c
 endif
 
 #SRC +=	$(SRC_DIR)/aw_lib/timer.c

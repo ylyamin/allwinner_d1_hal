@@ -147,7 +147,7 @@ static inline uint32_t readl(const volatile void *addr)
 #define PANEL_VSYNC_END		(1280 + 16 + 10)
 #define PANEL_VTOTAL		(1280 + 16 + 10 + 2)
 //#define PANEL_CLOCK		(PANEL_HTOTAL * PANEL_VTOTAL * 60 / 1000)
-#define PANEL_CLOCK			54465 //(55000000)
+#define PANEL_CLOCK			55000000 //54465
 #define PANEL_LANES			4
 #define PANEL_DSI_BPP		24
 #define PANEL_BURST			0
