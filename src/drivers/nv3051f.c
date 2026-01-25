@@ -110,7 +110,6 @@ struct gpio_t lcd_gpio[] = {
 		.mode = GPIO_MODE_OUTPUT,
 		.drv =  GPIO_DRV_3,
 	},
-    /*
 	{
 		.gpio = GPIOD,
 		.pin =  0x3ff, // D0-D9
@@ -119,6 +118,7 @@ struct gpio_t lcd_gpio[] = {
 		.drv =  GPIO_DRV_3, 
 		.state = GPIO_RESET,
 	},
+    /*
     {
 		.gpio = GPIOD,
 		.pin = BV(10),  //CS
