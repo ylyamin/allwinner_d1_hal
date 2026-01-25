@@ -8,9 +8,6 @@
 #include "de.h"
 #include "tcon_lcd.h"
 
-#define DSI0_BASE   0x05450000
-#define DSI0        ((DSICOMBO_t *) (DSI0_BASE+0x1000))
-
 void tcon_find_clock(uint32_t tgt_freq)
 {
 
@@ -84,32 +81,49 @@ static void tcon_int_handler(void *arg)
 
 	if (gint0 & BV(13)) {
 		TCON_LCD0->LCD_GINT0_REG = BV(13);
+
 	}
 }
 
-static void enable_combphy_lvds(void)
-{
-//	uart_printf("dsi phy before\n");
-//	uart_dump_reg(DSI0, 72);
+#define DSI0_BASE   0x05450000
+#define DSI0        ((DSICOMBO_t *) (DSI0_BASE+0x1000))
 
+static void enable_combphy_lvds(void) //24bit ?
+{
 	DSI0->combo_phy_reg1 = 0x43;
 	DSI0->combo_phy_reg0 = 0x1;
-	delay_us(1);
+	delay_us(5);
 	DSI0->combo_phy_reg0 = 0x5;
-	delay_us(1);
-	DSI0->combo_phy_reg0 = 0x7;
-	delay_us(1);
+	delay_us(5);
+	DSI0->combo_phy_reg0 = 0x7; 
+	delay_us(5);
 	DSI0->combo_phy_reg0 = 0xf;
 
 
-	//DSI0->dphy_ana4 = 0x84000000;
-	//DSI0->dphy_ana3 = 0x01040000;
-	//DSI0->dphy_ana2 &= (0 << 1);
-	//DSI0->dphy_ana1 = 0;
+/*  	delay_us(5);
+	DSI0->dphy_ana4 = 0x84000000;
+	DSI0->dphy_ana3 = 0x01040000;
+	DSI0->dphy_ana2 &= (0 << 1);
+	DSI0->dphy_ana1 = 0;
 
+ 	TCON_LCD0->LCD_LVDS_ANA_REG [0] =
+		(0x0F << 20) |	// When LVDS signal is 18-bit, LVDS_HPREN_DRV=0x7; when LVDS signal is 24-bit, LVDS_HPREN_DRV=0xF;
+		(0x01 << 24) |	// LVDS_HPREN_DRVC
+		(0x04 << 17) |	// Configure LVDS0_REG_C (differential mode voltage) to 4; 100: 336 mV
+		(0x03 << 8) |	// ?LVDS_REG_R Configure LVDS0_REG_V (common mode voltage) to 3;
+		0;
 
-//	uart_printf("dsi phy\n");
-//	uart_dump_reg(DSI0, 72);
+	TCON_LCD0->LCD_LVDS_ANA_REG [0] |= (1 << 30);	// en_ldo
+	delay_us(1);
+
+	// 	Lastly, start module voltage, and enable EN_LVDS and EN_24M.
+	TCON_LCD0->LCD_LVDS_ANA_REG [0] |= (1 << 31);	// ?LVDS_EN_MB start module voltage
+	delay_us(1);
+	TCON_LCD0->LCD_LVDS_ANA_REG [0] |= (1 << 29);	// enable EN_LVDS
+	delay_us(1);
+	TCON_LCD0->LCD_LVDS_ANA_REG [0] |= (1 << 28);	// EN_24M
+	delay_us(1);   */
+
 }
 
 static void disable_combphy_lvds(void)
@@ -129,53 +143,23 @@ static void disable_combphy_lvds(void)
 
 static void setup_lvds(void)
 {
-	TCON_LCD0->LCD_LVDS_IF_REG = LVDS_18BIT | LVDS_MODE_JEIDA | LVDS_CLK_SEL;
-	TCON_LCD0->LCD_LVDS_IF_REG |= LVDS_EN;
-	TCON_LCD0->LCD_LVDS_IF_REG = TCON_LCD0->LCD_LVDS_IF_REG;
-}
+	//TCON_LCD0->LCD_LVDS_IF_REG = LVDS_18BIT | LVDS_MODE_JEIDA | LVDS_CLK_SEL;
+	TCON_LCD0->LCD_LVDS_IF_REG = LVDS_CLK_SEL;
 
-#define LVDS_ANA_C(x) (x << 13)
-#define LVDS_ANA_V(x) (x << 22)
-#define LVDS_ANA_PD(x) (x << 26)
-#define LVDS_ANA_EN_LDO(x) (x << 1)
-#define LVDS_ANA_EN_MB(x) ( x << 0)
-#define LVDS_ANA_EN_DRVC(x) (x << 7)
-#define LVDS_ANA_EN_DRVD(x) (x << 8)
-#define LVDS_ANA_EN_24M(x) (x << 3)
-#define LVDS_ANA_EN_LVDS(x) (x << 2)
+	TCON_LCD0->LCD_LVDS_IF_REG |= LVDS_EN;
+	//TCON_LCD0->LCD_LVDS_IF_REG = TCON_LCD0->LCD_LVDS_IF_REG;
+}
 
 static void enable_lvds(void)
 {
 	TCON_LCD0->LCD_LVDS_IF_REG |= BV(31);
-
-#if 1
 	enable_combphy_lvds();
-#else
-	TCON_LCD0->LVDS_ANA_REG[0] = 
-		LVDS_ANA_C(2) |
-		LVDS_ANA_V(3) |
-		LVDS_ANA_PD(2);
-
-	vTaskDelay(1);
-
-	TCON_LCD0->LVDS_ANA_REG[0] |=
-		LVDS_ANA_EN_24M(1) |
-		LVDS_ANA_EN_LVDS(1) |
-		LVDS_ANA_EN_MB(1);
-
-	vTaskDelay(1);
-
-	TCON_LCD0->LVDS_ANA_REG[0] |=
-		LVDS_ANA_EN_DRVC(1) |
-		LVDS_ANA_EN_DRVD(0x07); // 18bit colors
-#endif
 }
 
 static void disable_lvds(void)
 {
 	TCON_LCD0->LCD_LVDS_IF_REG &= ~BV(31);
 	TCON_LCD0->LCD_LVDS_ANA_REG[0] = 0;
-
 	disable_combphy_lvds();
 }
 
@@ -201,7 +185,7 @@ void tcon_lcd_init(timing_t timing)
 	uint32_t val = timing.vt - timing.lcd_h - 8;
 	if (val > 31) val = 31;
 	if (val < 10) val = 10;
-	TCON_LCD0->LCD_CTL_REG = ((val & 0x1f) << 4) |  0; // 7= grid test mode, 1=colorcheck, 2-grray chaeck
+	TCON_LCD0->LCD_CTL_REG = ((val & 0x1f) << 4) |  2; // 7= grid test mode, 1=colorcheck, 2-grray chaeck
 
 	TCON_LCD0->LCD_HV_IF_REG = 0; // 24bit/1cycle
 
@@ -215,13 +199,15 @@ void tcon_lcd_init(timing_t timing)
 
 	// io polarity for h,v,de,clk
 	TCON_LCD0->LCD_IO_TRI_REG = 0; // default is 0xffffff (very bad :-)
-	TCON_LCD0->LCD_IO_POL_REG = 0;//2 << 28; // 2/3phase offset ?! why ?
+	TCON_LCD0->LCD_IO_POL_REG = 0; //2 << 28; // 2/3phase offset ?! why ?
 
 	// enable line interrupt ...
 	// install irq handler
 	// TCON_LCD0->GINT1_REG = line << 16;
 	// TCON_LCD0->GINT0_REG = BV(29);
 	//
+	TCON_LCD0->LCD_GINT0_REG = BV(31);// | BV(29); //V interrupt
+
 	irq_assign(LCD_IRQn, (void *) tcon_int_handler);
 	irq_enable(LCD_IRQn);
 

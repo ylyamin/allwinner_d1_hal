@@ -14,7 +14,7 @@ typedef struct {
 	volatile uint32_t combo_phy_reg2;
 } DSICOMBO_t;
 
-#define DSI0_PHY    ((DSICOMBO_t *) (DSI_DPHY_BASE))
+#define DSI0_PHY ((DSICOMBO_t *) DSI_DPHY_BASE)
 
 enum lcd_type
 {

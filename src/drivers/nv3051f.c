@@ -51,48 +51,34 @@ TXW686017B0
 40	LED+ 	        	
 */
 
+//#define HDP   600//玻璃实际(480) 需两边插黑处理 Horizontal 
+//#define VDP   1280    //vertiacal
 
-//#define HDP   600//玻璃实际(480) 需两边插黑处理
-//#define VDP   1280
+//#define HSW  2 //Horizontal Synchronization ?
+//#define HBP   44 //Horizontal Back Porch
+//#define HFP   46  //Horizontal Front Porch
 
-//#define HSW  2
-//#define HBP   44
-//#define HFP   46 
-
-//#define VSW  2
-//#define VBP   8
-//#define VFP   16
+//#define VSW  2 //Vertical Synchronization
+//#define VBP   8 //Vertical Back Porch
+//#define VFP   16 //Vertical Front Porch
 
 //frame rate=60Hz////
 //Pixel Clk=54.23Mhz//(480:44.82Mhz)
 
-
-/* } timing = {
-	.pxclk = 51200000,
-	.w = 1024,
-	.h = 600,
-
-	.ht = 1024+250+1,
-	.hbp = 90+1,
-	.hspw = 70,
-
-	.vt = 600+35,
-	.vbp = 13,
-	.vspw = 10,
-};
- */
 timing_t timing = {
     .lcd_type = LVDS,
-	.pixclk = 54230000,//54.23Mhz
-	.lcd_w = 1280,
-	.lcd_h = 600,
-	.hbp = 44,
-	.ht = 1024+250+1,
-	.hspw = 2,
-	.vbp = 8,
-	.vt = 600+35,
-	.vspw = 2,
+	.pixclk = 54230000, //54.23Mhz
+	.lcd_w = 600,      //width 
+	.lcd_h = 1280,       //hight
+	.hbp = 44,          //horizontal back porch
+	.ht = 600+44+46+2,  //horizontal Total Size
+	.hspw = 2,          //horizontal Sync Pulse Width
+	.vbp = 8,           //vertical back porch
+	.vt = 1280+8+16+2,  //vertical Total Size
+	.vspw = 2,          //vertical Sync Pulse Width
 };
+
+//dotclk = fframe × (X + HBP + HFP + HSPW) × (Y + VBP + VFP + VSPW) 54,225,120
 
 struct gpio_t lcd_gpio[] = {
 	{
@@ -149,11 +135,12 @@ struct gpio_t lcd_gpio[] = {
 	}, */
 };
 
-#define reset_1 gpio_set(&lcd_gpio[0], GPIO_SET)
-#define reset_0 gpio_set(&lcd_gpio[0], GPIO_RESET)
+#define panel_reset_1 gpio_set(&lcd_gpio[0], GPIO_SET)
+#define panel_reset_0 gpio_set(&lcd_gpio[0], GPIO_RESET)
 
 #define panel_bl_1 gpio_set(&lcd_gpio[1], GPIO_SET)
 #define panel_bl_0 gpio_set(&lcd_gpio[1], GPIO_RESET)
+
 
 timing_t LCD_get_param(void)
 {
@@ -177,29 +164,15 @@ void LCD_bl_close(void)
 
 void LCD_panel_init(void)
 {
-    LOG_D("=====================LCD_panel_init");
-    
-/* 
-SPI_RES=1;
-Delay(10);	//延迟10ms
-SPI_RES=0;
-Delay(220);//延迟220ms
-SPI_RES=1;
-Delay(120);  //延迟120ms          
-
-Delay(20);  //延迟20ms  
-送平台数据 
-*/
-
-    reset_1;
+    LOG_D("LCD_panel_init");
+    panel_reset_1;
 	delay_ms(10);
-    reset_0;
+    panel_reset_0;
 	delay_ms(220);
-    reset_1;
+    panel_reset_1;
 	delay_ms(120);
 
-    LOG_D("=====================LCD_panel_init finish");
-	return;
+    LOG_D("LCD_panel_init finish");
 }
 
 
