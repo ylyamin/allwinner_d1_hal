@@ -67,6 +67,20 @@ TXW686017B0
 //Pixel Clk=54.23Mhz//(480:44.82Mhz)
 
 
+/* } timing = {
+	.pxclk = 51200000,
+	.w = 1024,
+	.h = 600,
+
+	.ht = 1024+250+1,
+	.hbp = 90+1,
+	.hspw = 70,
+
+	.vt = 600+35,
+	.vbp = 13,
+	.vspw = 10,
+};
+ */
 timing_t timing = {
     .lcd_type = LVDS,
 	.pixclk = 54230000,//54.23Mhz
@@ -87,14 +101,16 @@ struct gpio_t lcd_gpio[] = {
 		.mode = GPIO_MODE_OUTPUT,
         .pupd = GPIO_PUPD_UP,
 		.drv =  GPIO_DRV_3,
+        .state = GPIO_RESET,
 	},
     {
 		.gpio = GPIOD,
 		.pin =  BV(22), //BL
-        .mode = GPIO_MODE_OUTPUT,
 		.pupd = GPIO_PUPD_UP,
+		.mode = GPIO_MODE_OUTPUT,
 		.drv =  GPIO_DRV_3,
 	},
+    /*
 	{
 		.gpio = GPIOD,
 		.pin =  0x3ff, // D0-D9
@@ -130,7 +146,7 @@ struct gpio_t lcd_gpio[] = {
 		.mode = GPIO_MODE_OUTPUT,
         .pupd = GPIO_PUPD_UP,
 		.drv = GPIO_DRV_3,
-	}, 
+	}, */
 };
 
 #define reset_1 gpio_set(&lcd_gpio[0], GPIO_SET)
