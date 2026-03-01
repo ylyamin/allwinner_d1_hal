@@ -5,7 +5,7 @@
 #include <gpio.h>
 #include <ccu.h>
 #include <log.h>
-
+#include <axp228.h>
 /*
 TXW686017B0		
 
@@ -68,30 +68,41 @@ TXW686017B0
 timing_t timing = {
     .lcd_type = LVDS,
 	.pixclk = 54230000, //54.23Mhz
-	.lcd_w = 600,      //width 
+	.lcd_w = 480,      //width 
 	.lcd_h = 1280,       //hight
 	.hbp = 44,          //horizontal back porch
-	.ht = 600+44+46+2,  //horizontal Total Size
+	.ht = 1280+44+46+2,  //horizontal Total Size
 	.hspw = 2,          //horizontal Sync Pulse Width
 	.vbp = 8,           //vertical back porch
-	.vt = 1280+8+16+2,  //vertical Total Size
+	.vt = 600+8+16+2,  //vertical Total Size
 	.vspw = 2,          //vertical Sync Pulse Width
 };
 
 //dotclk = fframe × (X + HBP + HFP + HSPW) × (Y + VBP + VFP + VSPW) 54,225,120
 
 struct gpio_t lcd_gpio[] = {
-	{
+/* 	{
 		.gpio = GPIOG,
 		.pin = BV(13),  //RST
 		.mode = GPIO_MODE_OUTPUT,
         .pupd = GPIO_PUPD_UP,
 		.drv =  GPIO_DRV_3,
         .state = GPIO_RESET,
+	}, */
+
+	{
+		.gpio = GPIOD,
+		.pin =  BV(19),  //RST
+		.mode = GPIO_MODE_OUTPUT,
+        .pupd = GPIO_PUPD_DOWN,
+		.drv =  GPIO_DRV_3,
+        .state = GPIO_SET,
 	},
+
+
     {
 		.gpio = GPIOD,
-		.pin =  BV(22), //BL
+		.pin =  BV(20), //BL 22
 		.pupd = GPIO_PUPD_UP,
 		.mode = GPIO_MODE_OUTPUT,
 		.drv =  GPIO_DRV_3,
@@ -104,35 +115,35 @@ struct gpio_t lcd_gpio[] = {
 		.drv =  GPIO_DRV_3, 
 		.state = GPIO_RESET,
 	},
-    /*
+    
     {
 		.gpio = GPIOD,
 		.pin = BV(10),  //CS
-		.mode = GPIO_MODE_OUTPUT,
+		.mode = GPIO_MODE_FNC4,
         .pupd = GPIO_PUPD_UP,
 		.drv = GPIO_DRV_3,
 	},
     {
 		.gpio = GPIOD,
 		.pin = BV(11),  //SCL
-		.mode = GPIO_MODE_OUTPUT,
+		.mode = GPIO_MODE_FNC4,
         .pupd = GPIO_PUPD_UP,
 		.drv = GPIO_DRV_3,
 	},
     {
 		.gpio = GPIOD,
 		.pin = BV(12),  //SDA
-		.mode = GPIO_MODE_OUTPUT,
+		.mode = GPIO_MODE_FNC4,
         .pupd = GPIO_PUPD_UP,
 		.drv = GPIO_DRV_3,
 	},
     {
 		.gpio = GPIOD,
 		.pin = BV(13),  //SDO
-		.mode = GPIO_MODE_OUTPUT,
+		.mode = GPIO_MODE_FNC4,
         .pupd = GPIO_PUPD_UP,
 		.drv = GPIO_DRV_3,
-	}, */
+	}, 
 };
 
 #define panel_reset_1 gpio_set(&lcd_gpio[0], GPIO_SET)
@@ -164,13 +175,19 @@ void LCD_bl_close(void)
 
 void LCD_panel_init(void)
 {
-    LOG_D("LCD_panel_init");
-    panel_reset_1;
-	delay_ms(10);
+    LOG_D("LCD_panel_init 3051");
+	panel_reset_1;
+	axp_LCD_control(TWI0,1);
+	
+	delay_ms(10); //10
+
+
     panel_reset_0;
-	delay_ms(220);
+	delay_us(220); //220
+
+
     panel_reset_1;
-	delay_ms(120);
+	delay_ms(120); //120 
 
     LOG_D("LCD_panel_init finish");
 }

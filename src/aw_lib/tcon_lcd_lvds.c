@@ -99,8 +99,8 @@ static void enable_combphy_lvds(void) //24bit ?
 	delay_us(5);
 	DSI0->combo_phy_reg0 = 0xf;
 
-
-/*  	delay_us(5);
+//////
+/*   	delay_us(5);
 	DSI0->dphy_ana4 = 0x84000000;
 	DSI0->dphy_ana3 = 0x01040000;
 	DSI0->dphy_ana2 &= (0 << 1);
@@ -123,7 +123,7 @@ static void enable_combphy_lvds(void) //24bit ?
 	delay_us(1);
 	TCON_LCD0->LCD_LVDS_ANA_REG [0] |= (1 << 28);	// EN_24M
 	delay_us(1);   */
-
+////////
 }
 
 static void disable_combphy_lvds(void)
@@ -165,7 +165,7 @@ static void disable_lvds(void)
 
 void tcon_lcd_init(timing_t timing)
 {
-	LOG_D("tcon: init\n");
+	LOG_D("tcon: init lvds\n");
 	tcon_lcd_disable();
 
 	uint32_t tcon_div = 7;
@@ -177,7 +177,7 @@ void tcon_lcd_init(timing_t timing)
 	TCON_LCD0->LCD_DCLK_REG |= (0x0f << 28);
 
 	// TODO: where does this 2 come from ?
-	LOG_D("tcon_lcd: tcon clk = %dHz pixclk = %dHz\n", ccu_tcon_get_clk() / tcon_div / 2, timing.pixclk);
+	LOG_D("tcon_lcd: tcon clk = %dHz pixclk = %dHz\n", ccu_tcon_get_clk() / tcon_div / 2, timing.pixclk); //clk = 648000000Hz pixclk = 55000000Hz
 	ccu_dsi_enable();
 	ccu_lvds_enable();
 
@@ -185,7 +185,7 @@ void tcon_lcd_init(timing_t timing)
 	uint32_t val = timing.vt - timing.lcd_h - 8;
 	if (val > 31) val = 31;
 	if (val < 10) val = 10;
-	TCON_LCD0->LCD_CTL_REG = ((val & 0x1f) << 4) |  2; // 7= grid test mode, 1=colorcheck, 2-grray chaeck
+	TCON_LCD0->LCD_CTL_REG = ((val & 0x1f) << 4) |  0; // 7= grid test mode, 1=colorcheck, 2-grray chaeck
 
 	TCON_LCD0->LCD_HV_IF_REG = 0; // 24bit/1cycle
 
@@ -220,7 +220,7 @@ void tcon_lcd_enable(void)
 {
 	TCON_LCD0->LCD_CTL_REG |= BV(31);
 	TCON_LCD0->LCD_GCTL_REG |= BV(31);
-
+	TCON_LCD0->LCD_DCLK_REG |= (0x0f << 28); 
 	enable_lvds();
 }
 
@@ -230,4 +230,17 @@ void tcon_lcd_disable(void)
 	TCON_LCD0->LCD_GCTL_REG &= ~BV(31);
 
 	disable_lvds();
+}
+
+void tcon_dump_regs(void)
+{
+
+	small_printf("	CCU->PLL_PERI_CTRL_REG		0x020	%08x\n\r",  *(uint32_t *)( 0x02001000 + 0x020)	);
+	small_printf("	CCU->PLL_VIDEO0_CTRL_REG	0x040	%08x\n\r",  *(uint32_t *)( 0x02001000 + 0x040)	);
+	small_printf("	CCU->TCONLCD_CLK_REG		0xB60	%08x\n\r",  *(uint32_t *)( 0x02001000 + 0xB60)	);
+	small_printf("	CCU->TCONLCD_BGR_REG		0xB7C	%08x\n\r",  *(uint32_t *)( 0x02001000 + 0xB7C)	);
+	small_printf("	TCON_LCD0->LCD_DCLK_REG		0x044	%08x\n\r",  *(uint32_t *)( 0x05461000 + 0x044)	);
+	small_printf("	CCU->DSI_CLK_REG			0xB24	%08x\n\r",  *(uint32_t *)( 0x02001000 + 0xB24)		);
+	small_printf("	CCU->DSI_BGR_REG			0xB4C	%08x\n\r",  *(uint32_t *)( 0x02001000 + 0xB4C)		);
+	small_printf("	CCU->LVDS_BGR_REG			0xBAC	%08x\n\r",  *(uint32_t *)( 0x02001000 + 0xBAC)		);
 }

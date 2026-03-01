@@ -10,8 +10,9 @@ SRC +=	$(SRC_DIR)/aw_lib/led.c
 #SRC +=	$(SRC_DIR)/aw_lib/smhc.c
 
 ifeq ("$(PLATFORM)", "devterm")
-SRC +=	$(SRC_DIR)/aw_lib/tcon_lcd_dsi.c
-SRC +=	$(SRC_DIR)/aw_lib/dsi.c
+SRC +=	$(SRC_DIR)/aw_lib/tcon_lcd_lvds.c
+#SRC +=	$(SRC_DIR)/aw_lib/tcon_lcd_dsi.c
+#SRC +=	$(SRC_DIR)/aw_lib/dsi.c
 endif
 
 ifeq ("$(PLATFORM)", "sipeed")

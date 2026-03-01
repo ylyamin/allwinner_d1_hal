@@ -23,7 +23,7 @@ void display_task_init(void)
 	timing_t timing = LCD_get_param();
 
 	struct layer_t layer = {
-			.lcd_w = 600,
+			.lcd_w = 480,
 			.lcd_h = 1280,
 			.w = 480,
 			.h = 1280,
@@ -42,8 +42,8 @@ void display_task_init(void)
 	uint32_t w = 480; // de_layer_get_w();
 	uint32_t h = 1280; // de_layer_get_h();
 
-	gr_fill(&fb1,w,h, 0xffffffff);
-	gr_fill(&fb2,w,h, 0xffffffff);
+	gr_fill(&fb1,w,h, 0xff0000ff);
+	gr_fill(&fb2,w,h, 0xff0000ff);
 /* 	gr_draw_pixel(&fb1,w,h, 100, 100, 0xffff00ff);
 	gr_draw_pixel(&fb1,w,h, 101, 101, 0xffff00ff);
 	gr_draw_pixel(&fb1,w,h, 101, 100, 0xffff0000);
@@ -57,15 +57,17 @@ void display_task_init(void)
 
 	//2
 	tcon_lcd_init(timing);
-	
-	//3
-	LCD_panel_init();
 
 	//4
 	tcon_lcd_enable();
-	
+
+	//3
+	LCD_panel_init();
+
 	de_init();
 	de_layer_set(&fb1, &fb2);
+
+	tcon_dump_regs();
 }
 
 uint32_t line_x = 0;
@@ -77,7 +79,7 @@ void display_task_exec(void)
 	uint32_t w = de_layer_get_w();
 	unsigned long ms = get_time_ms();
 
-/* 	if (!(ms % 50))
+  	if (!(ms % 50))
 	{
 		gr_draw_line(&fb1, w, h, line_x, 0, line_x, h-1, 0xff0000ff);	// clean previous
 		gr_draw_line(&fb1, w, h, 0, line_y, w-1, line_y, 0xff0000ff);	// clean previous
@@ -90,6 +92,6 @@ void display_task_exec(void)
 
 		if (line_x > w) line_x = 0; 									//reset in the end
 		if (line_y > h) line_y = 0; 									//reset in the end
-	}	 */
-
+	}	 
+ 
 }

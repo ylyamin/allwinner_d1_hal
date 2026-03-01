@@ -193,6 +193,7 @@ $(BUILD_DIR)/%.S.o: %.S
 	$(CMD_PREFIX)$(AS) $(INC_FLAGS) $(AFLAGS) -c  $< -o $@
 
 $(BUILD_DIR)/$(TARGET_NAME).bin: $(OBJS)
+	@echo SOC:$(SOC) PLATFORM:$(PLATFORM)
 	@echo LD $(BUILD_DIR)/$(TARGET_NAME).elf
 	$(CMD_PREFIX)${LD} -o $(BUILD_DIR)/$(TARGET_NAME).elf ${LFLAGS} $(OBJS)
 	$(CMD_PREFIX)${OBJCOPY} -O binary -S $(BUILD_DIR)/$(TARGET_NAME).elf $(BUILD_DIR)/$(TARGET_NAME).bin
