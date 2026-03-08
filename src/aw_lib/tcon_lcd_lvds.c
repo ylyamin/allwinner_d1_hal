@@ -100,12 +100,12 @@ static void enable_combphy_lvds(void) //24bit ?
 	DSI0->combo_phy_reg0 = 0xf;
 
 //////
-/*   	delay_us(5);
+ 	delay_us(5);
 	DSI0->dphy_ana4 = 0x84000000;
 	DSI0->dphy_ana3 = 0x01040000;
 	DSI0->dphy_ana2 &= (0 << 1);
 	DSI0->dphy_ana1 = 0;
-
+/*  
  	TCON_LCD0->LCD_LVDS_ANA_REG [0] =
 		(0x0F << 20) |	// When LVDS signal is 18-bit, LVDS_HPREN_DRV=0x7; when LVDS signal is 24-bit, LVDS_HPREN_DRV=0xF;
 		(0x01 << 24) |	// LVDS_HPREN_DRVC
@@ -185,8 +185,8 @@ void tcon_lcd_init(timing_t timing)
 	uint32_t val = timing.vt - timing.lcd_h - 8;
 	if (val > 31) val = 31;
 	if (val < 10) val = 10;
-	TCON_LCD0->LCD_CTL_REG = ((val & 0x1f) << 4) | (1 << 20) | 0; // 7= grid test mode, 1=colorcheck, 2-grray chaeck
-
+	//TCON_LCD0->LCD_CTL_REG = ((val & 0x1f) << 4) | 0; // 7= grid test mode, 1=colorcheck, 2-grray chaeck
+	TCON_LCD0->LCD_CTL_REG = (0x1f << 4) | 0;
 	TCON_LCD0->LCD_HV_IF_REG = 0; // 24bit/1cycle
 
 	setup_lvds();
@@ -195,7 +195,7 @@ void tcon_lcd_init(timing_t timing)
 	TCON_LCD0->LCD_BASIC0_REG = ((timing.lcd_w  - 1) << 16) | (timing.lcd_h - 1);
  	TCON_LCD0->LCD_BASIC1_REG = ((timing.ht - 1) << 16) | (timing.hbp - 1);
 	TCON_LCD0->LCD_BASIC2_REG = ((timing.vt * 2) << 16) | (timing.vbp - 1);
-	TCON_LCD0->LCD_BASIC3_REG = ((timing.hspw)   << 16) | (timing.vspw); 
+	TCON_LCD0->LCD_BASIC3_REG = ((timing.hspw - 1)   << 16) | (timing.vspw - 1); 
 
 	// io polarity for h,v,de,clk
 	TCON_LCD0->LCD_IO_TRI_REG = 0; // default is 0xffffff (very bad :-)
@@ -207,13 +207,12 @@ void tcon_lcd_init(timing_t timing)
 	// TCON_LCD0->GINT1_REG = line << 16;
 	// TCON_LCD0->GINT0_REG = BV(29);
 	//
-	//TCON_LCD0->LCD_GINT0_REG = BV(31);// | BV(29); //V interrupt
-
+	//TCON_LCD0->LCD_GINT0_REG = BV(31) | BV(13) | BV(1);
 	irq_assign(LCD_IRQn, (void *) tcon_int_handler);
 	irq_enable(LCD_IRQn); 
 
 
-	//tcon_dither();
+	tcon_dither();
 	LOG_D("tcon: init done\n");
 }
 
@@ -236,12 +235,56 @@ void tcon_lcd_disable(void)
 void tcon_dump_regs(void)
 {
 
-	small_printf("	CCU->PLL_PERI_CTRL_REG		0x020	%08x\n\r",  *(uint32_t *)( 0x02001000 + 0x020)	);
-	small_printf("	CCU->PLL_VIDEO0_CTRL_REG	0x040	%08x\n\r",  *(uint32_t *)( 0x02001000 + 0x040)	);
-	small_printf("	CCU->TCONLCD_CLK_REG		0xB60	%08x\n\r",  *(uint32_t *)( 0x02001000 + 0xB60)	);
-	small_printf("	CCU->TCONLCD_BGR_REG		0xB7C	%08x\n\r",  *(uint32_t *)( 0x02001000 + 0xB7C)	);
-	small_printf("	TCON_LCD0->LCD_DCLK_REG		0x044	%08x\n\r",  *(uint32_t *)( 0x05461000 + 0x044)	);
-	small_printf("	CCU->DSI_CLK_REG			0xB24	%08x\n\r",  *(uint32_t *)( 0x02001000 + 0xB24)		);
-	small_printf("	CCU->DSI_BGR_REG			0xB4C	%08x\n\r",  *(uint32_t *)( 0x02001000 + 0xB4C)		);
-	small_printf("	CCU->LVDS_BGR_REG			0xBAC	%08x\n\r",  *(uint32_t *)( 0x02001000 + 0xBAC)		);
+small_printf("\n\rStep 1 Select HV interface type\n\n\r");
+
+small_printf("	TCON_LCD0->LCD_CTL_REG		0x040 	%08x\n\r", *(uint32_t *)( 0x05461000 + 0x040)	);
+small_printf("	TCON_LCD0->LCD_HV_IF_REG	0x058	%08x\n\r", *(uint32_t *)( 0x05461000 + 0x058)	);
+
+small_printf("\n\rStep 2 Clock configuration\n\n\r");
+
+//small_printf("	CCU->PLL_PERI_CTRL_REG		0x020	%08x\n\r",  *(uint32_t *)( 0x02001000 + 0x020)	);
+//small_printf("	CCU->PLL_VIDEO0_CTRL_REG	0x040	%08x\n\r",  *(uint32_t *)( 0x02001000 + 0x040)	);
+//small_printf("	CCU->TCONLCD_CLK_REG		0xB60	%08x\n\r",  *(uint32_t *)( 0x02001000 + 0xB60)	);
+small_printf("	TCON_LCD0->LCD_DCLK_REG		0x044	%08x\n\r",  *(uint32_t *)( 0x05461000 + 0x044)	);
+//small_printf("	CCU->DSI_CLK_REG			0xB24	%08x\n\r",  *(uint32_t *)( 0x02001000 + 0xB24)		);
+
+small_printf("\n\rStep 3 Set sequence parameters\n\n\r");
+
+small_printf("	TCON_LCD0->LCD_BASIC0_REG	0x048	%08x\n\r", *(uint32_t *)( 0x05461000 + 0x048)	);	
+small_printf("	TCON_LCD0->LCD_BASIC1_REG	0x04C	%08x\n\r", *(uint32_t *)( 0x05461000 + 0x04C)	);		
+small_printf("	TCON_LCD0->LCD_BASIC2_REG	0x050	%08x\n\r", *(uint32_t *)( 0x05461000 + 0x050)	);		
+small_printf("	TCON_LCD0->LCD_BASIC3_REG	0x054	%08x\n\r", *(uint32_t *)( 0x05461000 + 0x054)	);	
+
+small_printf("\n\rStep 4 Open IO output\n\n\r");		
+
+small_printf("	TCON_LCD0->LCD_IO_TRI_REG	0x08C	%08x\n\r", *(uint32_t *)( 0x05461000 + 0x08C) 	);			
+small_printf("	TCON_LCD0->LCD_IO_POL_REG	0x088	%08x\n\r", *(uint32_t *)( 0x05461000 + 0x088) 	);		
+
+small_printf("\n\rStep 5 LVDS digital logic configuration\n\n\r");	
+
+small_printf("	TCON_LCD0->LCD_LVDS_IF_REG	0x084	%08x\n\r", *(uint32_t *)( 0x05461000 + 0x084)	);				
+small_printf("	TCON_LCD0->LVDS1_IF_REG		0x244	%08x\n\r", *(uint32_t *)( 0x05461000 + 0x244)	); 		
+
+small_printf("\n\rStep 6 LVDS controller configuration\n\n\r");
+
+small_printf("PHY0 COMBO_PHY_REG \n\n\r");
+
+small_printf("	DSI0_PHY->combo_phy_reg1	0x114	%08x\n\r", *(uint32_t *)( 0x05451000 + 0x114)	); 			
+small_printf("	DSI0_PHY->combo_phy_reg0	0x110	%08x\n\r", *(uint32_t *)( 0x05451000 + 0x110)	); 			
+small_printf("	DSI0_PHY->dphy_ana4			0x05c	%08x\n\r", *(uint32_t *)( 0x05451000 + 0x05c)		); 			
+small_printf("	DSI0_PHY->dphy_ana3			0x058	%08x\n\r", *(uint32_t *)( 0x05451000 + 0x058)		); 			
+small_printf("	DSI0_PHY->dphy_ana2			0x054	%08x\n\r", *(uint32_t *)( 0x05451000 + 0x054)		); 		
+small_printf("	DSI0_PHY->dphy_ana1			0x050	%08x\n\r", *(uint32_t *)( 0x05451000 + 0x050)		); 		
+
+small_printf("\n\rPHY1 LCD_LVDS0_ANA_REG \n\n\r");					
+
+small_printf("	TCON_LCD0->LCD_LVDS_ANA_REG[0]	0x220	%08x\n\r", *(uint32_t *)( 0x05461000 + 0x220) );		
+
+small_printf("\n\rStep 5-7 Set and open interrupt function\n\n\r");
+
+small_printf("	TCON_LCD0->LCD_GINT0_REG	0x004	%08x\n\r", *(uint32_t *)( 0x05461000 + 0x004) 	);		
+small_printf("	TCON_LCD0->LCD_GINT1_REG	0x008	%08x\n\r", *(uint32_t *)( 0x05461000 + 0x008) 	);	
+
+
+
 }

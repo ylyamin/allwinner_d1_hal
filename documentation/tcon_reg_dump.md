@@ -1,38 +1,115 @@
-# hal lib LVDS
+# HAL lib LVDS
 
-        CCU->PLL_PERI_CTRL_REG          0x020           c8216300
-        CCU->PLL_VIDEO0_CTRL_REG        0x040           f8001f01
+Step 1 Select HV interface type
 
-        N = 32
-        M1 = 2
+        TCON_LCD0->LCD_CTL_REG          0x040   801001f0
+        TCON_LCD0->LCD_HV_IF_REG        0x058   00000000
 
-        CCU->TCONLCD_CLK_REG            0xB60           81000000
-        CCU->TCONLCD_BGR_REG            0xB7C           00010001
-        TCON_LCD0->LCD_DCLK_REG         0x044           f0000007
-        CCU->DSI_CLK_REG                0xB24           81000003
+Step 2 Clock configuration
 
-        PLL_PERI
-        M = 4
+        TCON_LCD0->LCD_DCLK_REG         0x044   f0000007
 
-        CCU->DSI_BGR_REG                0xB4C           00010001
-        CCU->LVDS_BGR_REG               0xBAC           00010000
+Step 3 Set sequence parameters
+
+        TCON_LCD0->LCD_BASIC0_REG       0x048   01df04ff
+        TCON_LCD0->LCD_BASIC1_REG       0x04C   055b002b
+        TCON_LCD0->LCD_BASIC2_REG       0x050   04e40007
+        TCON_LCD0->LCD_BASIC3_REG       0x054   00020002
+
+Step 4 Open IO output
+
+        TCON_LCD0->LCD_IO_TRI_REG       0x08C   00000000
+        TCON_LCD0->LCD_IO_POL_REG       0x088   00000000
+
+Step 5 LVDS digital logic configuration
+
+        TCON_LCD0->LCD_LVDS_IF_REG      0x084   80100000
+        TCON_LCD0->LVDS1_IF_REG         0x244   00000000
+Step 2 Clock configuration
+
+        TCON_LCD0->LCD_DCLK_REG         0x044   f0000007
+
+Step 3 Set sequence parameters
+
+        TCON_LCD0->LCD_BASIC0_REG       0x048   01df04ff
+        TCON_LCD0->LCD_BASIC1_REG       0x04C   055b002b
+        TCON_LCD0->LCD_BASIC2_REG       0x050   04e40007
+        TCON_LCD0->LCD_BASIC3_REG       0x054   00020002
+
+Step 4 Open IO output
+
+        TCON_LCD0->LCD_IO_TRI_REG       0x08C   00000000
+        TCON_LCD0->LCD_IO_POL_REG       0x088   00000000
+
+Step 5 LVDS digital logic configuration
+
+        TCON_LCD0->LCD_LVDS_IF_REG      0x084   80100000
+        TCON_LCD0->LVDS1_IF_REG         0x244   00000000
+
+Step 6 LVDS controller configuration
+
+PHY0 COMBO_PHY_REG
+
+        DSI0_PHY->combo_phy_reg1        0x114   00000043
+        DSI0_PHY->combo_phy_reg0        0x110   0000000f
+        DSI0_PHY->dphy_ana4                     0x05c   00000000
+        DSI0_PHY->dphy_ana3                     0x058   00000000
+        DSI0_PHY->dphy_ana2                     0x054   00000000
+        DSI0_PHY->dphy_ana1                     0x050   00000000
+
+PHY1 LCD_LVDS0_ANA_REG
+
+        TCON_LCD0->LCD_LVDS_ANA_REG[0]  0x220   00000000
+
+Step 5-7 Set and open interrupt function
+
+        TCON_LCD0->LCD_GINT0_REG        0x004   0000a003
+        TCON_LCD0->LCD_GINT1_REG        0x008   00000000
 
 # RT LVDS
 
-        CCU->PLL_PERI_CTRL_REG      0x020               f8216300
-        CCU->PLL_VIDEO0_CTRL_REG    0x040               f8000f00
+  Step 1 Select HV interface type
 
-        N = 16
-        M1 = 1
+        TCON_LCD0->LCD_CTL_REG      0x040               800000a0
+        TCON_LCD0->LCD_HV_IF_REG    0x058               00000000
 
+Step 2 Clock configuration
 
-        CCU->TCONLCD_CLK_REG        0xB60               81000000
-        CCU->TCONLCD_BGR_REG        0xB7C               00010001
         TCON_LCD0->LCD_DCLK_REG     0x044               f0000007
-        CCU->DSI_CLK_REG            0xB24               80000000
 
-        HOSC
-        M = 1
+Step 3 Set sequence parameters
 
-        CCU->DSI_BGR_REG            0xB4C               00010001
-        CCU->LVDS_BGR_REG           0xBAC               00010000
+        TCON_LCD0->LCD_BASIC0_REG   0x048               01df04ff
+        TCON_LCD0->LCD_BASIC1_REG   0x04C               055b002b
+        TCON_LCD0->LCD_BASIC2_REG   0x050               04e40007
+        TCON_LCD0->LCD_BASIC3_REG   0x054               00010001
+
+Step 4 Open IO output
+
+        TCON_LCD0->LCD_IO_TRI_REG   0x08C               00000000
+        TCON_LCD0->LCD_IO_POL_REG   0x088               00000000
+
+Step 5 LVDS digital logic configuration
+
+        TCON_LCD0->LCD_LVDS_IF_REG  0x084               80100000
+        TCON_LCD0->LVDS1_IF_REG     0x244               00100000
+
+Step 6 LVDS controller configuration
+
+PHY0 COMBO_PHY_REG
+
+        DSI0_PHY->combo_phy_reg1    0x114               00000043
+        DSI0_PHY->combo_phy_reg0    0x110               0000000f
+        DSI0_PHY->dphy_ana4         0x05c               84000000
+        DSI0_PHY->dphy_ana3         0x058               01040000
+        DSI0_PHY->dphy_ana2         0x054               00000000
+        DSI0_PHY->dphy_ana1         0x050               00000000
+
+PHY1 LCD_LVDS0_ANA_REG
+
+        TCON_LCD0->LCD_LVDS_ANA_REG[0]  0x220           00000000
+
+Step 5-7 Set and open interrupt function
+
+        TCON_LCD0->LCD_GINT0_REG    0x004           80002002
+        TCON_LCD0->LCD_GINT1_REG    0x008           00000000
