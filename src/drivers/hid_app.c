@@ -27,6 +27,7 @@
 #include "tusb.h"
 #include <uart.h>
 #include <log.h>
+#include <console_task.h>
 
 //--------------------------------------------------------------------+
 // MACRO TYPEDEF CONSTANT ENUM DECLARATION
@@ -143,6 +144,7 @@ static inline bool find_key_in_report(hid_keyboard_report_t const *report, uint8
   return false;
 }
 
+
 static void process_kbd_report(hid_keyboard_report_t const *report)
 {
   static hid_keyboard_report_t prev_report = { 0, 0, {0} }; // previous report to check key released
@@ -160,8 +162,12 @@ static void process_kbd_report(hid_keyboard_report_t const *report)
         // not existed in previous report means the current key is pressed
         bool const is_shift = report->modifier & (KEYBOARD_MODIFIER_LEFTSHIFT | KEYBOARD_MODIFIER_RIGHTSHIFT);
         uint8_t ch = keycode2ascii[report->keycode[i]][is_shift ? 1 : 0];
-        LOG_I("%c",ch); //_uart_putchar(ch);
-        if ( ch == '\r' ) _uart_putchar('\n'); // added new line for enter key
+
+        //LOG_I("%c",ch); //_uart_putchar(ch);
+        //if ( ch == '\r' ) _uart_putchar('\n'); // added new line for enter key
+
+        console_write(ch);
+
 
         #ifndef __ICCARM__ // TODO IAR doesn't support stream control ?
         fflush(stdout); // flush right away, else nanolib will wait for newline
@@ -210,7 +216,10 @@ void cursor_movement(int8_t x, int8_t y, int8_t wheel)
 
   LOG_D("\r\n");
 #else
-  LOG_I("(%d %d %d)\r\n", x, y, wheel);
+  //LOG_I("(%d %d %d)\r\n", x, y, wheel);
+
+  console_write(x);
+
 #endif
 }
 

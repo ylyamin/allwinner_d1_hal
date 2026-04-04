@@ -19,14 +19,14 @@
 // COMMON CONFIGURATION
 //--------------------------------------------------------------------
 
-#define CFG_TUSB_OS           OPT_OS_NONE
-#define CFG_TUSB_MCU OPT_MCU_SUN20IW1
+#define CFG_TUSB_OS     OPT_OS_NONE
+#define CFG_TUSB_MCU    OPT_MCU_SUN20IW1
 
 #define CFG_TUSB_MEM_SECTION __attribute__((section(".ramnc")))
 //#define CFG_TUSB_MEM_ALIGN   __attribute__ ((aligned(64)))
 
 #define CFG_TUSB_DEBUG_PRINTF small_printf
-#define CFG_TUSB_DEBUG 3	// 0..3
+#define CFG_TUSB_DEBUG 0	// 0..3
 
 //--------------------------------------------------------------------
 // HOST CONFIGURATION

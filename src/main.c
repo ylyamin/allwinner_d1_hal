@@ -5,28 +5,33 @@
 #include <led.h>
 #include <usb_task.h>
 #include <dispaly_task.h>
+#include <console_task.h>
 
 void main(void)
 {
+    #ifdef CONFIG_USE_USB
+        usb_task_init();
+    #endif
 
-#ifdef CONFIG_USE_USB
-	usb_task_init();
-#endif
+    #ifdef CONFIG_USE_DISPLAY
+        display_task_init();	
+    #endif
 
-#ifdef CONFIG_USE_DISPLAY
-	display_task_init();	
-#endif
+    console_task_init();
 
     while(1)
     {
 
-    #ifdef CONFIG_USE_USB
-        usb_task_exec();
-    #endif
+        #ifdef CONFIG_USE_USB
+            usb_task_exec();
+        #endif
 
-    #ifdef CONFIG_USE_DISPLAY
-        display_task_exec();	
-    #endif
-    
+        #ifdef CONFIG_USE_DISPLAY
+            display_task_exec();	
+        #endif
+
+        console_task_exec();
+
+
     }
 }

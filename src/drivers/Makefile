@@ -1,9 +1,9 @@
 SRC +=	$(SRC_DIR)/drivers/hid_app.c
 
 #ifeq ("$(PLATFORM)", "'s'")
-SRC +=	$(SRC_DIR)/drivers/axp228.c
-#SRC +=	$(SRC_DIR)/drivers/st7701s_rgb.c
-SRC +=	$(SRC_DIR)/drivers/nv3051f.c
+#SRC +=	$(SRC_DIR)/drivers/axp228.c
+SRC +=	$(SRC_DIR)/drivers/st7701s_rgb.c
+#SRC +=	$(SRC_DIR)/drivers/nv3051f.c
 #endif
 
 #ifeq ("$(PLATFORM)", "'d'")

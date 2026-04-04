@@ -96,7 +96,7 @@ void tcon_lcd_disable(void)
 
 void tcon_lcd_init(timing_t timing)
 {
-	LOG_D("tcon: init");
+	LOG_D("tcon: init rgb");
 	tcon_lcd_disable();
 
 // Step 1 Select HV interface type 
