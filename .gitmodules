@@ -2,3 +2,6 @@
 	path = src/lib/hftrx_tinyusb_fork
 	url = https://github.com/ylyamin/hftrx_tinyusb_fork
 	branch = master_ua1arn
+[submodule "src/lib/font"]
+	path = src/lib/font
+	url = https://github.com/dhepper/font8x8
