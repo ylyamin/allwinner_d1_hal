@@ -62,6 +62,7 @@ endif
 SRC +=	$(SRC_DIR)/board_start.c
 SRC +=	$(SRC_DIR)/board_start.s
 SRC +=	$(SRC_DIR)/main.c
+SRC +=	$(SRC_DIR)/doom.c
 
 INC +=	$(SRC_DIR)
 
@@ -158,9 +159,9 @@ LFLAGS = $(DEVICE) $(VARS) -T $(SRC_DIR)/link.ld -Wl,--cref,-Map=$(BUILD_DIR)/$(
 
 # -ffreestanding -std=gnu99 
 # -mstrict-align
-#-gc-sections 
-#-lgcc
-#--specs=nano.specs -fno-common -fno-builtin
+# -gc-sections 
+# -lgcc
+# --specs=nano.specs -fno-common -fno-builtin
 # -nostartfiles 
 # -nostdlib
 

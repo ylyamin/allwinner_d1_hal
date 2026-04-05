@@ -32,5 +32,7 @@
 #define CONFIG_USE_TWI      1
 #define CONFIG_USE_USB      1
 #define CONFIG_USE_DISPLAY  1
+#define CONFIG_USE_CONSOLE  1
+//#define CONFIG_USE_DOOM     1
 
 #endif  //CONFIG_H_

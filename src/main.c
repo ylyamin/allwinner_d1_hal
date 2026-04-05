@@ -6,6 +6,7 @@
 #include <usb_task.h>
 #include <dispaly_task.h>
 #include <console_task.h>
+#include <doomgeneric.h>
 
 void main(void)
 {
@@ -17,7 +18,14 @@ void main(void)
         display_task_init();	
     #endif
 
-    console_task_init();
+    #ifdef CONFIG_USE_CONSOLE
+        console_task_init();
+    #endif
+
+    #ifdef CONFIG_USE_DOOM
+        char argv[0]; 
+        doomgeneric_Create(0, *argv);
+    #endif
 
     while(1)
     {
@@ -30,8 +38,13 @@ void main(void)
             display_task_exec();	
         #endif
 
-        console_task_exec();
+        #ifdef CONFIG_USE_CONSOLE
+            console_task_exec();
+        #endif
 
+        #ifdef CONFIG_USE_DOOM
+            doomgeneric_Tick(); 
+        #endif
 
     }
 }
