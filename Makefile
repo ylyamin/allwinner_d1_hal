@@ -62,7 +62,6 @@ endif
 SRC +=	$(SRC_DIR)/board_start.c
 SRC +=	$(SRC_DIR)/board_start.s
 SRC +=	$(SRC_DIR)/main.c
-SRC +=	$(SRC_DIR)/doom.c
 
 INC +=	$(SRC_DIR)
 
@@ -154,8 +153,8 @@ SIZE = ${CROSS_COMPILE}size
 DEVICE = -march=rv64imafd_zicsr -mabi=lp64d -mcmodel=medany
 VARS   = -D VERSION_GIT="\"$(VERSION_GIT)\"" -D SOC="'$(SOC_D)'" -D PLATFORM="'$(PLATFORM_D)'"
 CFLAGS = $(DEVICE) $(VARS) -fno-stack-protector -ffunction-sections -fdata-sections -fdiagnostics-color=always -Wno-cpp -Wno-int-conversion
-AFLAGS = $(DEVICE) $(VARS) -x assembler-with-cpp
-LFLAGS = $(DEVICE) $(VARS) -T $(SRC_DIR)/link.ld -Wl,--cref,-Map=$(BUILD_DIR)/$(TARGET_NAME).map,--print-memory-usage -nostartfiles 
+AFLAGS = $(DEVICE) $(VARS) -x assembler-with-cpp																					
+LFLAGS = $(DEVICE) $(VARS) -T $(SRC_DIR)/link.ld -Wl,--cref,-Map=$(BUILD_DIR)/$(TARGET_NAME).map,--print-memory-usage -nostartfiles
 
 # -ffreestanding -std=gnu99 
 # -mstrict-align
