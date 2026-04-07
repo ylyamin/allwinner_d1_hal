@@ -4,7 +4,7 @@
 
 MEMORY
 {
-  RAM : ORIGIN = 0x40000000, LENGTH = 32M
+  RAM : ORIGIN = 0x40000000, LENGTH = 62M
 }
 
 /* Library configurations */
@@ -205,11 +205,12 @@ SECTIONS
 
 	.heap (NOLOAD):
 	{
-		__HeapBase = .;
+		PROVIDE(__HeapBase = .);
+		. = . + 0x2000;
 		__end__ = .;
 		end = __end__;
 		KEEP(*(.heap*))
-		__HeapLimit = .;
+		PROVIDE(__HeapLimit = .);
 	} > RAM
 
 	/* .stack_dummy section doesn't contains any symbols. It is only
