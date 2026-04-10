@@ -5,8 +5,10 @@
 #include <string.h>
 #include <stdio.h>
 #include <ccu.h>
+#include <de.h>
 
 //#define DOOM_IMPLEMENTATION
+#define DOOM_FAST_TICK  1
 #include "DOOM.h"
 #include "doomdef.h"
 
@@ -98,7 +100,7 @@ int doom_eof_fnc(void* handle)
 void doom_gettime_fnc(int* sec, int* usec)
 {
     *sec = ( get_time_ms() / 1000 );
-    *usec = get_time_us();
+    *usec = get_time_ms();
 }
 
 char* doom_getenv_fnc(const char* var) 
@@ -134,9 +136,12 @@ void doom_task_init(void)
 
 void doom_task_exec(void)
 {
-    doom_update();
+    doom_force_update();
     memcpy(&fb1, doom_get_framebuffer(3 /* RGBA */),  SCREENWIDTH * SCREENHEIGHT * 3);
-    LOG_W("s:%d, us:%d",( get_time_ms() / 1000), get_time_us );
+    //de_commit();
+
+    //LOG_W("s:%d, us:%d",( get_time_ms() / 1000), get_time_us() );
 }
+
 
 

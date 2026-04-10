@@ -30,7 +30,7 @@ void main(void)
     {
 
         #ifdef CONFIG_USE_USB
-            usb_task_exec();
+            //usb_task_exec();
         #endif
 
         #ifdef CONFIG_USE_DISPLAY
@@ -38,7 +38,7 @@ void main(void)
         #endif
 
         #ifdef CONFIG_USE_CONSOLE
-            console_task_exec();
+            //console_task_exec();
         #endif
 
         #ifdef CONFIG_USE_DOOM
