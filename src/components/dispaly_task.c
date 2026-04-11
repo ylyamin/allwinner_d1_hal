@@ -13,8 +13,7 @@ extern void LCD_bl_open(void);
 extern void LCD_bl_close(void);
 extern void LCD_panel_init(void);
 
-uint8_t fb1[480 * 272 * 4];  //= dma_memalign(128, size);
-uint8_t fb2[480 * 272 * 4]; // = dma_memalign(128, size);
+unsigned char fb1[480 * 272 * 4]; 
 
 void display_task_init(void)
 {
@@ -30,7 +29,7 @@ void display_task_init(void)
 			.lcd_h = h,
 			.w = w,
 			.h = h,
-			.fmt = LAY_FBFMT_RGBA_8888, 
+			.fmt = LAY_FBFMT_ABGR_8888, 
 			.alpha = 0xff,
 			.win = {
 				.x0 = 0,
@@ -42,13 +41,10 @@ void display_task_init(void)
 
  	de_set_layer(layer);
 
-	gr_fill(&fb1,w,h, 0xff0000ff);
-	gr_fill(&fb2,w,h, 0xff0000ff);
-
-	//gr_fill(&fb1, 200, 200, 0xff00ff00);
+	gr_fill(&fb1,w,h, 0x00000000);
 
  	gr_draw_line(&fb1,w,h, 0, 0, w-1, h-1, 0xff00ffff);
-	gr_draw_line(&fb1,w,h, w-1, 0, 0, h-1, 0xffff00ff);
+	gr_draw_line(&fb1,w,h, w-1, 0, 0, h-1, 0xff00ffff);
 
 	//1
 	LCD_gpio_init();
@@ -62,10 +58,9 @@ void display_task_init(void)
 
 	//4
 	tcon_lcd_enable();
-	//delay_ms(120); //120 
 
 	de_init();
-	de_layer_set(&fb1, &fb2);
+	de_layer_set(&fb1, 0);
 
 	//tcon_dump_regs();
 }

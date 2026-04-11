@@ -13,7 +13,8 @@ uint32_t ccu_clk_apb1		=  24000000;
 static inline uint64_t counter(void)
 {
 	uint64_t cnt;
-	 __asm__ __volatile__("csrr %0, time\n" : "=r"(cnt) :: "memory");
+	__asm__ __volatile__("csrr %0, time\n" : "=r"(cnt) :: "memory");
+    //__asm__ __volatile__("rdtime %0" : "=r"(cnt)); 
 	return cnt;
 }
 
@@ -33,12 +34,12 @@ void delay_ms(unsigned long ms)
 
 unsigned long get_time_us(void)
 {
-	return (counter() / 24);
+	return (counter() / 24); //microsecond 10^6
 }
 
 unsigned long get_time_ms(void)
 {
-	return (get_time_us() / 1000);
+	return (get_time_us() / 1000); //millisecond 10^3 
 }
 
 void ccu_de_set_peripx2_div(uint32_t div)
