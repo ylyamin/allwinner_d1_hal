@@ -206,7 +206,7 @@ SECTIONS
 	.heap (NOLOAD):
 	{
 		PROVIDE(__HeapBase = .);
-		. = . + 20M;
+		. = . + 30M;
 		__end__ = .;
 		end = __end__;
 		KEEP(*(.heap*))

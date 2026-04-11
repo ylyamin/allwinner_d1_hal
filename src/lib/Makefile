@@ -13,6 +13,7 @@ SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb_fork/src/portable/ohci/ohci.c
 
 INC +=	$(SRC_DIR)/lib/tinyprintf
 INC +=	$(SRC_DIR)/lib/hftrx_tinyusb_fork/src
+INC +=	$(SRC_DIR)/lib/hftrx_tinyusb_fork/src/class/hid/
 INC +=	$(SRC_DIR)/lib/font
 
 INC +=	$(SRC_DIR)/lib/puredoom/src/DOOM/

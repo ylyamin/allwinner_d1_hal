@@ -144,7 +144,6 @@ static inline bool find_key_in_report(hid_keyboard_report_t const *report, uint8
   return false;
 }
 
-
 static void process_kbd_report(hid_keyboard_report_t const *report)
 {
   static hid_keyboard_report_t prev_report = { 0, 0, {0} }; // previous report to check key released
@@ -154,18 +153,17 @@ static void process_kbd_report(hid_keyboard_report_t const *report)
   {
     if ( report->keycode[i] )
     {
-      if ( find_key_in_report(&prev_report, report->keycode[i]) )
+/*       if ( find_key_in_report(&prev_report, report->keycode[i]) )
       {
         // exist in previous report means the current key is holding
       }else
-      {
+      { */
         // not existed in previous report means the current key is pressed
-        bool const is_shift = report->modifier & (KEYBOARD_MODIFIER_LEFTSHIFT | KEYBOARD_MODIFIER_RIGHTSHIFT);
-        uint8_t ch = keycode2ascii[report->keycode[i]][is_shift ? 1 : 0];
+        //bool const is_shift = report->modifier & (KEYBOARD_MODIFIER_LEFTSHIFT | KEYBOARD_MODIFIER_RIGHTSHIFT);
+        //uint8_t ch = keycode2ascii[report->keycode[i]][is_shift ? 1 : 0];
 
-        //LOG_I("%c",ch); //_uart_putchar(ch);
-        //if ( ch == '\r' ) _uart_putchar('\n'); // added new line for enter key
-
+        uint8_t ch = report->keycode[i];
+        if (report->modifier & (KEYBOARD_MODIFIER_LEFTCTRL | KEYBOARD_MODIFIER_RIGHTCTRL)) ch = HID_KEY_CONTROL_RIGHT;
         console_write(ch);
 
 
@@ -175,7 +173,7 @@ static void process_kbd_report(hid_keyboard_report_t const *report)
       }
     }
     // TODO example skips key released
-  }
+/*   } */
 
   prev_report = *report;
 }

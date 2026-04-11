@@ -7,6 +7,7 @@
 #include <ccu.h>
 #include <de.h>
 #include <console_task.h>
+#include "hid.h"
 
 //#define DOOM_IMPLEMENTATION
 #define DOOM_FAST_TICK  1
@@ -14,9 +15,7 @@
 #include "doomdef.h"
 #include "doomtype.h"
 
-extern unsigned char __HeapBase; 
-extern unsigned char __HeapLimit; 
-static tlsf_t mem_pool = NULL;
+extern tlsf_t mem_pool;
 extern unsigned char fb1[]; 
 
 void doom_print_fnc(const char* fmt)
@@ -104,10 +103,6 @@ extern byte* screens[];
 
 void doom_task_init(void)
 {
-    size_t s = (size_t)(&__HeapLimit - &__HeapBase);
-	LOG_W("heap: creating mem pool @ %08x size %d\n", &__HeapBase, s);
-	mem_pool = tlsf_create_with_pool((void *)&__HeapBase, s);
-
     doom_set_print(doom_print_fnc);
     doom_set_malloc(doom_malloc_fnc, doom_free_fnc);
     doom_set_file_io( doom_open_fnc,
@@ -136,7 +131,14 @@ void doom_task_exec(void)
     if(fifo_empty(&console_fifo) != 1)
     {
         ch = console_read();
-        LOG_I("%c",ch);
+        if(ch == HID_KEY_ENTER          )ch = DOOM_KEY_ENTER;
+        if(ch == HID_KEY_SPACE          )ch = DOOM_KEY_SPACE;
+        if(ch == HID_KEY_ARROW_RIGHT    )ch = DOOM_KEY_RIGHT_ARROW;
+        if(ch == HID_KEY_ARROW_LEFT     )ch = DOOM_KEY_LEFT_ARROW;
+        if(ch == HID_KEY_ARROW_DOWN     )ch = DOOM_KEY_DOWN_ARROW;
+        if(ch == HID_KEY_ARROW_UP       )ch = DOOM_KEY_UP_ARROW;
+        if(ch == HID_KEY_CONTROL_RIGHT  )ch = DOOM_KEY_CTRL;
+        if(ch == HID_KEY_CONTROL_LEFT   )ch = DOOM_KEY_CTRL;
         doom_key_down(ch);
         //doom_button_down(doom_button_t button);
     }
