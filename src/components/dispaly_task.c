@@ -18,7 +18,7 @@ uint32_t wbuf = 320;
 uint32_t hbuf = 200;
 
 uint32_t w = 480;// de_layer_get_w();
-uint32_t h = 272;// de_layer_get_h();
+uint32_t h = 1280;// de_layer_get_h();
 
 extern tlsf_t mem_pool;
 
@@ -35,9 +35,9 @@ void display_task_init(void)
 	struct layer_t layer = {
 			.lcd_w = w,
 			.lcd_h = h,
-			.w = wbuf,
-			.h = hbuf,
-			.fmt = LAY_FBFMT_ABGR_8888, 
+			.w = w,
+			.h = h,
+			.fmt = LAY_FBFMT_ARGB_8888,
 			.alpha = 0xff,
 			.win = {
 				.x0 = 0,
@@ -49,7 +49,7 @@ void display_task_init(void)
 
  	de_set_layer(layer);
 
-	gr_fill(fb1,w,h, 0x00000000);
+	gr_fill(fb1,w,h, 0xffffffff);
 
  	gr_draw_line(fb1,w,h, 0, 0, w-1, h-1, 0xff00ffff);
 	gr_draw_line(fb1,w,h, w-1, 0, 0, h-1, 0xff00ffff);

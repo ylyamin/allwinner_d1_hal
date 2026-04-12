@@ -187,7 +187,7 @@ void LCD_panel_init(void)
 
 
     panel_reset_1;
-	//delay_ms(120); //120 
+	delay_ms(120); //120 
 
     LOG_D("LCD_panel_init finish");
 }

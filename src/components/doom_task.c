@@ -9,14 +9,13 @@
 #include <console_task.h>
 #include "hid.h"
 
-//#define DOOM_IMPLEMENTATION
-#define DOOM_FAST_TICK  1
 #include "DOOM.h"
 #include "doomdef.h"
 #include "doomtype.h"
 
 extern tlsf_t mem_pool;
-extern unsigned char fb1[]; 
+extern struct fifo_t console_fifo;
+extern uint32_t *doom_framebuffer;
 
 void doom_print_fnc(const char* fmt)
 {
@@ -49,7 +48,6 @@ void* doom_open_fnc(const char* filename, const char* mode)
 
 void doom_close_fnc(void* handle) 
 {
-    LOG_W("doom_close_fnc");
 }
 
 int doom_read_fnc(void* handle, void *buf, int count)
@@ -99,8 +97,6 @@ char* doom_getenv_fnc(const char* var)
     return "/home"; 
 }
 
-extern byte* screens[];
-
 void doom_task_init(void)
 {
     doom_set_print(doom_print_fnc);
@@ -118,12 +114,8 @@ void doom_task_init(void)
 
     char argv[0]; 
     doom_init(0, *argv, 0);
-    de_layer_set(doom_get_framebuffer(4), 0);
+    de_layer_set(doom_framebuffer, 0);
 }
-
-extern struct fifo_t console_fifo;
-
-extern void* doom_memcpy(void* destination, const void* source, int num);
 
 void doom_task_exec(void)
 {
@@ -144,17 +136,14 @@ void doom_task_exec(void)
     }
 
     doom_force_update();
-    doom_get_framebuffer(4);
 
-    doom_key_up(ch);
+    static int frame_cnt = 0;
+    if (++frame_cnt == 2)
+    {
+        doom_key_up(ch);
+        frame_cnt = 0;
+    }
     //doom_button_up(doom_button_t button);
-    //LOG_D("%d",get_time_us());
+    //doom_mouse_move(int delta_x, int delta_y);
+    //LOG_D("Time: %d",get_time_ms() / 1000);
 }
-
-
-/* void doom_key_down(doom_key_t key);
-void doom_key_up(doom_key_t key);
-void doom_button_down(doom_button_t button);
-void doom_button_up(doom_button_t button);
-void doom_mouse_move(int delta_x, int delta_y);
- */

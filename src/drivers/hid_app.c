@@ -229,10 +229,12 @@ static void process_mouse_report(hid_mouse_report_t const * report)
   uint8_t button_changed_mask = report->buttons ^ prev_report.buttons;
   if ( button_changed_mask & report->buttons)
   {
-    LOG_D(" %c%c%c ",
+/*     LOG_D(" %c%c%c ",
        report->buttons & MOUSE_BUTTON_LEFT   ? 'L' : '-',
        report->buttons & MOUSE_BUTTON_MIDDLE ? 'M' : '-',
-       report->buttons & MOUSE_BUTTON_RIGHT  ? 'R' : '-');
+       report->buttons & MOUSE_BUTTON_RIGHT  ? 'R' : '-'); */
+
+    if (report->buttons & MOUSE_BUTTON_LEFT) console_write(HID_KEY_CONTROL_RIGHT);
   }
 
   //------------- cursor movement -------------//
