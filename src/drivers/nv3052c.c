@@ -71,7 +71,7 @@ timing_t timing = {
 
 struct gpio_t lcd_gpio[] = {
 
-#if 1
+#if 0
 	{
 		.gpio = GPIOG,
 		.pin = BV(13),  //RST
@@ -417,17 +417,18 @@ void LCD_panel_init(void)
 {
     LOG_D("=====================LCD_panel_init 3052\n");
 	axp_LCD_control(TWI0,1);
-    panel_reset_1;
+/*     panel_reset_1;
 	delay_ms(10);
     panel_reset_0;
-	delay_ms(130);
-    //panel_reset_1;
-	//delay_ms(120);
+	delay_ms(130); */
 
- 	panel_spi_cs_0; //14
+    panel_reset_1;
+	panel_reset_0;
+
+/*  	panel_spi_cs_0; //14
 	panel_spi_sdi_1; //12
 	panel_spi_scl_0; //15
-	panel_spi_scl_1; //15
+	panel_spi_scl_1; //15 */
  
  /*    for (int i = 0; i < ARRAY_SIZE(common_init_regs), i++;)
     {

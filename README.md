@@ -118,7 +118,7 @@ make flash
 
 To create SD card image in [image](image) folder:
 ```sh
-make -i sd
+make sd
 ```
 
 To create SD card image for ClockworkPi Devterm platform
