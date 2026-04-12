@@ -52,16 +52,21 @@ LCD             RV_Dock_EXT_3517    GPIO Function
 
 timing_t timing = {
     .lcd_type = RGB,
-	.pixclk = 60000000,//54.23Mhz
-    .lcd_w = 480,      //width 
+	.pixclk = 55000000,//54.23Mhz
+    .lcd_w = 600,      //width 
 	.lcd_h = 1280,       //hight
-	.hbp = 44,          //horizontal back porch
-	.ht = 1280+44+46+2,  //horizontal Total Size
+
+	.hbp = 8,          //horizontal back porch
+	.ht = 600+8+8+2,  //horizontal Total Size 572
 	.hspw = 2,          //horizontal Sync Pulse Width
+
 	.vbp = 8,           //vertical back porch
-	.vt = 600+8+16+2,  //vertical Total Size
+	.vt = 1280+8+8+2,  //vertical Total Size
 	.vspw = 2,          //vertical Sync Pulse Width
 };
+
+//dotclk = fframe × (X + HBP + HFP + HSPW) × (Y + VBP + VFP + VSPW) 54,225,120
+
 
 struct gpio_t lcd_gpio[] = {
 	{
@@ -354,20 +359,20 @@ void LCD_panel_init(void)
     panel_reset_1;
 	delay_ms(10);
     panel_reset_0;
-	delay_ms(10);
-    panel_reset_1;
-	delay_ms(120);
+	delay_ms(130);
+    //panel_reset_1;
+	//delay_ms(120);
 
-	panel_spi_cs_0; //14
+ 	panel_spi_cs_0; //14
 	panel_spi_sdi_1; //12
 	panel_spi_scl_0; //15
 	panel_spi_scl_1; //15
-
-    for (int i = 0; i < ARRAY_SIZE(common_init_regs), i++;)
+ 
+ /*    for (int i = 0; i < ARRAY_SIZE(common_init_regs), i++;)
     {
         LCD_WRITE_COMMAND(common_init_regs[i].cmd);
         LCD_WRITE_DATA(common_init_regs[i].val);
-    } 
+    }  */
 
     LOG_D("=====================LCD_panel_init finish\n");
 	return;

@@ -16,40 +16,34 @@ extern void LCD_panel_init(void);
 
 uint32_t wbuf = 320;
 uint32_t hbuf = 200;
-
-uint32_t w = 480;// de_layer_get_w();
-uint32_t h = 1280;// de_layer_get_h();
-
 extern tlsf_t mem_pool;
-
 unsigned char *fb1; 
 
 void display_task_init(void)
 {
 	LOG_D("display_task_init");
-
-    fb1 = tlsf_malloc(mem_pool, w * h * 4);
-
 	timing_t timing = LCD_get_param();
-
 	struct layer_t layer = {
-			.lcd_w = w,
-			.lcd_h = h,
-			.w = w,
-			.h = h,
+			.lcd_w = timing.lcd_w,
+			.lcd_h = timing.lcd_h,
+			.w = timing.lcd_w,//wbuf
+			.h = timing.lcd_h,//hbuf
 			.fmt = LAY_FBFMT_ARGB_8888,
 			.alpha = 0xff,
 			.win = {
 				.x0 = 0,
 				.y0 = 0,
-				.x1 = w,
-				.y1 = h,
+				.x1 = timing.lcd_w,
+				.y1 = timing.lcd_h,
 			},
 	};
-
  	de_set_layer(layer);
+	uint32_t w = de_layer_get_w();
+	uint32_t h = de_layer_get_h();
 
-	gr_fill(fb1,w,h, 0xffffffff);
+    fb1 = tlsf_malloc(mem_pool, w * h * 4);
+
+	gr_fill(fb1,w,h, 0xffffff00);
 
  	gr_draw_line(fb1,w,h, 0, 0, w-1, h-1, 0xff00ffff);
 	gr_draw_line(fb1,w,h, w-1, 0, 0, h-1, 0xff00ffff);
