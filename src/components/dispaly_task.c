@@ -26,8 +26,8 @@ void display_task_init(void)
 	struct layer_t layer = {
 			.lcd_w = timing.lcd_w,
 			.lcd_h = timing.lcd_h,
-			.w = timing.lcd_w,//wbuf
-			.h = timing.lcd_h,//hbuf
+			.w = wbuf,
+			.h = hbuf,
 			.fmt = LAY_FBFMT_ARGB_8888,
 			.alpha = 0xff,
 			.win = {
@@ -38,10 +38,11 @@ void display_task_init(void)
 			},
 	};
  	de_set_layer(layer);
-	uint32_t w = de_layer_get_w();
-	uint32_t h = de_layer_get_h();
 
-    fb1 = tlsf_malloc(mem_pool, w * h * 4);
+	uint32_t w = wbuf;
+	uint32_t h = hbuf;
+
+    fb1 = tlsf_malloc(mem_pool, wbuf * hbuf * 4);
 
 	gr_fill(fb1,w,h, 0xffffff00);
 

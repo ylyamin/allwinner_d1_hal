@@ -111,7 +111,7 @@ struct gpio_t lcd_gpio[] = {
 	},
     {
 		.gpio = GPIOE,
-		.pin = BV(12),  //SDI
+		.pin = BV(12),  //SDA
 		.mode = GPIO_MODE_OUTPUT,
         .pupd = GPIO_PUPD_UP,
 		.drv = GPIO_DRV_3,

@@ -68,7 +68,10 @@ timing_t timing = {
 //dotclk = fframe × (X + HBP + HFP + HSPW) × (Y + VBP + VFP + VSPW) 54,225,120
 
 
+
 struct gpio_t lcd_gpio[] = {
+
+#if 1
 	{
 		.gpio = GPIOG,
 		.pin = BV(13),  //RST
@@ -112,7 +115,65 @@ struct gpio_t lcd_gpio[] = {
         .pupd = GPIO_PUPD_UP,
 		.drv = GPIO_DRV_3,
 	},
+#else
+	{
+		.gpio = GPIOD,
+		.pin =  BV(19),  //RST
+		.mode = GPIO_MODE_OUTPUT,
+        .pupd = GPIO_PUPD_DOWN,
+		.drv =  GPIO_DRV_3,
+        .state = GPIO_SET,
+	},
+
+
+    {
+		.gpio = GPIOD,
+		.pin =  BV(20), //BL 22
+		.pupd = GPIO_PUPD_UP,
+		.mode = GPIO_MODE_OUTPUT,
+		.drv =  GPIO_DRV_3,
+	},
+	{
+		.gpio = GPIOD,
+		.pin =  0x3ff, // D0-D9
+		.mode = GPIO_MODE_FNC3,
+		.pupd = GPIO_PUPD_OFF,
+		.drv =  GPIO_DRV_3, 
+		.state = GPIO_RESET,
+	},
+    
+    {
+		.gpio = GPIOD,
+		.pin = BV(10),  //CS
+		.mode = GPIO_MODE_FNC4,
+        .pupd = GPIO_PUPD_UP,
+		.drv = GPIO_DRV_3,
+	},
+    {
+		.gpio = GPIOD,
+		.pin = BV(11),  //SCL
+		.mode = GPIO_MODE_FNC4,
+        .pupd = GPIO_PUPD_UP,
+		.drv = GPIO_DRV_3,
+	},
+    {
+		.gpio = GPIOD,
+		.pin = BV(12),  //SDA
+		.mode = GPIO_MODE_FNC4,
+        .pupd = GPIO_PUPD_UP,
+		.drv = GPIO_DRV_3,
+	},
+    {
+		.gpio = GPIOD,
+		.pin = BV(13),  //SDO
+		.mode = GPIO_MODE_FNC4,
+        .pupd = GPIO_PUPD_UP,
+		.drv = GPIO_DRV_3,
+	}, 
+#endif
 };
+
+
 
 struct nv3052c_reg {
 	uint8_t cmd;
@@ -355,7 +416,7 @@ void LCD_bl_close(void)
 void LCD_panel_init(void)
 {
     LOG_D("=====================LCD_panel_init 3052\n");
-
+	axp_LCD_control(TWI0,1);
     panel_reset_1;
 	delay_ms(10);
     panel_reset_0;
