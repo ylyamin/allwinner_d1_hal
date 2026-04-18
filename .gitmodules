@@ -8,3 +8,6 @@
 [submodule "src/lib/puredoom"]
 	path = src/lib/puredoom
 	url = https://github.com/Daivuk/PureDOOM
+[submodule "src/lib/tlsf"]
+	path = src/lib/tlsf
+	url = https://github.com/mattconte/tlsf
