@@ -1,5 +1,3 @@
-SRC +=	$(SRC_DIR)/lib/tinyprintf/tinyprintf.c
-
 SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb_fork/src/tusb.c
 SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb_fork/src/typec/usbc.c
 SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb_fork/src/class/cdc/cdc_host.c
@@ -10,13 +8,6 @@ SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb_fork/src/host/usbh.c
 SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb_fork/src/common/tusb_fifo.c
 SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb_fork/src/portable/ehci/ehci.c
 SRC +=	$(SRC_DIR)/lib/hftrx_tinyusb_fork/src/portable/ohci/ohci.c
-
-INC +=	$(SRC_DIR)/lib/tinyprintf
-INC +=	$(SRC_DIR)/lib/hftrx_tinyusb_fork/src
-INC +=	$(SRC_DIR)/lib/hftrx_tinyusb_fork/src/class/hid/
-INC +=	$(SRC_DIR)/lib/font
-
-INC +=	$(SRC_DIR)/lib/puredoom/src/DOOM/
 
 SRC +=	$(SRC_DIR)/lib/puredoom/src/DOOM/DOOM.c
 SRC +=	$(SRC_DIR)/lib/puredoom/src/DOOM/am_map.c
@@ -80,3 +71,14 @@ SRC +=	$(SRC_DIR)/lib/puredoom/src/DOOM/v_video.c
 SRC +=	$(SRC_DIR)/lib/puredoom/src/DOOM/w_wad.c
 SRC +=	$(SRC_DIR)/lib/puredoom/src/DOOM/wi_stuff.c
 SRC +=	$(SRC_DIR)/lib/puredoom/src/DOOM/z_zone.c
+
+SRC +=	$(SRC_DIR)/lib/tinyprintf/tinyprintf.c
+
+SRC +=	$(SRC_DIR)/lib/tlsf/tlsf.c
+
+INC +=	$(SRC_DIR)/lib/font
+INC +=	$(SRC_DIR)/lib/hftrx_tinyusb_fork/src
+INC +=	$(SRC_DIR)/lib/hftrx_tinyusb_fork/src/class/hid/
+INC +=	$(SRC_DIR)/lib/puredoom/src/DOOM/
+INC +=	$(SRC_DIR)/lib/tinyprintf
+INC +=	$(SRC_DIR)/lib/tlsf

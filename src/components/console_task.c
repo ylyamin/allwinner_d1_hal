@@ -10,7 +10,7 @@
 struct fifo_t console_fifo;
 uint8_t console_buf[CONSOLE_BUF];
 
-extern uint8_t fb1[]; 
+extern uint8_t framebuffer[]; 
 
 void console_task_init(void)
 {
@@ -50,9 +50,9 @@ void console_task_exec(void)
             for (y=0; y < 8; y++) {
                 set = bitmap[x] & 1 << y;
                 if(set)
-                    gr_draw_pixel(&fb1, w, h, y + shift_x, x + shift_y, 0xffffffff);
+                    gr_draw_pixel(&framebuffer, w, h, y + shift_x, x + shift_y, 0xffffffff);
                 else
-                    gr_draw_pixel(&fb1, w, h, y + shift_x, x + shift_y, 0xff0000ff);
+                    gr_draw_pixel(&framebuffer, w, h, y + shift_x, x + shift_y, 0xff0000ff);
             }
         }
         shift_x += 10;

@@ -1,0 +1,149 @@
+#include <platform.h>
+#include <log.h>
+#include <doom1_wad.h>
+#include <tlsf.h>
+#include <string.h>
+#include <stdio.h>
+#include <ccu.h>
+#include <de.h>
+#include <console_task.h>
+#include "hid.h"
+
+#include "DOOM.h"
+#include "doomdef.h"
+#include "doomtype.h"
+
+extern tlsf_t mem_pool;
+extern struct fifo_t console_fifo;
+extern uint32_t *doom_framebuffer;
+
+void doom_print_fnc(const char* fmt)
+{
+    small_printf(fmt);
+}
+
+void* doom_malloc_fnc(int size) 
+{
+    return tlsf_malloc(mem_pool, size);
+}
+void doom_free_fnc(void* ptr) 
+{
+	tlsf_free(mem_pool, ptr);
+}
+
+//xxd -i doom1.wad > doom1_wad.h
+
+int file_counter = 0;
+
+void* doom_open_fnc(const char* filename, const char* mode)
+{
+    if(strcmp(filename,"/home/doom1.wad") == 0)
+    {
+        file_counter = 0;
+        return &doom1_wad;
+    }     
+    else
+        return 0;
+}
+
+void doom_close_fnc(void* handle) 
+{
+}
+
+int doom_read_fnc(void* handle, void *buf, int count)
+{
+    if(file_counter <= doom1_wad_len)
+    {
+        memcpy(buf, handle + file_counter, count);
+        file_counter += count;
+        return count;
+    }
+    else    
+        return 0;
+}
+
+int doom_write_fnc(void* handle, const void *buf, int count)
+{
+    LOG_W("doom_write_fnc");
+    return -1;
+}
+int doom_seek_fnc(void* handle, int offset, doom_seek_t origin)
+{
+    if(origin == DOOM_SEEK_SET) file_counter = offset;
+    if(origin == DOOM_SEEK_CUR) file_counter += offset;
+    if(origin == DOOM_SEEK_END) file_counter = doom1_wad_len + offset;
+    return 0;
+}
+int doom_tell_fnc(void* handle)
+{
+    return file_counter;
+}
+int doom_eof_fnc(void* handle)
+{
+    if(file_counter == doom1_wad_len)
+        return 1;
+    else
+        return 0;
+}    
+
+void doom_gettime_fnc(int* sec, int* usec)
+{
+    *sec =  (int)(get_time_ms() / 1000);
+    *usec = (int) get_time_us();
+}
+
+char* doom_getenv_fnc(const char* var) 
+{ 
+    return "/home"; 
+}
+
+void doom_task_init(void)
+{
+    doom_set_print(doom_print_fnc);
+    doom_set_malloc(doom_malloc_fnc, doom_free_fnc);
+    doom_set_file_io( doom_open_fnc,
+                      doom_close_fnc,
+                      doom_read_fnc,
+                      doom_write_fnc,
+                      doom_seek_fnc,
+                      doom_tell_fnc,
+                      doom_eof_fnc);
+    doom_set_gettime(doom_gettime_fnc);
+    //doom_set_exit(doom_exit_fnc);
+    doom_set_getenv(doom_getenv_fnc);
+
+    char argv[0]; 
+    doom_init(0, *argv, 0);
+    de_layer_set(doom_framebuffer, 0);
+}
+
+void doom_task_exec(void)
+{
+    uint8_t ch;
+    if(fifo_empty(&console_fifo) != 1)
+    {
+        ch = console_read();
+        if(ch == HID_KEY_ENTER          )ch = DOOM_KEY_ENTER;
+        if(ch == HID_KEY_SPACE          )ch = DOOM_KEY_SPACE;
+        if(ch == HID_KEY_ARROW_RIGHT    )ch = DOOM_KEY_RIGHT_ARROW;
+        if(ch == HID_KEY_ARROW_LEFT     )ch = DOOM_KEY_LEFT_ARROW;
+        if(ch == HID_KEY_ARROW_DOWN     )ch = DOOM_KEY_DOWN_ARROW;
+        if(ch == HID_KEY_ARROW_UP       )ch = DOOM_KEY_UP_ARROW;
+        if(ch == HID_KEY_CONTROL_RIGHT  )ch = DOOM_KEY_CTRL;
+        if(ch == HID_KEY_CONTROL_LEFT   )ch = DOOM_KEY_CTRL;
+        doom_key_down(ch);
+        //doom_button_down(doom_button_t button);
+    }
+
+    doom_force_update();
+
+    static int frame_cnt = 0;
+    if (++frame_cnt == 2)
+    {
+        doom_key_up(ch);
+        frame_cnt = 0;
+    }
+    //doom_button_up(doom_button_t button);
+    //doom_mouse_move(int delta_x, int delta_y);
+    //LOG_D("Time: %d",get_time_ms() / 1000);
+}

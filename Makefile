@@ -61,10 +61,9 @@ endif
 # Sources
 SRC +=	$(SRC_DIR)/board_start.c
 SRC +=	$(SRC_DIR)/board_start.s
-SRC +=	$(SRC_DIR)/main.c
-
 INC +=	$(SRC_DIR)
 
+include $(SRC_DIR)/application/Makefile
 include $(SRC_DIR)/components/Makefile
 include $(SRC_DIR)/drivers/Makefile
 include $(SRC_DIR)/aw_f133/Makefile

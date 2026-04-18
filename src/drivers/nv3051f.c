@@ -70,9 +70,13 @@ timing_t timing = {
 	.pixclk = 54230000, //54.23Mhz
 	.lcd_w = 480,      //width 
 	.lcd_h = 1280,       //hight
+    .scale_w = 480,
+    .scale_h = 1280,
+
 	.hbp = 44,          //horizontal back porch
 	.ht = 1280+44+46+2,  //horizontal Total Size
 	.hspw = 2,          //horizontal Sync Pulse Width
+
 	.vbp = 8,           //vertical back porch
 	.vt = 600+8+16+2,  //vertical Total Size
 	.vspw = 2,          //vertical Sync Pulse Width
