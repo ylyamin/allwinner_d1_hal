@@ -66,9 +66,9 @@ INC +=	$(SRC_DIR)
 include $(SRC_DIR)/application/Makefile
 include $(SRC_DIR)/components/Makefile
 include $(SRC_DIR)/drivers/Makefile
-include $(SRC_DIR)/aw_f133/Makefile
-include $(SRC_DIR)/aw_lib/Makefile
-include $(SRC_DIR)/lib/Makefile
+include $(SRC_DIR)/awh_f133/Makefile
+include $(SRC_DIR)/awh_lib/Makefile
+include $(SRC_DIR)/external/Makefile
 
 #Toolcahin
 XFEL_DIR = $(TOOLCHAIN_INSTALL_DIR)/xfel

@@ -1,13 +1,13 @@
-[submodule "src/lib/hftrx_tinyusb_fork"]
+[submodule "src/external/hftrx_tinyusb_fork"]
 	path = src/external/hftrx_tinyusb_fork
 	url = https://github.com/ylyamin/hftrx_tinyusb_fork
 	branch = master_ua1arn
-[submodule "src/lib/font"]
+[submodule "src/external/font"]
 	path = src/external/font
 	url = https://github.com/dhepper/font8x8
-[submodule "src/lib/puredoom"]
+[submodule "src/external/puredoom"]
 	path = src/external/puredoom
 	url = https://github.com/Daivuk/PureDOOM
-[submodule "src/lib/tlsf"]
+[submodule "src/external/tlsf"]
 	path = src/external/tlsf
 	url = https://github.com/mattconte/tlsf
