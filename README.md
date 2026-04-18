@@ -19,7 +19,6 @@ Based on @robots [allwinner_t113](https://github.com/robots/allwinner_t113) and 
 - [ClockworkPi DevTerm R-01](https://www.clockworkpi.com/home-devterm)
 - [Sipeed Lichee RV + Dock](https://wiki.sipeed.com/hardware/en/lichee/RV/Dock.html)
 
-
 # Installation
 In repository exist pre-builded images for SD card in folder [image](image), need to flash it to SD card and install to device.
 
@@ -45,7 +44,6 @@ Insert flashed SD card to device OR flash by XFEL and power on, should see at th
 ```
 
 ## Environment
-
 Tested on Ubuntu 22.04.3 64x.
 In my case I was use Windows 10 64x as a host with and Ubuntu virtual machine as a guest for compilation.
 Repo was downloaded to a shared folder in Windows and then mounted in Ubuntu:

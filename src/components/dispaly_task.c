@@ -5,7 +5,7 @@
 #include <de.h>
 #include <tcon_lcd.h>
 #include <ccu.h>
-#include <dsi.h>
+#include <mipi_dsi.h>
 #include <tlsf.h>
 
 extern timing_t LCD_get_param(void);

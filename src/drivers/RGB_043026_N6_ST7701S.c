@@ -13,7 +13,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
-#include <st7701s_rgb.h>
+#include <RGB_043026_N6_ST7701S.h>
 #include <gpio.h>
 #include <ccu.h>
 #include <log.h>

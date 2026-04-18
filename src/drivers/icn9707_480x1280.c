@@ -4,7 +4,7 @@
 #include <log.h>
 #include <axp228.h>
 #include <tcon_lcd.h>
-#include <dsi.h>
+#include <mipi_dsi.h>
 
 extern void dsi_init(void);
 extern ssize_t mipi_dsi_dcs_write(const uint8_t *data, size_t len);

@@ -1,7 +1,4 @@
-/*
- *
- */
-#include <nv3051f.h>
+#include <LVDS_TXW686017B0_NV3051F.h>
 #include <gpio.h>
 #include <ccu.h>
 #include <log.h>

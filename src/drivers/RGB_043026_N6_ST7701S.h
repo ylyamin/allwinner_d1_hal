@@ -8,8 +8,8 @@
  * warranty of any kind, whether express or implied.
  */
 
-#ifndef __NV3052C_H__
-#define  __NV3052C_H__
+#ifndef __RGB_043026_N6_ST7701S_H__
+#define  __RGB_043026_N6_ST7701S_H__
 #include <tcon_lcd.h>
 
 timing_t LCD_get_param(void);
@@ -18,4 +18,4 @@ void LCD_bl_open(void);
 void LCD_bl_close(void);
 void LCD_panel_init(void);
 
-#endif
+#endif /* __RGB_043026_N6_ST7701S_H__ */

@@ -1,10 +1,12 @@
-#include <nv3052c.h>
+#include <RGB_TXW686013B0_NV3052C.h>
 #include <gpio.h>
 #include <ccu.h>
 #include <log.h>
 #include <axp228.h>
 
 /*
+RGB panel TXW686013B0
+
 //#define HDP   600//玻璃实际(480) 需两边各插黑60处理
 //#define VDP   1280
 
@@ -28,8 +30,6 @@ Delay(120);  //延迟120ms
 
 Delay(20);  //延迟20ms  
 送平台数据
-
-
 
 LCD             RV_Dock_EXT_3517    GPIO Function
 

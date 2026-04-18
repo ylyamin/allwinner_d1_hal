@@ -117,9 +117,11 @@ void doom_task_init(void)
     de_layer_set(doom_framebuffer, 0);
 }
 
+uint8_t ch;
+
 void doom_task_exec(void)
 {
-    uint8_t ch;
+
     if(fifo_empty(&console_fifo) != 1)
     {
         ch = console_read();
