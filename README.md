@@ -1,17 +1,19 @@
 # Overview
 
-Elementary HAL (Hardware Abstraction Layer) for [Allwinner D1H](https://d1.docs.aw-ol.com/en/)/D1s/F133 RISC-V SOC.<br>
-
-Based on @robots [allwinner_t113](https://github.com/robots/allwinner_t113) and @ua1arn [hftrx](https://github.com/ua1arn/hftrx) projects. Also used some code from [xboot](https://github.com/xboot/xboot), [xfel](https://github.com/xboot/xfel) (MIT, BSD, Apache Licenses)
+HAL (Hardware Abstraction Layer) for [Allwinner D1H](https://d1.docs.aw-ol.com/en/)/D1s/F133 RISC-V SOC.<br>
+Is minimal bare-metal library could be used to run own OS or whatever. A dependency-free, register-level C library.<br>
+Mostly based on @robots [allwinner_t113](https://github.com/robots/allwinner_t113) and @ua1arn [hftrx](https://github.com/ua1arn/hftrx) projects.
 
 ## Features
+- DOOM game can play!
+![Lichee_RV_doom](documentation/Pics/Lichee_RV_doom.jpg)
 - Working graphics with LCD RGB 4.3 inch (043026-N6(ML) ST7701S SPI)
 - USB Host with support USB 2.0/1.0 Keyboard, Mouse
 - TWI (I2C) supported AXP228 Power management chip
 - UART, GPIO
 
 ## Details
-- LCD MIPI not work yet (6.86 inch icnl9707)
+- LCD MIPI/LVDS not work yet (6.86 inch icnl9707)
 - USB not work from SD card image, from xfel work ok
 - UART output is blocking 
 
@@ -21,6 +23,8 @@ Based on @robots [allwinner_t113](https://github.com/robots/allwinner_t113) and 
 
 # Installation
 In repository exist pre-builded images for SD card in folder [image](image), need to flash it to SD card and install to device.
+- For ClockworkPi DevTerm R01 board please use [image/sd_image_devterm.img](image/sd_image_devterm.img)
+- For Sipeed Lichee RV board please use [image/sd_image_lichee.img](image/sd_image_lichee.img)
 
 ## Windows
 Could use https://etcher.balena.io/#download-etcher for flash image to SD card.
@@ -45,17 +49,6 @@ Insert flashed SD card to device OR flash by XFEL and power on, should see at th
 
 ## Environment
 Tested on Ubuntu 22.04.3 64x.
-In my case I was use Windows 10 64x as a host with and Ubuntu virtual machine as a guest for compilation.
-Repo was downloaded to a shared folder in Windows and then mounted in Ubuntu:
-```sh
-sudo apt install open-vm-tools
-sudo mkdir /mnt/hgfs/
-sudo vmhgfs-fuse .host:/share /mnt/hgfs/ -o allow_other -o uid=1000
-```
-/etc/fstab example
-```sh
-.host:/    /mnt/hgfs/    fuse.vmhgfs-fuse    defaults,allow_other,uid=1000     0    0
-```
 On machine need to be installed make environment:
 ```sh
 sudo apt install git make build-essential pkg-config libusb-1.0-0-dev libncurses5-dev unzip screen
@@ -68,6 +61,19 @@ Then execute due each session:
 source ./environment.sh
 ```
 Or add to ~/.bashrc
+
+## Environment setup with virtual machine
+In my case I was use Windows 10 64x as a host with and Ubuntu virtual machine as a guest for compilation.
+Repo was downloaded to a shared folder in Windows and then mounted in Ubuntu:
+```sh
+sudo apt install open-vm-tools
+sudo mkdir /mnt/hgfs/
+sudo vmhgfs-fuse .host:/share /mnt/hgfs/ -o allow_other -o uid=1000
+```
+/etc/fstab example
+```sh
+.host:/    /mnt/hgfs/    fuse.vmhgfs-fuse    defaults,allow_other,uid=1000     0    0
+```
 
 ## Build toolchain
 
@@ -162,6 +168,26 @@ GDB connection command for CPUs(CPU0):
 Restoring binary file build/app.bin into memory (0x40000000 to 0x40600000)
 ```
 
+## Hardware details
+- [ClockworkPi DevTerm R01](https://www.clockworkpi.com/home-devterm)
+- [Sipeed Lichee RV + Dock](https://wiki.sipeed.com/hardware/en/lichee/RV/Dock.html)
+- Lichee RV Dock extension LCD adapter board
+- 4.3 RGB LCD Display (043026-N6(ML)) with IC ST7001s (SPI)
+- FTDI 2248-c USB/UART adapter
+- Sipeed RV-Debugger Plus
+- MicroSD_Sniffer
+
+### ClockworkPi DevTerm R01 assembly
+![Devterm_R01_assembly](documentation/Pics/Devterm_R01_assembly.jpg)
+
+### Sipeed Lichee RV assembly
+![Lichee_RV_assembly](documentation/Pics/Lichee_RV_assembly.jpg)
+
+# Links
+https://forum.clockworkpi.com/t/r-01-library-for-small-os/15602 <br>
+https://bbs.aw-ol.com/topic/6113/r-01-library-for-small-os <br>
+https://whycan.com/t_11784.html <br>
+
 ## TODO:
 - LCD mipi (take dsi driver from Linux or RTT)
 - USB not work from SD card image
@@ -177,7 +203,3 @@ Restoring binary file build/app.bin into memory (0x40000000 to 0x40600000)
 - Kbuild ? obj-y ?
 - Common for T113 ?
 - spi-nand ?
-
-https://forum.clockworkpi.com/t/r-01-library-for-small-os/15602 <br>
-https://bbs.aw-ol.com/topic/6113/r-01-library-for-small-os <br>
-https://whycan.com/t_11784.html <br>
