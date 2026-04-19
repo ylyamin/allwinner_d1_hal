@@ -6,28 +6,36 @@
 #include <gr.h>
 #include <font8x8_basic.h>
 
-#define CONSOLE_BUF 4096
-struct fifo_t console_fifo;
-uint8_t console_buf[CONSOLE_BUF];
+#define BUFF_SIZE 100
+
+struct fifo_t keyboard_fifo;
+struct fifo_t mouse_fifo;
+struct fifo_t joystick_fifo;
+
+uint8_t keyboard_buf[BUFF_SIZE];
+uint8_t mouse_buf[BUFF_SIZE];
+uint8_t joystick_buf[BUFF_SIZE];
 
 extern uint8_t framebuffer[]; 
 
 void console_task_init(void)
 {
-	fifo_init(&console_fifo, console_buf, sizeof(uint8_t), CONSOLE_BUF);
+	fifo_init(&keyboard_fifo, keyboard_buf, sizeof(uint8_t), BUFF_SIZE);
+    fifo_init(&mouse_fifo, mouse_buf, sizeof(uint8_t), BUFF_SIZE);
+	fifo_init(&joystick_fifo, joystick_buf, sizeof(uint8_t), BUFF_SIZE);
 }
 
-void console_write(uint8_t ch)
+void keyboard_write(uint8_t ch)
 {
-    uint32_t * write_addr = fifo_get_write_addr(&console_fifo);
+    uint32_t * write_addr = fifo_get_write_addr(&keyboard_fifo);
     *write_addr = ch;
-    fifo_write_done(&console_fifo);
+    fifo_write_done(&keyboard_fifo);
 }
 
-uint8_t console_read(void)
+uint8_t keyboard_read(void)
 {
-    uint32_t * read_addr = fifo_get_read_addr(&console_fifo);
-    fifo_read_done(&console_fifo);
+    uint32_t * read_addr = fifo_get_read_addr(&keyboard_fifo);
+    fifo_read_done(&keyboard_fifo);
     return *read_addr;
 }
 
@@ -39,9 +47,9 @@ void console_task_exec(void)
     uint32_t h = de_layer_get_h();
     uint32_t w = de_layer_get_w();
 
-    if(fifo_empty(&console_fifo) != 1)
+    if(fifo_empty(&keyboard_fifo) != 1)
     {
-        ch = console_read();
+        ch = keyboard_read();
         LOG_I("%c",ch);
     
         char *bitmap = font8x8_basic[ch];

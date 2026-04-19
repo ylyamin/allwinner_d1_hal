@@ -14,7 +14,7 @@
 #include "doomtype.h"
 
 extern tlsf_t mem_pool;
-extern struct fifo_t console_fifo;
+extern struct fifo_t keyboard_fifo;
 extern uint32_t *doom_framebuffer;
 
 void doom_print_fnc(const char* fmt)
@@ -117,23 +117,23 @@ void doom_task_init(void)
     de_layer_set(doom_framebuffer, 0);
 }
 
-uint8_t ch;
+uint8_t key, previous_key;
 
 void doom_task_exec(void)
 {
 
-    if(fifo_empty(&console_fifo) != 1)
+    if(fifo_empty(&keyboard_fifo) != 1)
     {
-        ch = console_read();
-        if(ch == HID_KEY_ENTER          )ch = DOOM_KEY_ENTER;
-        if(ch == HID_KEY_SPACE          )ch = DOOM_KEY_SPACE;
-        if(ch == HID_KEY_ARROW_RIGHT    )ch = DOOM_KEY_RIGHT_ARROW;
-        if(ch == HID_KEY_ARROW_LEFT     )ch = DOOM_KEY_LEFT_ARROW;
-        if(ch == HID_KEY_ARROW_DOWN     )ch = DOOM_KEY_DOWN_ARROW;
-        if(ch == HID_KEY_ARROW_UP       )ch = DOOM_KEY_UP_ARROW;
-        if(ch == HID_KEY_CONTROL_RIGHT  )ch = DOOM_KEY_CTRL;
-        if(ch == HID_KEY_CONTROL_LEFT   )ch = DOOM_KEY_CTRL;
-        doom_key_down(ch);
+        key = keyboard_read();
+        if(key == HID_KEY_ENTER          )key = DOOM_KEY_ENTER;
+        if(key == HID_KEY_SPACE          )key = DOOM_KEY_SPACE;
+        if(key == HID_KEY_ARROW_RIGHT    )key = DOOM_KEY_RIGHT_ARROW;
+        if(key == HID_KEY_ARROW_LEFT     )key = DOOM_KEY_LEFT_ARROW;
+        if(key == HID_KEY_ARROW_DOWN     )key = DOOM_KEY_DOWN_ARROW;
+        if(key == HID_KEY_ARROW_UP       )key = DOOM_KEY_UP_ARROW;
+        if(key == HID_KEY_CONTROL_RIGHT  )key = DOOM_KEY_CTRL;
+        if(key == HID_KEY_CONTROL_LEFT   )key = DOOM_KEY_CTRL;
+        doom_key_down(key);
         //doom_button_down(doom_button_t button);
     }
 
@@ -142,9 +142,11 @@ void doom_task_exec(void)
     static int frame_cnt = 0;
     if (++frame_cnt == 2)
     {
-        doom_key_up(ch);
+        doom_key_up(previous_key);
         frame_cnt = 0;
     }
+    previous_key = key;
+
     //doom_button_up(doom_button_t button);
     //doom_mouse_move(int delta_x, int delta_y);
     //LOG_D("Time: %d",get_time_ms() / 1000);

@@ -5,7 +5,7 @@ Is minimal bare-metal library could be used to run own OS or whatever. A depende
 Mostly based on @robots [allwinner_t113](https://github.com/robots/allwinner_t113) and @ua1arn [hftrx](https://github.com/ua1arn/hftrx) projects.
 
 ## Features
-- DOOM game can play!
+- You can play DOOM on this!
 ![Lichee_RV_doom](documentation/Pics/Lichee_RV_doom.jpg)
 - Working graphics with LCD RGB 4.3 inch (043026-N6(ML) ST7701S SPI)
 - USB Host with support USB 2.0/1.0 Keyboard, Mouse
@@ -18,7 +18,6 @@ Mostly based on @robots [allwinner_t113](https://github.com/robots/allwinner_t11
 - UART output is blocking 
 
 ## Executed at hardware such as:
-- [ClockworkPi DevTerm R-01](https://www.clockworkpi.com/home-devterm)
 - [Sipeed Lichee RV + Dock](https://wiki.sipeed.com/hardware/en/lichee/RV/Dock.html)
 
 # Installation
@@ -169,16 +168,12 @@ Restoring binary file build/app.bin into memory (0x40000000 to 0x40600000)
 ```
 
 ## Hardware details
-- [ClockworkPi DevTerm R01](https://www.clockworkpi.com/home-devterm)
 - [Sipeed Lichee RV + Dock](https://wiki.sipeed.com/hardware/en/lichee/RV/Dock.html)
 - Lichee RV Dock extension LCD adapter board
 - 4.3 RGB LCD Display (043026-N6(ML)) with IC ST7001s (SPI)
 - FTDI 2248-c USB/UART adapter
 - Sipeed RV-Debugger Plus
 - MicroSD_Sniffer
-
-### ClockworkPi DevTerm R01 assembly
-![Devterm_R01_assembly](documentation/Pics/Devterm_R01_assembly.jpg)
 
 ### Sipeed Lichee RV assembly
 ![Lichee_RV_assembly](documentation/Pics/Lichee_RV_assembly.jpg)

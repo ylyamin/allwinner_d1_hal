@@ -164,7 +164,7 @@ static void process_kbd_report(hid_keyboard_report_t const *report)
 
         uint8_t ch = report->keycode[i];
         if (report->modifier & (KEYBOARD_MODIFIER_LEFTCTRL | KEYBOARD_MODIFIER_RIGHTCTRL)) ch = HID_KEY_CONTROL_RIGHT;
-        console_write(ch);
+        keyboard_write(ch);
 
 
         #ifndef __ICCARM__ // TODO IAR doesn't support stream control ?
@@ -215,9 +215,6 @@ void cursor_movement(int8_t x, int8_t y, int8_t wheel)
   LOG_D("\r\n");
 #else
   //LOG_I("(%d %d %d)\r\n", x, y, wheel);
-
-  console_write(x);
-
 #endif
 }
 
@@ -234,7 +231,7 @@ static void process_mouse_report(hid_mouse_report_t const * report)
        report->buttons & MOUSE_BUTTON_MIDDLE ? 'M' : '-',
        report->buttons & MOUSE_BUTTON_RIGHT  ? 'R' : '-'); */
 
-    if (report->buttons & MOUSE_BUTTON_LEFT) console_write(HID_KEY_CONTROL_RIGHT);
+    if (report->buttons & MOUSE_BUTTON_LEFT) keyboard_write(HID_KEY_CONTROL_RIGHT);
   }
 
   //------------- cursor movement -------------//
