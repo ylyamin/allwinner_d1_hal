@@ -148,7 +148,7 @@ void I_SetPalette(byte* palette)
         pal[i] =
             ((uint32_t)r << 16) | ((uint32_t)g << 8) | (uint32_t)b | 0xff << 24;
     }
-    doom_memcpy(screen_palette, palette, 256 * 3);
+    memcpy(screen_palette, palette, 256 * 3);
 }
 
 
