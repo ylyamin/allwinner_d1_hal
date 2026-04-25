@@ -4,7 +4,32 @@
 #include <log.h>
 #include <axp228.h>
 /*
-TXW686017B0		
+LVDS panel TXW686017B0 with IC NV3051F.
+Shenzhen Tian xian wei Technology.
+
+//#define HDP   600//玻璃实际(480) 需两边插黑处理 Horizontal 
+//#define VDP   1280    //vertiacal
+
+//#define VSW  2 //Vertical Synchronization
+//#define VBP   8 //Vertical Back Porch
+//#define VFP   16 //Vertical Front Porch
+
+//#define HSW  2 //Horizontal Synchronization ?
+//#define HBP   44 //Horizontal Back Porch
+//#define HFP   46  //Horizontal Front Porch
+
+//frame rate=60Hz////
+//Pixel Clk=54.23Mhz//(480:44.82Mhz)
+
+SPI_RES=1;
+Delay(10);	//延迟10ms
+SPI_RES=0;
+Delay(220);//延迟220ms
+SPI_RES=1;
+Delay(120);  //延迟120ms          
+
+Delay(20);  //延迟20ms  
+送平台数据
 
 1	VCOM/NC		
 2	VDD 3.3V 		
@@ -48,24 +73,12 @@ TXW686017B0
 40	LED+ 	        	
 */
 
-//#define HDP   600//玻璃实际(480) 需两边插黑处理 Horizontal 
-//#define VDP   1280    //vertiacal
 
-//#define HSW  2 //Horizontal Synchronization ?
-//#define HBP   44 //Horizontal Back Porch
-//#define HFP   46  //Horizontal Front Porch
-
-//#define VSW  2 //Vertical Synchronization
-//#define VBP   8 //Vertical Back Porch
-//#define VFP   16 //Vertical Front Porch
-
-//frame rate=60Hz////
-//Pixel Clk=54.23Mhz//(480:44.82Mhz)
 
 timing_t timing = {
     .lcd_type = LVDS,
-	.pixclk = 54230000, //54.23Mhz
-	.lcd_w = 480,      //width 
+	.pixclk = 54000000, //54.23Mhz
+	.lcd_w = 600,      //width 
 	.lcd_h = 1280,       //hight
     .scale_w = 480,
     .scale_h = 1280,
@@ -82,42 +95,32 @@ timing_t timing = {
 //dotclk = fframe × (X + HBP + HFP + HSPW) × (Y + VBP + VFP + VSPW) 54,225,120
 
 struct gpio_t lcd_gpio[] = {
-/* 	{
+ 	{
 		.gpio = GPIOG,
 		.pin = BV(13),  //RST
 		.mode = GPIO_MODE_OUTPUT,
         .pupd = GPIO_PUPD_UP,
 		.drv =  GPIO_DRV_3,
         .state = GPIO_RESET,
-	}, */
-
-	{
-		.gpio = GPIOD,
-		.pin =  BV(19),  //RST
-		.mode = GPIO_MODE_OUTPUT,
-        .pupd = GPIO_PUPD_DOWN,
-		.drv =  GPIO_DRV_3,
-        .state = GPIO_SET,
-	},
-
+	}, 
 
     {
 		.gpio = GPIOD,
-		.pin =  BV(20), //BL 22
+		.pin =  BV(22), //BL 22
 		.pupd = GPIO_PUPD_UP,
 		.mode = GPIO_MODE_OUTPUT,
 		.drv =  GPIO_DRV_3,
 	},
 	{
 		.gpio = GPIOD,
-		.pin =  0x3ff, // D0-D9
+		.pin =  0x3fffff, // D0-D9
 		.mode = GPIO_MODE_FNC3,
 		.pupd = GPIO_PUPD_OFF,
 		.drv =  GPIO_DRV_3, 
 		.state = GPIO_RESET,
 	},
     
-    {
+/*     {
 		.gpio = GPIOD,
 		.pin = BV(10),  //CS
 		.mode = GPIO_MODE_FNC4,
@@ -144,7 +147,7 @@ struct gpio_t lcd_gpio[] = {
 		.mode = GPIO_MODE_FNC4,
         .pupd = GPIO_PUPD_UP,
 		.drv = GPIO_DRV_3,
-	}, 
+	},  */
 };
 
 #define panel_reset_1 gpio_set(&lcd_gpio[0], GPIO_SET)
@@ -176,21 +179,19 @@ void LCD_bl_close(void)
 
 void LCD_panel_init(void)
 {
-    LOG_D("LCD_panel_init 3051");
+    LOG_D("LCD_panel_init 3051\n");
+
 	panel_reset_1;
-	axp_LCD_control(TWI0,1);
-	
-	delay_ms(10); //10
-
-
+	//axp_LCD_control(TWI0,1);
+	delay_ms(10);  //10
     panel_reset_0;
-	delay_us(220); //220
-
-
+	delay_us(10); //220
     panel_reset_1;
-	delay_ms(120); //120 
+	delay_ms(10); //120 
 
-    LOG_D("LCD_panel_init finish");
+	//delay_ms(20);  //20 
+
+    LOG_D("LCD_panel_init finish\n");
 }
 
 

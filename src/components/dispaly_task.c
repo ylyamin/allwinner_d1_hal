@@ -41,7 +41,7 @@ void display_task_init(void)
  	uint32_t h = de_layer_get_h();
     framebuffer = tlsf_malloc(mem_pool, w * h * 4);
 
-	gr_fill(framebuffer,w,h, 0x00000000);
+	gr_fill(framebuffer,w,h, 0x000000ff);
  	gr_draw_line(framebuffer,w,h, 0, 0, w-1, h-1, 0xff00ffff);
 	gr_draw_line(framebuffer,w,h, w-1, 0, 0, h-1, 0xff00ffff);
 
@@ -61,7 +61,7 @@ void display_task_init(void)
 	de_init();
 	de_layer_set(framebuffer, 0);
 
-	//tcon_dump_regs();
+	tcon_dump_regs();
 }
 
 uint32_t line_x = 0;

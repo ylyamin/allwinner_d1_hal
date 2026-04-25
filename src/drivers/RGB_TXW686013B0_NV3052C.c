@@ -5,7 +5,8 @@
 #include <axp228.h>
 
 /*
-RGB panel TXW686013B0
+RGB panel TXW686013B0 with IC NV3052C
+Shenzhen Tian xian wei Technology.
 
 //#define HDP   600//玻璃实际(480) 需两边各插黑60处理
 //#define VDP   1280
@@ -13,13 +14,13 @@ RGB panel TXW686013B0
 //#define VBPD   6
 //#define VFPD  16
 //#define VSPW   2
+
 //#define HBPD  44
 //#define HFPD  46 
 //#define HSPW  2 
 
 //frame rate=60Hz
 //Pixel Clk=54.33Mhz
-
 
 SPI_RES=1;
 Delay(10);	//延迟10ms
@@ -96,8 +97,6 @@ timing_t timing = {
 //dotclk = fframe × (X + HBP + HFP + HSPW) × (Y + VBP + VFP + VSPW) 54,225,120
 
 struct gpio_t lcd_gpio[] = {
-
-#if 1
 	{
 		.gpio = GPIOE,
 		.pin = BV(15),  //RST
@@ -120,33 +119,6 @@ struct gpio_t lcd_gpio[] = {
 		.drv =  GPIO_DRV_3, 
 		.state = GPIO_RESET,
 	},
-#else
-	{
-		.gpio = GPIOD,
-		.pin =  BV(10),  //RST 19
-		.mode = GPIO_MODE_OUTPUT,
-        .pupd = GPIO_PUPD_DOWN,
-		.drv =  GPIO_DRV_3,
-        .state = GPIO_SET,
-	},
-
-
-    {
-		.gpio = GPIOD,
-		.pin =  BV(20), //BL 22
-		.pupd = GPIO_PUPD_UP,
-		.mode = GPIO_MODE_OUTPUT,
-		.drv =  GPIO_DRV_3,
-	},
-	{
-		.gpio = GPIOD,
-		.pin =  0x3fffff, // D0-D9
-		.mode = GPIO_MODE_FNC2,
-		.pupd = GPIO_PUPD_OFF,
-		.drv =  GPIO_DRV_3, 
-		.state = GPIO_RESET,
-	},
-#endif
 };
 
 #define panel_reset_1 gpio_set(&lcd_gpio[0], GPIO_SET)
@@ -178,7 +150,7 @@ void LCD_bl_close(void)
 void LCD_panel_init(void)
 {
     LOG_D("=====================LCD_panel_init 3052\n");
-	axp_LCD_control(TWI0,1);
+	//axp_LCD_control(TWI0,1);
 
 	panel_reset_1;
 	delay_ms(10);

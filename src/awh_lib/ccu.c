@@ -62,7 +62,7 @@ void ccu_tcon_set_video0x4_div(uint32_t div)
 
 void ccu_dsi_enable(void)
 {
-	CCU->DSI_CLK_REG = (1 << 24) | (0 << 8) | (3 << 0); //! orig 1 - pll, 2 - video
+	CCU->DSI_CLK_REG = (1 << 24) | (0 << 8) | (0 << 0); //! orig 1 - pll, 2 - video, M = 0
 	CCU->DSI_CLK_REG |= BV(31);
 	CCU->DSI_BGR_REG |= BV(16);
 	CCU->DSI_BGR_REG |= BV(0);
@@ -269,6 +269,8 @@ void ccu_video0_pll_set(uint8_t n, uint8_t m)
 {
 	// default 1188MHz
 	CCU->PLL_VIDEO0_CTRL_REG &= ~BV(31);
+
+	CCU->PLL_VIDEO0_CTRL_REG &= ~(0x3); //! M0,M1 = 0
 
 	if (m == 1) {
 		CCU->PLL_VIDEO0_CTRL_REG &= ~BV(1);
