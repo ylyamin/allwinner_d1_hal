@@ -124,7 +124,7 @@ void LCD_panel_init(void)
 {
 	
     uint32_t i;
-    LOG_D("<0>raoyiming +++ LCD_panel_init\n");
+    LOG_D("LCD_panel_init icn9707");
 
     /*all off*/
     axp_LCD_control(TWI0,0);
@@ -159,5 +159,5 @@ void LCD_panel_init(void)
     //!sunxi_lcd_dsi_clk_enable(sel);
 	/* T6 */
 	//delay_ms(120);
-    LOG_D("<0>raoyiming +++ LCD_panel_init finish\n");
+    LOG_D("LCD_panel_init finish");
 }

@@ -51,13 +51,14 @@ void display_task_init(void)
 
 	//2
 	tcon_lcd_init(timing);
-
-	//3
-	LCD_panel_init();
-
+	
 	//4
 	tcon_lcd_enable();
+	//3
+	LCD_panel_init();
+	
 
+	
 	de_init();
 	de_layer_set(framebuffer, 0);
 

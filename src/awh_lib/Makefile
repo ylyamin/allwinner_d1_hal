@@ -12,13 +12,13 @@ SRC +=	$(SRC_DIR)/awh_lib/fifo.c
 
 ifeq ("$(PLATFORM)", "devterm")
 #SRC +=	$(SRC_DIR)/awh_lib/tcon_lcd_rgb.c
-SRC +=	$(SRC_DIR)/awh_lib/tcon_lcd_lvds.c
-#SRC +=	$(SRC_DIR)/awh_lib/tcon_lcd_dsi.c
-#SRC +=	$(SRC_DIR)/awh_lib/mipi_dsi.c
+#SRC +=	$(SRC_DIR)/awh_lib/tcon_lcd_lvds.c
+SRC +=	$(SRC_DIR)/awh_lib/tcon_lcd_dsi.c
+SRC +=	$(SRC_DIR)/awh_lib/mipi_dsi.c
 endif
 
 ifeq ("$(PLATFORM)", "sipeed")
-SRC +=	$(SRC_DIR)/awh_lib/tcon_lcd_rgb.c
+#SRC +=	$(SRC_DIR)/awh_lib/tcon_lcd_rgb.c
 #SRC +=	$(SRC_DIR)/awh_lib/tcon_lcd_lvds.c
 endif
 
