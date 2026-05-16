@@ -51,18 +51,17 @@ void display_task_init(void)
 
 	//2
 	tcon_lcd_init(timing);
-	
-	//4
-	tcon_lcd_enable();
+
 	//3
 	LCD_panel_init();
-	
 
-	
+	//4
+	tcon_lcd_enable();
+
 	de_init();
 	de_layer_set(framebuffer, 0);
 
-	tcon_dump_regs();
+	//tcon_dump_regs();
 }
 
 uint32_t line_x = 0;
@@ -70,23 +69,23 @@ uint32_t line_y = 0;
 
 void display_task_exec(void)
 {
-/* 	uint32_t h = de_layer_get_h();
+ 	uint32_t h = de_layer_get_h();
 	uint32_t w = de_layer_get_w();
 	unsigned long ms = get_time_ms();
 
     if (!(ms % 200))
 	{
-		gr_draw_line(&framebuffer, w, h, line_x, 0, line_x, h-1, 0xff0000ff);	// clean previous
-		gr_draw_line(&framebuffer, w, h, 0, line_y, w-1, line_y, 0xff0000ff);	// clean previous
+		gr_draw_line(framebuffer, w, h, line_x, 0, line_x, h-1, 0xff0000ff);	// clean previous
+		gr_draw_line(framebuffer, w, h, 0, line_y, w-1, line_y, 0xff0000ff);	// clean previous
 
 		line_x += w / 20;
 		line_y += h / 20;
 
-		gr_draw_line(&framebuffer, w, h, line_x, 0, line_x, h-1, 0xff00ff00);	// draw new
-		gr_draw_line(&framebuffer, w, h, 0, line_y, w-1, line_y, 0xffff0000);	// draw new
+		gr_draw_line(framebuffer, w, h, line_x, 0, line_x, h-1, 0xff00ff00);	// draw new
+		gr_draw_line(framebuffer, w, h, 0, line_y, w-1, line_y, 0xffff0000);	// draw new
 
 		if (line_x > w) line_x = 0; 									//reset in the end
 		if (line_y > h) line_y = 0; 									//reset in the end
-	}	   */
+	}	   
   
 }

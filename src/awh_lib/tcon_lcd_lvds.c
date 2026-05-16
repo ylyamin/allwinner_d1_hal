@@ -172,7 +172,7 @@ void tcon_lcd_init(timing_t timing)
 	tcon_lcd_disable();
 
 // Step 1 Select HV interface type 
-	
+
 	TCON_LCD0->LCD_CTL_REG &= (0 << 24);		// Set the interface type of LCD controlle: 0 - HV(Sync+DE), 1 - 8080 I/F; 
 	TCON_LCD0->LCD_CTL_REG &= ~BV(0);			// Source Select: 0 - DE, Color - 1
 	TCON_LCD0->LCD_HV_IF_REG &= ~(0xf << 28); 	// Set the HV mode of LCD controller: 0 = 24bit/1cycle parallel mode

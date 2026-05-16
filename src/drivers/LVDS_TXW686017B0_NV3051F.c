@@ -80,7 +80,7 @@ timing_t timing = {
 	.pixclk = 54000000, //54.23Mhz
 	.lcd_w = 600,      //width 
 	.lcd_h = 1280,       //hight
-    .scale_w = 600,
+    .scale_w = 480,
     .scale_h = 1280,
 
 	.hbp = 44,          //horizontal back porch
@@ -96,8 +96,8 @@ timing_t timing = {
 
 struct gpio_t lcd_gpio[] = {
  	{
-		.gpio = GPIOG,
-		.pin = BV(13),  //RST
+		.gpio = GPIOD,
+		.pin = BV(19),  //RST
 		.mode = GPIO_MODE_OUTPUT,
         .pupd = GPIO_PUPD_UP,
 		.drv =  GPIO_DRV_3,
@@ -106,14 +106,14 @@ struct gpio_t lcd_gpio[] = {
 
     {
 		.gpio = GPIOD,
-		.pin =  BV(22), //BL 22
+		.pin =  BV(20), //BL 22
 		.pupd = GPIO_PUPD_UP,
 		.mode = GPIO_MODE_OUTPUT,
 		.drv =  GPIO_DRV_3,
 	},
 	{
 		.gpio = GPIOD,
-		.pin =  0x3fffff, // D0-D9
+		.pin =  0x3ff, // D0-D9
 		.mode = GPIO_MODE_FNC3,
 		.pupd = GPIO_PUPD_OFF,
 		.drv =  GPIO_DRV_3, 
@@ -182,14 +182,12 @@ void LCD_panel_init(void)
     LOG_D("LCD_panel_init 3051\n");
 
 	panel_reset_1;
-	//axp_LCD_control(TWI0,1);
+	axp_LCD_control(TWI0,1);
 	delay_ms(10);  //10
     panel_reset_0;
-	delay_us(10); //220
+	delay_us(220); //220
     panel_reset_1;
-	delay_ms(10); //120 
-
-	//delay_ms(20);  //20 
+	delay_ms(120); //120 
 
     LOG_D("LCD_panel_init finish\n");
 }

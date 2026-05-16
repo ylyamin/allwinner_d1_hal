@@ -46,7 +46,7 @@ end:
 	
 	LOG_D("tcon: best: n=%d m=%d err=%d\n", best_n, best_m, best_err);
 
-	ccu_video0_pll_set(27, 2); //dsi
+	ccu_video0_pll_set(16, 0); //dsi
 	//ccu_video0_pll_set(best_n, best_m);
 	ccu_tcon_set_video0x4_div(1);
 	ccu_tcon_lcd_enable();
