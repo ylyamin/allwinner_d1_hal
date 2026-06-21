@@ -31,9 +31,9 @@ uint8_t fmtpitch[] = {
 
 struct layer_t layers[1] = {
 	{
-		.lcd_w = 480,
+		.lcd_w = 600,
 		.lcd_h = 1280,
-		.w = 480, //320,
+		.w = 600, //320,
 		.h = 1280, //200,
 		.fmt = LAY_FBFMT_ARGB_8888,
 		.alpha = 0xff,
@@ -41,7 +41,7 @@ struct layer_t layers[1] = {
 		.win = {
 			.x0 = 0,
 			.y0 = 0,
-			.x1 = 480,
+			.x1 = 600,
 			.y1 = 1280,
 		},
 	},
@@ -141,12 +141,12 @@ void de_layer_set(void *fb0, void *fb1)
 	uint32_t p = fmt_to_pitch(layers[0].fmt);
 
 	DE_MUX_OVL_UI1->LAYER[0].ATTCTL = BV(0) | (layers[0].fmt << 8) | BV(1) | (layers[0].alpha << 24); 
-	DE_MUX_OVL_UI1->LAYER[0].MBSIZE = ((layers[0].h-1) << 16) | (layers[0].w-1);
-	DE_MUX_OVL_UI1->LAYER[0].COOR = ((layers[0].win.y0) << 16) | (layers[0].win.x0);
-	DE_MUX_OVL_UI1->LAYER[0].PITCH = p * layers[0].w; 
+	DE_MUX_OVL_UI1->LAYER[0].MBSIZE = ((layers[0].h-1) << 16) | (layers[0].w-1); //layers heigh width
+	DE_MUX_OVL_UI1->LAYER[0].COOR = ((layers[0].win.y0) << 16) | (layers[0].win.x0); //coor layer on overlay window
+	DE_MUX_OVL_UI1->LAYER[0].PITCH = p * layers[0].w; //layer memmory
 	DE_MUX_OVL_UI1->LAYER[0].TOP_LADD = (uint32_t)layers[0].fb[0];
 
-	DE_MUX_OVL_UI1->SIZE = ((h-1) << 16) | (w-1);
+	DE_MUX_OVL_UI1->SIZE = ((layers[0].lcd_h-1) << 16) | (layers[0].lcd_w-1); //overlay heigh width
 
 #if 0
 	if  ((w < layers[0].lcd_w) || (h < layers[0].lcd_h)) {

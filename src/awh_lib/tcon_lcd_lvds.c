@@ -78,7 +78,7 @@ static void tcon_int_handler(void *arg)
 	if (gint0 & BV(15)) { //LCD_VB_INT_FLAG
 		TCON_LCD0->LCD_GINT0_REG = BV(15);
 
-		de_int_vblank();
+		//de_int_vblank();
 	}
 
 	if (gint0 & BV(13)) {

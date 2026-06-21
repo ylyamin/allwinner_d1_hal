@@ -59,7 +59,7 @@ void gr_draw_circle(void *fb, uint32_t w, uint32_t h, int16_t xx, int16_t yy, in
 void gr_draw_vline_xyh(void *fb, uint32_t w, uint32_t h, int16_t x, int16_t y, int16_t hh, uint32_t color)
 {
 	if ((x >= w) || (y >= h)) return;
-	if ((y+h-1) >= h) hh = w - y;
+	if ((y+h-1) >= h) hh = h - y;
 
 	for (int i = 0; i < hh; i++) {
 		gr_draw_pixel(fb, w, hh, x, y+i, color);
