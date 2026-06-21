@@ -13,6 +13,9 @@ void ccu_init(void);
 void ccu_de_set_peripx2_div(uint32_t div);
 void ccu_de_enable(void);
 
+void ccu_g2d_set_peripx2_div(uint32_t div);
+void ccu_g2d_enable(void);
+
 void ccu_dsi_enable(void);
 void ccu_lvds_enable(void);
 

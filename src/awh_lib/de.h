@@ -31,6 +31,7 @@ struct layer_t {
 void de_set_layer(struct layer_t layer);
 void de_init(void);
 void de_commit(void);
+uint32_t fmt_to_pitch(uint8_t fmt);
 
 void de_layer_set(void *fb, void *fb1);
 uint32_t de_layer_get_h(void);

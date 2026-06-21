@@ -9,6 +9,7 @@ SRC +=	$(SRC_DIR)/awh_lib/irq.c
 SRC +=	$(SRC_DIR)/awh_lib/led.c
 #SRC +=	$(SRC_DIR)/awh_lib/smhc.c
 SRC +=	$(SRC_DIR)/awh_lib/fifo.c
+SRC +=	$(SRC_DIR)/awh_lib/g2d.c
 
 ifeq ("$(PLATFORM)", "devterm")
 #SRC +=	$(SRC_DIR)/awh_lib/tcon_lcd_rgb.c

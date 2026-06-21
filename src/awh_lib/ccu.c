@@ -54,6 +54,19 @@ void ccu_de_enable(void)
 	CCU->DE_BGR_REG |= BV(0);
 }
 
+void ccu_g2d_set_peripx2_div(uint32_t div)
+{
+	CCU->G2D_CLK_REG = (0 << 24) | (0 << 8) | (div-1); // src = peri(x2), n=1, m=div
+	CCU->G2D_CLK_REG |= BV(31);
+}
+
+void ccu_g2d_enable(void)
+{
+	CCU->G2D_BGR_REG |= BV(16);
+	CCU->G2D_BGR_REG |= BV(0);
+}
+
+
 void ccu_tcon_set_video0x4_div(uint32_t div)
 {
 	CCU->TCONLCD_CLK_REG = (1 << 24) | (0 << 8) | (div-1); // src = video0(x4), n=1, m=div

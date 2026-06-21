@@ -38,7 +38,7 @@ endif
 
 # Platform: devterm or sipeed
 
-PLATFORM_D = s
+PLATFORM_D = d
 ifeq ("$(origin platform)", "command line")
 	PLATFORM = $(platform)
 	ifeq ("$(PLATFORM)","sipeed")

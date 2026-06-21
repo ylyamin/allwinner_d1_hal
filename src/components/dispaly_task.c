@@ -3,6 +3,7 @@
 #include <log.h>
 #include <gr.h>
 #include <de.h>
+#include <g2d.h>
 #include <tcon_lcd.h>
 #include <ccu.h>
 #include <mipi_dsi.h>
@@ -16,6 +17,7 @@ extern void LCD_panel_init(void);
 
 extern tlsf_t mem_pool;
 unsigned char *framebuffer; 
+unsigned char *framebuffer2; 
 
 void display_task_init(void)
 {
@@ -24,8 +26,8 @@ void display_task_init(void)
 	struct layer_t layer = {
 			.lcd_w = 600,
 			.lcd_h = 1280,
-			.w = 480,
-			.h = 1280,
+			.w = 200,
+			.h = 320,
 			.fmt = LAY_FBFMT_ARGB_8888,
 			.alpha = 0xff,
 			.win = {
@@ -37,9 +39,12 @@ void display_task_init(void)
 	};
  	de_set_layer(layer);
 
-	uint32_t w = de_layer_get_w();
- 	uint32_t h = de_layer_get_h();
+	uint32_t h = de_layer_get_w();
+ 	uint32_t w = de_layer_get_h();
     framebuffer = tlsf_malloc(mem_pool, w * h * 4);
+    framebuffer2 = tlsf_malloc(mem_pool, w * h * 4);
+
+
 	gr_fill(framebuffer,w,h, 0x000000ff);
 
 	gr_draw_hline_xyw(framebuffer, w, h, /*x*/ 10,		/*y*/ 10,		/*ww*/ w - 20, 0x00ff0000);
@@ -62,9 +67,10 @@ void display_task_init(void)
 
 	//4
 	tcon_lcd_enable();
-
 	de_init();
-	de_layer_set(framebuffer, 0);
+	de_layer_set(framebuffer2, 0);
+
+	g2d_init();
 
 	//tcon_dump_regs();
 }
@@ -74,11 +80,11 @@ uint32_t line_y = 0;
 
 void display_task_exec(void)
 {
-	uint32_t w = de_layer_get_w();
- 	uint32_t h = de_layer_get_h();
+	uint32_t h = de_layer_get_w();
+ 	uint32_t w = de_layer_get_h();
 	unsigned long ms = get_time_ms();
 
-/*     if (!(ms % 200))
+/*      if (!(ms % 200))
 	{
 		gr_draw_line(framebuffer, w, h, line_x, 0, line_x, h-1, 0x000000ff);	// clean previous
 		gr_draw_line(framebuffer, w, h, 0, line_y, w-1, line_y, 0x000000ff);	// clean previous
@@ -94,6 +100,7 @@ void display_task_exec(void)
 
 		if (line_x > w) line_x = 0; 									//reset in the end
 		if (line_y > h) line_y = 0; 									//reset in the end
-	}	   */ 
-   
+
+	}	 */   
+
 }
