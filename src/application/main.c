@@ -29,7 +29,7 @@ void main(void)
         display_task_init();	
     #endif
 
-    delay_ms(100);
+    //delay_ms(100);
 
     #ifdef CONFIG_USE_CONSOLE
         console_task_init();
@@ -55,7 +55,7 @@ void main(void)
         #endif
 
         #ifdef CONFIG_USE_CONSOLE
-            //console_task_exec();
+            console_task_exec();
         #endif
 
     }

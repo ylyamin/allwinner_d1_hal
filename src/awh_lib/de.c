@@ -111,7 +111,8 @@ void de_init(void)
 
 	DE_MUX_BLD->CTL[0] = 0x03010301;
 	DE_MUX_BLD->PIPE[0].FILL_COLOR = 0xFFFF8000;
-	DE_MUX_BLD->PIPE[0].CH_ISIZE = ((layers[0].lcd_h-1) << 16) | (layers[0].lcd_w-1);
+	DE_MUX_BLD->PIPE[0].CH_ISIZE = ((768-1) << 16) | (480-1);
+	DE_MUX_BLD->PIPE[0].CH_OFFSET = (256 << 16) | (60);
 
 	de_commit();
 }
@@ -126,6 +127,42 @@ void de_commit(void)
 	DE_MUX_GLB->DBUFFER = 1;
 }
 
+#define SUN8I_UI_SCALER_SCALE_MIN		1
+#define SUN8I_UI_SCALER_SCALE_MAX		((1UL << 20) - 1)
+
+#define SUN8I_UI_SCALER_SCALE_FRAC		20
+#define SUN8I_UI_SCALER_PHASE_FRAC		20
+#define SUN8I_UI_SCALER_COEFF_COUNT		16
+
+#define DE2_VI_SCALER_UNIT_BASE 0x20000
+#define DE2_VI_SCALER_UNIT_SIZE 0x20000
+#define DE2_UI_SCALER_UNIT_SIZE 0x10000
+
+static int sun8i_ui_scaler_coef_index(unsigned int step)
+{
+	unsigned int scale, int_part, float_part;
+	return 0;
+
+	scale = step >> (SUN8I_UI_SCALER_SCALE_FRAC - 3);
+	int_part = scale >> 3;
+	float_part = scale & 0x7;
+
+	switch (int_part) {
+	case 0:
+		return 0;
+	case 1:
+		return float_part;
+	case 2:
+		return 8 + (float_part >> 1);
+	case 3:
+		return 12;
+	case 4:
+		return 13;
+	default:
+		return 14;
+	}
+}
+
 void de_layer_set(void *fb0, void *fb1)
 {
 	de_commit_wait();
@@ -136,8 +173,8 @@ void de_layer_set(void *fb0, void *fb1)
 	layers[0].fb_dbl = fb1 != 0;
 
 	LOG_D("de: set layer, fmt = %d", layers[0].fmt);
-	uint32_t w = layers[0].win.x1 - layers[0].win.x0;
-	uint32_t h = layers[0].win.y1 - layers[0].win.y0;
+	uint32_t w = layers[0].w;
+	uint32_t h = layers[0].h;
 	uint32_t p = fmt_to_pitch(layers[0].fmt);
 
 	DE_MUX_OVL_UI1->LAYER[0].ATTCTL = BV(0) | (layers[0].fmt << 8) | BV(1) | (layers[0].alpha << 24); 
@@ -146,33 +183,76 @@ void de_layer_set(void *fb0, void *fb1)
 	DE_MUX_OVL_UI1->LAYER[0].PITCH = p * layers[0].w; //layer memmory
 	DE_MUX_OVL_UI1->LAYER[0].TOP_LADD = (uint32_t)layers[0].fb[0];
 
-	DE_MUX_OVL_UI1->SIZE = ((layers[0].lcd_h-1) << 16) | (layers[0].lcd_w-1); //overlay heigh width
+	//DE_MUX_OVL_UI1->SIZE = ((layers[0].lcd_h-1) << 16) | (layers[0].lcd_w-1); //overlay lcd heigh lcd width
+	DE_MUX_OVL_UI1->SIZE = ((320-1) << 16) | (200-1); //overlay lcd heigh lcd width
+
+	unsigned int src_w = 200;
+	unsigned int src_h = 320;
+
+	unsigned int dst_w = 480;
+	unsigned int dst_h = 768;
+
+#if 1
+	uint32_t hscale = (0x10000 << 4) * src_w / dst_w;
+	uint32_t vscale = (0x10000 << 4) * src_h / dst_h;
+	uint32_t layer = 0;
+
+	uint32_t base, hphase = 0, vphase = 0;
+	int i, offset;
+
+	base = DE2_VI_SCALER_UNIT_BASE +
+		DE2_VI_SCALER_UNIT_SIZE * 1 +
+		DE2_UI_SCALER_UNIT_SIZE * layer;
+
+	hphase <<= SUN8I_UI_SCALER_PHASE_FRAC - 16;
+	vphase <<= SUN8I_UI_SCALER_PHASE_FRAC - 16;
+
+	DE_MUX_GSU1->INSIZE_REG  = ((src_h-1) << 16) | (src_w - 1);
+	DE_MUX_GSU1->OUTSIZE_REG = ((dst_h-1) << 16) | (dst_w - 1);
+	DE_MUX_GSU1->HSTEP_REG = hscale;
+	DE_MUX_GSU1->VSTEP_REG = vscale;
+	DE_MUX_GSU1->HPHASE_REG = hphase;
+	DE_MUX_GSU1->VPHASE0_REG = vphase;
+
+	offset = sun8i_ui_scaler_coef_index(hscale) *
+			SUN8I_UI_SCALER_COEFF_COUNT;
+	for (i = 0; i < SUN8I_UI_SCALER_COEFF_COUNT; i++)
+		DE_MUX_GSU1->HCOEF_REG[i] = lan2coefftab16[offset + i];
+
+	DE_MUX_GSU1->CTRL_REG = 1 | 0x10;
+
+#endif
 
 #if 0
-	if  ((w < layers[0].lcd_w) || (h < layers[0].lcd_h)) {
-		uint64_t tmp = 0;
-		uint64_t vstep = 0;
+//	if  ((w < layers[0].lcd_w) || (h < layers[0].lcd_h)) {
+		unsigned long long tmp = 0;
+		unsigned long long vstep = 0;
 
 		// enable GSU (scaler unit)
 		LOG_D("de: enable scaler");
 
 		// set input resolution and output resolution
-		DE_MUX_GSU1->OUTSIZE_REG = ((layers[0].lcd_h-1) << 16) | (layers[0].lcd_w - 1);
-		DE_MUX_GSU1->INSIZE_REG = ((h-1) << 16) | (w - 1);
+		DE_MUX_GSU1->OUTSIZE_REG = ((dst_h-1) << 16) | (dst_w - 1);
+		DE_MUX_GSU1->INSIZE_REG = ((src_h-1) << 16) | (src_w - 1);
 
 		// calculate fractional hstep
-		tmp = w << GSU_PHASE_FRAC_BITWIDTH;
-		tmp = tmp / layers[0].lcd_w;
+		tmp = src_w << GSU_PHASE_FRAC_BITWIDTH;
+		tmp = tmp / dst_w;
+		//tmp = (unsigned int)(tmp >> GSU_FB_FRAC_BITWIDTH);
 
 		DE_MUX_GSU1->HSTEP_REG = tmp << GSU_PHASE_FRAC_REG_SHIFT;
-//		LOG_D("de: hstep = %08x\n\r", DE_MUX_GSU1->HSTEP_REG);
+		LOG_D("de: hstep = %08x\n\r", DE_MUX_GSU1->HSTEP_REG);
+		LOG_D("de: hstep = %08x\n\r", (0x10000 << 4) * src_w / dst_w);
 
 		// calculate fractional vstep
-		vstep = h << GSU_PHASE_FRAC_BITWIDTH;
-		vstep = vstep / layers[0].lcd_h;
+		vstep = src_h << GSU_PHASE_FRAC_BITWIDTH;
+		vstep = vstep / dst_h;
+		//vstep = (unsigned int)(vstep >> GSU_FB_FRAC_BITWIDTH);
 
 		DE_MUX_GSU1->VSTEP_REG = vstep << GSU_PHASE_FRAC_REG_SHIFT;
-//		LOG_D("de: vstep = %08x\n\r", DE_MUX_GSU1->VSTEP_REG);
+		LOG_D("de: vstep = %08x\n\r", DE_MUX_GSU1->VSTEP_REG);
+		LOG_D("de: vstep = %08x\n\r", (0x10000 << 4) * src_h / dst_h);
+
 
 		// calculate hphase (its always zero for our purpose)
 		tmp = (0 & 0xFFFFFFFF) >> (32 - GSU_PHASE_FRAC_BITWIDTH);
@@ -184,10 +264,10 @@ void de_layer_set(void *fb0, void *fb1)
 		DE_MUX_GSU1->VPHASE0_REG = tmp << GSU_PHASE_FRAC_REG_SHIFT;
 //		LOG_D("de: vphase = %08x\n\r", DE_MUX_GSU1->VPHASE0_REG);
 
-		uint32_t pt_coef = 0;
+		unsigned int pt_coef = 0;
 		
 		{
-			uint32_t scale_ratio, int_part, float_part, fir_coef_ofst;
+			unsigned int scale_ratio, int_part, float_part, fir_coef_ofst;
 			scale_ratio = vstep >> (GSU_PHASE_FRAC_BITWIDTH - 3);
 			int_part = scale_ratio >> 3;
 			float_part = scale_ratio & 0x7;
@@ -209,7 +289,7 @@ void de_layer_set(void *fb0, void *fb1)
 		}
 
 		DE_MUX_GSU1->CTRL_REG = 1 | 0x10;
-	}
+	//}
 #endif
 
 	LOG_D("de: commiting");
@@ -284,7 +364,7 @@ void de_int_vblank(void)
 		} */
 	}
 
-	if (changed) {
+	//if (changed) {
 		de_commit();
-	}
+	//}
 }

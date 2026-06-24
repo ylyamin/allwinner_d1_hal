@@ -17,7 +17,6 @@ extern void LCD_panel_init(void);
 
 extern tlsf_t mem_pool;
 unsigned char *framebuffer; 
-unsigned char *framebuffer2; 
 
 void display_task_init(void)
 {
@@ -31,7 +30,7 @@ void display_task_init(void)
 			.fmt = LAY_FBFMT_ARGB_8888,
 			.alpha = 0xff,
 			.win = {
-				.x0 = 60,
+				.x0 = 0,
 				.y0 = 0,
 				.x1 = 480 + 60,
 				.y1 = 1280,
@@ -39,11 +38,9 @@ void display_task_init(void)
 	};
  	de_set_layer(layer);
 
-	uint32_t h = de_layer_get_w();
- 	uint32_t w = de_layer_get_h();
+	uint32_t w = de_layer_get_w();
+ 	uint32_t h = de_layer_get_h();
     framebuffer = tlsf_malloc(mem_pool, w * h * 4);
-    framebuffer2 = tlsf_malloc(mem_pool, w * h * 4);
-
 
 	gr_fill(framebuffer,w,h, 0x000000ff);
 
@@ -52,8 +49,8 @@ void display_task_init(void)
 	gr_draw_vline_xyh(framebuffer, w, h, /*x*/ 10,		/*y*/ 10,		/*hh*/ h - 10, 0x00ff00ff);
 	gr_draw_vline_xyh(framebuffer, w, h, /*x*/ w - 10,  /*y*/ 10,		/*hh*/ h - 10, 0x00ffff00);
 
- 	//gr_draw_line(framebuffer,w,h, 0, 0, w-1, h-1, 0xff00ffff);
-	//gr_draw_line(framebuffer,w,h, w-1, 0, 0, h-1, 0xff00ffff);
+ 	gr_draw_line(framebuffer,w,h, 0, 0, w-1, h-1, 0xff00ffff);
+	gr_draw_line(framebuffer,w,h, w-1, 0, 0, h-1, 0xff00ffff);
 
 	//1
 	LCD_gpio_init();
@@ -68,7 +65,7 @@ void display_task_init(void)
 	//4
 	tcon_lcd_enable();
 	de_init();
-	de_layer_set(framebuffer2, 0);
+	de_layer_set(framebuffer, 0);
 
 	g2d_init();
 
@@ -80,11 +77,11 @@ uint32_t line_y = 0;
 
 void display_task_exec(void)
 {
-	uint32_t h = de_layer_get_w();
- 	uint32_t w = de_layer_get_h();
+	uint32_t w = de_layer_get_w();
+ 	uint32_t h = de_layer_get_h();
 	unsigned long ms = get_time_ms();
 
-/*      if (!(ms % 200))
+    if (!(ms % 200))
 	{
 		gr_draw_line(framebuffer, w, h, line_x, 0, line_x, h-1, 0x000000ff);	// clean previous
 		gr_draw_line(framebuffer, w, h, 0, line_y, w-1, line_y, 0x000000ff);	// clean previous
@@ -101,6 +98,6 @@ void display_task_exec(void)
 		if (line_x > w) line_x = 0; 									//reset in the end
 		if (line_y > h) line_y = 0; 									//reset in the end
 
-	}	 */   
+	}	 
 
 }

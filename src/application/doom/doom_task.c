@@ -17,6 +17,7 @@
 extern tlsf_t mem_pool;
 extern struct fifo_t keyboard_fifo;
 extern uint32_t *doom_framebuffer;
+extern uint32_t *framebuffer;
 extern uint32_t *framebuffer2;
 
 void doom_print_fnc(const char* fmt)
@@ -142,7 +143,7 @@ void doom_task_exec(void)
     }
 
     doom_force_update();
-   	g2d_rot(doom_framebuffer, framebuffer2);
+   	g2d_rot(doom_framebuffer, framebuffer);
 
     static int frame_cnt = 0;
     if (++frame_cnt == 2)
