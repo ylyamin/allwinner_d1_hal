@@ -48,9 +48,21 @@ static struct
   tuh_hid_report_info_t report_info[MAX_REPORT];
 }hid_info[CFG_TUH_HID];
 
+  typedef struct TU_ATTR_PACKED
+  {
+    uint32_t Buttons;   
+    uint8_t  Hat_switch : 4;   
+    uint16_t X : 10; //0-1023
+    uint16_t Y : 10; 
+    uint16_t Rx : 10; 
+    uint16_t Ry : 10; 
+    uint16_t Slider_L : 10; 
+    uint16_t Slider_R : 10; 
+  } hid_joystick_report_t;
+
 static void process_kbd_report(hid_keyboard_report_t const *report);
 static void process_mouse_report(hid_mouse_report_t const * report);
-static void process_joystick_report(hid_mouse_report_t const* report);
+static void process_joystick_report(hid_joystick_report_t const * report, uint16_t len);
 static void process_generic_report(uint8_t dev_addr, uint8_t instance, uint8_t const* report, uint16_t len);
 
 void hid_app_task(void)
@@ -81,6 +93,9 @@ void tuh_hid_mount_cb(uint8_t dev_addr, uint8_t instance, uint8_t const* desc_re
   // Therefore for this simple example, we only need to parse generic report descriptor (with built-in parser)
   if ( itf_protocol == HID_ITF_PROTOCOL_NONE )
   {
+    //LOG_D("HID Report:");
+    //for (uint32_t i = 0; i < desc_len; i++) small_printf("%02X ", *desc_report++);
+
     hid_info[instance].report_count = tuh_hid_parse_report_descriptor(hid_info[instance].report_info, MAX_REPORT, desc_report, desc_len);
     LOG_D("HID has %u reports \r\n", hid_info[instance].report_count);
   }
@@ -238,9 +253,45 @@ static void process_mouse_report(hid_mouse_report_t const * report)
   cursor_movement(report->x, report->y, report->wheel);
 }
 
-static void process_joystick_report(hid_mouse_report_t const * report)
+typedef enum
 {
-  LOG_E("process_joystick_report");
+  JOYSTICK_BUTTON_X  = 0x1,
+  JOYSTICK_BUTTON_A  = 0x2,
+  JOYSTICK_BUTTON_B  = 0x4,
+  JOYSTICK_BUTTON_Y  = 0x8,
+} hid_joystick_button_bm_t;
+
+typedef enum
+{
+  X_LEFT   = 0,
+  X_CENTER = 511,
+  X_RIGHT  = 1023,
+} hid_joystick_axes_t;
+
+static void process_joystick_report(hid_joystick_report_t const * report, uint16_t len)
+{
+  small_printf("process_joystick_report:\n\r");
+  small_printf("(\n\r");
+
+  if (len < 100)
+  {
+    if(report->Buttons == JOYSTICK_BUTTON_X) small_printf("Button X \n\r");
+    if(report->Buttons == JOYSTICK_BUTTON_A) small_printf("Button A \n\r");
+    if(report->Buttons == JOYSTICK_BUTTON_B) small_printf("Button B \n\r");
+    if(report->Buttons == JOYSTICK_BUTTON_Y) small_printf("Button Y \n\r");
+    if(report->X == X_LEFT) small_printf("X_LEFT \n\r");
+    if(report->X == X_CENTER) small_printf("X_CENTER \n\r");
+    if(report->X == X_RIGHT) small_printf("X_RIGHT \n\r");
+    if(report->Y == X_LEFT) small_printf("Y_LEFT \n\r");
+    if(report->Y == X_CENTER) small_printf("Y_CENTER \n\r");
+    if(report->Y == X_RIGHT) small_printf("Y_RIGHT \n\r");
+
+      small_printf("Buttons %x \n\r",       report->Buttons   );
+      small_printf("X %d \n\r" ,            report->X         );//<- ->: 0-511-1023
+      small_printf("Y %d \n\r",             report->Y         ); //^ v: 0-511-1023
+  }
+
+  small_printf(")\n\r");
 }
 
 //--------------------------------------------------------------------+
@@ -309,7 +360,7 @@ static void process_generic_report(uint8_t dev_addr, uint8_t instance, uint8_t c
 
       case HID_USAGE_DESKTOP_JOYSTICK:
         TU_LOG1("HID receive joustic report\r\n");
-        process_joystick_report( (hid_mouse_report_t const*) report );
+        process_joystick_report( (hid_joystick_report_t const*) report , len);
       break;
 
       default: break;

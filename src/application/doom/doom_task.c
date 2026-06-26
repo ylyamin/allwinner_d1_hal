@@ -142,8 +142,12 @@ void doom_task_exec(void)
         //doom_button_down(doom_button_t button);
     }
 
+    uint64_t frame_start = get_time_ms();
+
     doom_force_update();
    	g2d_rot(doom_framebuffer, framebuffer);
+
+    uint64_t frame_stop = get_time_ms();
 
     static int frame_cnt = 0;
     if (++frame_cnt == 2)
@@ -155,5 +159,6 @@ void doom_task_exec(void)
 
     //doom_button_up(doom_button_t button);
     //doom_mouse_move(int delta_x, int delta_y);
-    //LOG_D("Time: %d",get_time_ms() / 1000);
+    
+    //LOG_D("FPS: %d", 1000 / (frame_stop - frame_start));
 }
