@@ -39,6 +39,7 @@ void main(void)
 
         //doom_task_exec();
 
-        //console_task_exec();
+        console_render();
+
     }
 }

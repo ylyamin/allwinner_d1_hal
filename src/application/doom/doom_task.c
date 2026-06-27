@@ -19,7 +19,7 @@ extern struct fifo_t keyboard_fifo;
 extern struct fifo_t joystick_fifo;
 
 extern uint32_t *doom_framebuffer;
-extern uint32_t *framebuffer;
+extern uint32_t *framebuffer2;
 
 void doom_print_fnc(const char* fmt)
 {
@@ -155,7 +155,7 @@ void doom_task_exec(void)
         uint64_t frame_start = get_time_ms();
 
     doom_force_update();
-   	g2d_rot(doom_framebuffer, framebuffer);
+   	g2d_rot(doom_framebuffer, framebuffer2);
 
         uint64_t frame_stop = get_time_ms();
 

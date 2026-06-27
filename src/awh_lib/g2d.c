@@ -36,13 +36,13 @@ void g2d_rot(void *src_fb, void *dst_fb)
 {
                  
 //Input
-    G2D_ROT->ROT_IFMT = layers[0].fmt;      
+    G2D_ROT->ROT_IFMT = layers->layer[0].fmt;      
     G2D_ROT->ROT_ISIZE = ((200-1) << 16) | (320-1); 
-    G2D_ROT->ROT_IPITCH0 = fmt_to_pitch(layers[0].fmt) * 320;                    
+    G2D_ROT->ROT_IPITCH0 = fmt_to_pitch(layers->layer[0].fmt) * 320;                    
     G2D_ROT->ROT_ILADD0 = (uint32_t)src_fb;                  
 //Output
     G2D_ROT->ROT_OSIZE = ((320-1) << 16) | (200-1);                     
-    G2D_ROT->ROT_OPITCH0 = fmt_to_pitch(layers[0].fmt) * 200;                   
+    G2D_ROT->ROT_OPITCH0 = fmt_to_pitch(layers->layer[0].fmt) * 200;                   
     G2D_ROT->ROT_OLADD0 = (uint32_t)dst_fb;     
 //Control
     G2D_ROT->ROT_CTL |= (0x1 << 31) | (0x3 << 4) | (0x1 << 0); //270 copy   

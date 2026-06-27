@@ -17,32 +17,24 @@ struct blender_t {
 };
 
 struct layer_t {
-	uint32_t lcd_w;
-	uint32_t lcd_h;
+	struct {
 	// fb info
 	uint16_t w;
 	uint16_t h;
+	uint32_t offset_w;
+	uint32_t offset_h;
 	void *fb[2];
 	uint32_t fb_idx;
 	uint32_t fb_draw_idx;
 	uint32_t fb_dbl;
 	uint32_t swap_pending;
 	uint32_t fmt;
-
-	uint8_t alpha;
-
+	uint8_t  alpha;
 	//! SemaphoreHandle_t semaphore;
-
-	// overlay window
-	struct {
-		uint32_t x0;
-		uint32_t y0;
-		uint32_t x1;
-		uint32_t y1;
-	} win;
+	} layer[2];
 };
 
-void de_config(struct layer_t layer, struct blender_t new_blender);
+void de_config(struct layer_t new_layers, struct blender_t new_blender);
 void de_init(void);
 void de_commit(void);
 uint32_t fmt_to_pitch(uint8_t fmt);

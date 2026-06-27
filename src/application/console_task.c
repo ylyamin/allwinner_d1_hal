@@ -56,18 +56,20 @@ uint8_t joystick_read(void)
 
 int shift_x, shift_y;
 
-void console_task_exec(void)
+void console_render(void)
 {
     uint8_t ch;
+    uint8_t *str = "Hello RISC-V";
     uint32_t h = de_layer_get_h();
     uint32_t w = de_layer_get_w();
 
-    if(fifo_empty(&keyboard_fifo) != 1)
+/*     if(fifo_empty(&keyboard_fifo) != 1)
     {
         ch = keyboard_read();
-        LOG_I("%c",ch);
-    
-        char *bitmap = font8x8_basic[ch];
+        LOG_I("%c",ch); */
+    for (int i = 0; i++; sizeof(str))
+    {
+        char *bitmap = font8x8_basic[str[i]];
         int x,y,set;
         for (x=0; x < 8; x++) {
             for (y=0; y < 8; y++) {
@@ -82,4 +84,5 @@ void console_task_exec(void)
         if(!(shift_x %= w)) shift_y +=10;
         shift_y %= h;
     }
+/*     } */
 }

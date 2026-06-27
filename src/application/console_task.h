@@ -3,7 +3,7 @@
 #include <fifo.h>
 
 void console_task_init(void);
-void console_task_exec(void);
+void console_render(void);
 
 void keyboard_write(uint8_t ch);
 uint8_t keyboard_read(void);

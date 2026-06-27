@@ -42,22 +42,8 @@ struct blender_t blender = {
 	},
 };
 
-struct layer_t layers[1] = {
-	{
-		.lcd_w = 600,
-		.lcd_h = 1280,
-		.w = 600, //320,
-		.h = 1280, //200,
-		.fmt = LAY_FBFMT_ARGB_8888,
-		.alpha = 0xff,
-
-		.win = {
-			.x0 = 0,
-			.y0 = 0,
-			.x1 = 600,
-			.y1 = 1280,
-		},
-	},
+struct layer_t layers = {
+	.layer[0] = {},
 };
 
 uint32_t fmt_to_pitch(uint8_t fmt)
@@ -65,10 +51,10 @@ uint32_t fmt_to_pitch(uint8_t fmt)
 	return fmtpitch[fmt];
 }
 
-void de_config(struct layer_t layer, struct blender_t new_blender)
+void de_config(struct layer_t new_layers, struct blender_t new_blender)
 {
 	blender = new_blender;
-	layers[0] = layer;
+	layers = new_layers;
 }
 
 void de_init(void)
@@ -111,21 +97,27 @@ void de_init(void)
 	DE_MUX_DCSC->BYPASS_REG = 0;
 	
 	// setup blender
-	DE_MUX_BLD->FILLCOLOR_CTL = 0x0101; // enable pipe 0 and pipe 0 fill color
-	DE_MUX_BLD->CH_RTCTL = 0x1; // route channel 1(UI1) to pipe 0 of blender
+	DE_MUX_BLD->FILLCOLOR_CTL = 0x0303; // enable pipe 0,1 and pipe 0,1 fill color
+	DE_MUX_BLD->CH_RTCTL = 0x0010; // route channel 0(V) to pipe 0 
+								   // route channel 1(UI1) to pipe 1 
+								   // seems D1 have only one UI channel and one V channel 'de_feat.h')
 	DE_MUX_BLD->PREMUL_CTL = 0; //all alpha data is no-pre-multiply alpha
-	DE_MUX_BLD->BK_COLOR = 0x80FF00; // RGB no alpha
+	DE_MUX_BLD->BK_COLOR = 0xFF00FF; // RGB no alpha
 	DE_MUX_BLD->SIZE = ((blender.lcd_h-1) << 16) | (blender.lcd_w-1); // lcd size
 
 	// no color keying 
 	DE_MUX_BLD->KEY_CTL = 0;
 	DE_MUX_BLD->OUT_COLOR = 0;
-
 	DE_MUX_BLD->CTL[0] = 0x03010301;
-	DE_MUX_BLD->PIPE[0].FILL_COLOR = 0xFFFF8000;
+
+	//DE_MUX_BLD->PIPE[0].FILL_COLOR = 0xFF00FF00;
 	DE_MUX_BLD->PIPE[0].CH_ISIZE = ((blender.pipe[0].pipe_h-1) << 16) | (blender.pipe[0].pipe_w-1);
 	DE_MUX_BLD->PIPE[0].CH_OFFSET = ((blender.lcd_offset_h + blender.pipe[0].pipe_offset_h) << 16) | (blender.lcd_offset_w + blender.pipe[0].pipe_offset_w);
-
+	
+ 	//DE_MUX_BLD->PIPE[1].FILL_COLOR = 0xFFFF0000;
+	DE_MUX_BLD->PIPE[1].CH_ISIZE = ((blender.pipe[1].pipe_h-1) << 16) | (blender.pipe[1].pipe_w-1);
+	DE_MUX_BLD->PIPE[1].CH_OFFSET = ((blender.lcd_offset_h + blender.pipe[1].pipe_offset_h) << 16) | (blender.lcd_offset_w + blender.pipe[1].pipe_offset_w);
+	
 	de_commit();
 }
 
@@ -143,34 +135,41 @@ void de_layer_set(void *fb0, void *fb1)
 {
 	de_commit_wait();
 
-	layers[0].fb[0] = fb0;
-	layers[0].fb[1] = fb1;
-	layers[0].fb_idx = 0;
-	layers[0].fb_dbl = fb1 != 0;
+	layers.layer[0].fb[0] = fb0;
+	layers.layer[1].fb[0] = fb1;
 
-	LOG_D("de: set layer, fmt = %d", layers[0].fmt);
-	uint32_t w = layers[0].w;
-	uint32_t h = layers[0].h;
-	uint32_t p = fmt_to_pitch(layers[0].fmt);
 
-	DE_MUX_OVL_UI1->LAYER[0].ATTCTL = BV(0) | (layers[0].fmt << 8) | BV(1) | (layers[0].alpha << 24); 
-	DE_MUX_OVL_UI1->LAYER[0].MBSIZE = ((layers[0].h-1) << 16) | (layers[0].w-1); //layers heigh width
-	DE_MUX_OVL_UI1->LAYER[0].COOR = ((layers[0].win.y0) << 16) | (layers[0].win.x0); //coor layer on overlay window
-	DE_MUX_OVL_UI1->LAYER[0].PITCH = p * layers[0].w; //layer memmory
-	DE_MUX_OVL_UI1->LAYER[0].TOP_LADD = (uint32_t)layers[0].fb[0];
+/* 	layers.layer[0].fb[1] = fb1;
+	layers.layer[0].fb_idx = 0;
+	layers.layer[0].fb_dbl = fb1 != 0; */
 
-	//DE_MUX_OVL_UI1->SIZE = ((layers[0].lcd_h-1) << 16) | (layers[0].lcd_w-1); //overlay lcd heigh lcd width
-	DE_MUX_OVL_UI1->SIZE = ((320-1) << 16) | (200-1); //overlay lcd heigh lcd width
+	LOG_D("de: set layer, fmt = %d", layers.layer[0].fmt);
+	uint32_t w = layers.layer[0].w;
+	uint32_t h = layers.layer[0].h;
+	uint32_t p = fmt_to_pitch(layers.layer[0].fmt);
 
-	uint32_t src_w = 200;
-	uint32_t src_h = 320;
-	uint32_t dst_w = 480;
-	uint32_t dst_h = 768;
+	DE_MUX_OVL_V->LAYER[0].ATTCTL = BV(0) | (layers.layer[0].fmt << 8) | BV(15);
+	DE_MUX_OVL_V->LAYER[0].MBSIZE = ((layers.layer[0].h-1) << 16) | (layers.layer[0].w-1); //layers heigh width
+	DE_MUX_OVL_V->LAYER[0].COOR = ((layers.layer[0].offset_h) << 16) | (layers.layer[0].offset_w); //coor layer on overlay window
+	DE_MUX_OVL_V->LAYER[0].PITCH0 = p * layers.layer[0].w; //layer memmory
+	DE_MUX_OVL_V->LAYER[0].TOP_LADD0 = (uint32_t)layers.layer[0].fb[0];
+	DE_MUX_OVL_V->SIZE = ((layers.layer[0].h-1) << 16) | (layers.layer[0].w-1); //overlay heigh width
+
+ 	DE_MUX_OVL_UI1->LAYER[0].ATTCTL = BV(0) | (layers.layer[1].fmt << 8) | BV(1) | (layers.layer[1].alpha << 24); 
+	DE_MUX_OVL_UI1->LAYER[0].MBSIZE = ((layers.layer[1].h-1) << 16) | (layers.layer[1].w-1); //layers heigh width
+	DE_MUX_OVL_UI1->LAYER[0].COOR = ((layers.layer[1].offset_h) << 16) | (layers.layer[1].offset_w); //coor layer on overlay window
+	DE_MUX_OVL_UI1->LAYER[0].PITCH = p * layers.layer[1].w; //layer memmory
+	DE_MUX_OVL_UI1->LAYER[0].TOP_LADD = (uint32_t)layers.layer[1].fb[0];
+	DE_MUX_OVL_UI1->SIZE = ((layers.layer[1].h-1) << 16) | (layers.layer[1].w-1); //overlay heigh width 
+
+	uint32_t src_w = layers.layer[1].w;
+	uint32_t src_h = layers.layer[1].h;
+	uint32_t dst_w = blender.pipe[1].pipe_w;
+	uint32_t dst_h = blender.pipe[1].pipe_h;
 
 #if 1
 		uint64_t tmp = 0;
 		uint64_t vstep = 0;
-
 		// enable GSU (scaler unit)
 		LOG_D("de: enable scaler\n\r");
 
@@ -199,21 +198,18 @@ void de_layer_set(void *fb0, void *fb1)
 		DE_MUX_GSU1->VPHASE0_REG = tmp << GSU_PHASE_FRAC_REG_SHIFT;
 
 		uint32_t pt_coef = 0;
-		
-		{
-			uint32_t scale_ratio, int_part, float_part, fir_coef_ofst;
-			scale_ratio = vstep >> (GSU_PHASE_FRAC_BITWIDTH - 3);
-			int_part = scale_ratio >> 3;
-			float_part = scale_ratio & 0x7;
-			fir_coef_ofst = (int_part == 0) ? GSU_ZOOM0_SIZE :
-					(int_part == 1) ? GSU_ZOOM0_SIZE + float_part :
-					(int_part == 2) ? GSU_ZOOM0_SIZE + GSU_ZOOM1_SIZE + (float_part >> 1) :
-					(int_part == 3) ? GSU_ZOOM0_SIZE + GSU_ZOOM1_SIZE	+ GSU_ZOOM2_SIZE :
-					(int_part == 4) ? GSU_ZOOM0_SIZE + GSU_ZOOM1_SIZE	+ GSU_ZOOM2_SIZE + GSU_ZOOM3_SIZE :
-					GSU_ZOOM0_SIZE + GSU_ZOOM1_SIZE + GSU_ZOOM2_SIZE	+ GSU_ZOOM3_SIZE + GSU_ZOOM4_SIZE;
+		uint32_t scale_ratio, int_part, float_part, fir_coef_ofst;
+		scale_ratio = vstep >> (GSU_PHASE_FRAC_BITWIDTH - 3);
+		int_part = scale_ratio >> 3;
+		float_part = scale_ratio & 0x7;
+		fir_coef_ofst = (int_part == 0) ? GSU_ZOOM0_SIZE :
+				(int_part == 1) ? GSU_ZOOM0_SIZE + float_part :
+				(int_part == 2) ? GSU_ZOOM0_SIZE + GSU_ZOOM1_SIZE + (float_part >> 1) :
+				(int_part == 3) ? GSU_ZOOM0_SIZE + GSU_ZOOM1_SIZE	+ GSU_ZOOM2_SIZE :
+				(int_part == 4) ? GSU_ZOOM0_SIZE + GSU_ZOOM1_SIZE	+ GSU_ZOOM2_SIZE + GSU_ZOOM3_SIZE :
+				GSU_ZOOM0_SIZE + GSU_ZOOM1_SIZE + GSU_ZOOM2_SIZE	+ GSU_ZOOM3_SIZE + GSU_ZOOM4_SIZE;
 
-			pt_coef = fir_coef_ofst * GSU_PHASE_NUM;
-		}
+		pt_coef = fir_coef_ofst * GSU_PHASE_NUM;
 
 		// copy fir table
 		for (size_t i = 0; i < GSU_PHASE_NUM; i++) {
@@ -227,30 +223,30 @@ void de_layer_set(void *fb0, void *fb1)
 
 uint32_t de_layer_get_h(void)
 {
-	return layers[0].h;
+	return layers.layer[0].h;
 }
 
 uint32_t de_layer_get_w(void)
 {
-	return layers[0].w;
+	return layers.layer[0].w;
 }
 
 void *de_layer_get_fb(void)
 {
-	uint8_t idx = layers[0].fb_idx;
+	uint8_t idx = layers.layer[0].fb_idx;
 
-	return layers[0].fb[idx];
+	return layers.layer[0].fb[idx];
 }
 
 int de_layer_swap_done(void)
 {
-	if (layers[0].fb_dbl == 0)
+	if (layers.layer[0].fb_dbl == 0)
 		return 1;
 
 	uint32_t sp;
 
 	//!portENTER_CRITICAL();
-	sp = layers[0].swap_pending == 0;
+	sp = layers.layer[0].swap_pending == 0;
 	//!portEXIT_CRITICAL();
 
 	return sp;
@@ -259,37 +255,37 @@ int de_layer_swap_done(void)
 void de_layer_swap(void)
 {
 	//!portENTER_CRITICAL();
-	layers[0].swap_pending = 1;
+	layers.layer[0].swap_pending = 1;
 	//!portEXIT_CRITICAL();
 }
 
 void de_layer_register_semaphore() //! SemaphoreHandle_t s)
 {
-	//layers[0].semaphore = s;
+	//layers.layer[0].semaphore = s;
 }
 
 void de_int_vblank(void)
 {
 	uint32_t changed = 0;
 
-	for (uint32_t i = 0; i < ARRAY_SIZE(layers); i++) {
-		if (layers[i].fb_dbl == 0) continue;
+	for (uint32_t i = 0; i < ARRAY_SIZE(layers.layer); i++) {
+		if (layers.layer[i].fb_dbl == 0) continue;
 
-		if (layers[i].swap_pending) {
-			uint8_t idx = layers[i].fb_idx;
+		if (layers.layer[i].swap_pending) {
+			uint8_t idx = layers.layer[i].fb_idx;
 
-			DE_MUX_OVL_UI1->LAYER[i].TOP_LADD = (uint32_t)layers[0].fb[idx];
+			DE_MUX_OVL_UI1->LAYER[i].TOP_LADD = (uint32_t)layers.layer[0].fb[idx];
 
 			idx = !idx;
 
-			layers[i].fb_idx = idx;
-			layers[i].swap_pending = 0;
+			layers.layer[i].fb_idx = idx;
+			layers.layer[i].swap_pending = 0;
 			changed = 1;
 		}
 
-/*		if (layers[i].semaphore != NULL) {
+/*		if (layers.layer[i].semaphore != NULL) {
 			BaseType_t xHigherPriorityTaskWoken;
-			xSemaphoreGiveFromISR(layers[i].semaphore, &xHigherPriorityTaskWoken);
+			xSemaphoreGiveFromISR(layers.layer[i].semaphore, &xHigherPriorityTaskWoken);
 		} */
 	}
 
