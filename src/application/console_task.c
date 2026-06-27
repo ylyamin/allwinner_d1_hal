@@ -16,7 +16,7 @@ uint8_t keyboard_buf[BUFF_SIZE];
 uint8_t mouse_buf[BUFF_SIZE];
 uint8_t joystick_buf[BUFF_SIZE];
 
-extern uint8_t framebuffer[]; 
+extern uint8_t *framebuffer; 
 
 void console_task_init(void)
 {
@@ -59,15 +59,15 @@ int shift_x, shift_y;
 void console_render(void)
 {
     uint8_t ch;
-    uint8_t *str = "Hello RISC-V";
-    uint32_t h = de_layer_get_h();
-    uint32_t w = de_layer_get_w();
+    char *str = "Hello RISC-V";
+    uint32_t w = de_layer_get_h();
+    uint32_t h = de_layer_get_w();
 
 /*     if(fifo_empty(&keyboard_fifo) != 1)
     {
         ch = keyboard_read();
         LOG_I("%c",ch); */
-    for (int i = 0; i++; sizeof(str))
+    for (int i = 0; i < 12; i++)
     {
         char *bitmap = font8x8_basic[str[i]];
         int x,y,set;
@@ -75,14 +75,14 @@ void console_render(void)
             for (y=0; y < 8; y++) {
                 set = bitmap[x] & 1 << y;
                 if(set)
-                    gr_draw_pixel(&framebuffer, w, h, y + shift_x, x + shift_y, 0xffffffff);
+                    gr_draw_pixel(framebuffer, w, h, y + shift_x, x + shift_y, 0xffffffff);
                 else
-                    gr_draw_pixel(&framebuffer, w, h, y + shift_x, x + shift_y, 0xff0000ff);
+                    gr_draw_pixel(framebuffer, w, h, y + shift_x, x + shift_y, 0xff0000ff);
             }
         }
         shift_x += 10;
         if(!(shift_x %= w)) shift_y +=10;
-        shift_y %= h;
+        shift_y %= h; 
     }
 /*     } */
 }

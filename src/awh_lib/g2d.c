@@ -3,8 +3,7 @@
 #include "log.h"
 #include "de.h"
 #include "irq.h"
-
-extern struct layer_t layers[1];
+#include "g2d.h"
 
 static void g2d_int_handler(void *arg)
 {
@@ -32,18 +31,18 @@ void g2d_init(void)
  */
 }
 
-void g2d_rot(void *src_fb, void *dst_fb)
+void g2d_rot(struct g2d_rot_t g2d_rot_config)
 {
                  
 //Input
-    G2D_ROT->ROT_IFMT = layers->layer[0].fmt;      
-    G2D_ROT->ROT_ISIZE = ((200-1) << 16) | (320-1); 
-    G2D_ROT->ROT_IPITCH0 = fmt_to_pitch(layers->layer[0].fmt) * 320;                    
-    G2D_ROT->ROT_ILADD0 = (uint32_t)src_fb;                  
+    G2D_ROT->ROT_IFMT = g2d_rot_config.fmt;      
+    G2D_ROT->ROT_ISIZE = ((g2d_rot_config.src_h-1) << 16) | (g2d_rot_config.src_w-1); 
+    G2D_ROT->ROT_IPITCH0 = fmt_to_pitch(g2d_rot_config.fmt) * g2d_rot_config.src_w;                    
+    G2D_ROT->ROT_ILADD0 = (uint32_t) g2d_rot_config.src_fb;                  
 //Output
-    G2D_ROT->ROT_OSIZE = ((320-1) << 16) | (200-1);                     
-    G2D_ROT->ROT_OPITCH0 = fmt_to_pitch(layers->layer[0].fmt) * 200;                   
-    G2D_ROT->ROT_OLADD0 = (uint32_t)dst_fb;     
+    G2D_ROT->ROT_OSIZE = ((g2d_rot_config.dst_h-1) << 16) | (g2d_rot_config.dst_w-1);                     
+    G2D_ROT->ROT_OPITCH0 = fmt_to_pitch(g2d_rot_config.fmt) * g2d_rot_config.dst_w;                     
+    G2D_ROT->ROT_OLADD0 = (uint32_t) g2d_rot_config.dst_fb;     
 //Control
     G2D_ROT->ROT_CTL |= (0x1 << 31) | (0x3 << 4) | (0x1 << 0); //270 copy   
     G2D_ROT->ROT_INT |= (0x1 << 0) | (0x1 << 16);   
