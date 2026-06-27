@@ -97,10 +97,15 @@ void de_init(void)
 	DE_MUX_DCSC->BYPASS_REG = 0;
 	
 	// setup blender
-	DE_MUX_BLD->FILLCOLOR_CTL = 0x0303; // enable pipe 0,1 and pipe 0,1 fill color
+	DE_MUX_BLD->FILLCOLOR_CTL = (blender.pipe[1].pipe_enable << 9) | // 0x0303 enable pipe 0,1 and pipe 0,1 fill color
+								(blender.pipe[0].pipe_enable << 8) | 
+								(blender.pipe[1].pipe_enable << 1) | 
+								(blender.pipe[0].pipe_enable << 0); 
+
 	DE_MUX_BLD->CH_RTCTL = 0x0010; // route channel 0(V) to pipe 0 
 								   // route channel 1(UI1) to pipe 1 
 								   // seems D1 have only one UI channel and one V channel 'de_feat.h')
+
 	DE_MUX_BLD->PREMUL_CTL = 0; //all alpha data is no-pre-multiply alpha
 	DE_MUX_BLD->BK_COLOR = 0xFF00FF; // RGB no alpha
 	DE_MUX_BLD->SIZE = ((blender.lcd_h-1) << 16) | (blender.lcd_w-1); // lcd size

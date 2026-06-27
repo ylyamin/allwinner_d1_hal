@@ -9,6 +9,7 @@ struct blender_t {
 	uint32_t lcd_offset_h;
 	// pipes
 	struct {
+		uint8_t  pipe_enable : 1;
 		uint32_t pipe_w;
 		uint32_t pipe_h;
 		uint32_t pipe_offset_w;

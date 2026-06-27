@@ -29,7 +29,9 @@ void main(void)
 
     console_task_init();
 
-    doom_task_init();
+    #ifdef CONFIG_USE_DOOM
+        doom_task_init();
+    #endif
 
     while(1)
     {
@@ -37,9 +39,10 @@ void main(void)
             usb_task_exec();
         #endif
 
+        #ifdef CONFIG_USE_DOOM
+            doom_task_exec();
+        #endif
+
         display_task_exec();	
-
-        doom_task_exec();
-
     }
 }

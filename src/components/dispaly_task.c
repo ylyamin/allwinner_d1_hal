@@ -39,12 +39,14 @@ void display_task_init(void)
 		.lcd_offset_h = (timing.lcd_h - timing.lcd_scale_h)/2, //0
 		.pipe = {
 			{
+				.pipe_enable = 1,
 				.pipe_w = timing.lcd_scale_w, //480
 				.pipe_h = timing.lcd_scale_h, //1280
 				.pipe_offset_w = 0,
 				.pipe_offset_h = 0,
 			},
 			{
+				.pipe_enable = CONFIG_USE_DOOM,
 				.pipe_w = scaled_doom_w, //480
 				.pipe_h = scaled_doom_h, //768
 				.pipe_offset_w = (timing.lcd_scale_w - scaled_doom_w) / 2, //0
@@ -173,7 +175,7 @@ void display_task_exec(void)
 			.fmt = LAY_FBFMT_ARGB_8888,
     	};
 
-   		//g2d_rot(g2d_rot_config); //rotate framebuffer TODO wait finish
+   		g2d_rot(g2d_rot_config); //rotate framebuffer TODO wait finish
 	}	 
 
 }
