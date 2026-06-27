@@ -22,9 +22,37 @@ void display_task_init(void)
 {
 	LOG_D("display_task_init");
 	timing_t timing = LCD_get_param();
+
+	uint32_t doom_w = 200;
+	uint32_t doom_h = 320;
+	uint32_t scaled_doom_w = timing.lcd_scale_w; //480
+	uint32_t scaled_doom_h = timing.lcd_scale_w * doom_h / doom_w; //768
+
+	struct blender_t blender = {
+		.lcd_w = timing.lcd_w, //600
+		.lcd_h = timing.lcd_h, //1280
+		.lcd_offset_w = (timing.lcd_w - timing.lcd_scale_w)/2, //60
+		.lcd_offset_h = (timing.lcd_h - timing.lcd_scale_h)/2, //0
+		.pipe = {
+			{
+			.pipe_w = timing.lcd_scale_w, //480
+			.pipe_h = timing.lcd_scale_h, //1280
+			.pipe_offset_w = 0,
+			.pipe_offset_h = 0,
+			},
+			{
+			.pipe_w = scaled_doom_w,
+			.pipe_h = scaled_doom_h,
+			.pipe_offset_w = (timing.lcd_scale_w - scaled_doom_w) / 2, //0
+			.pipe_offset_h = (timing.lcd_scale_h - scaled_doom_h) / 2, //256
+			},
+		},
+	};
+
+
 	struct layer_t layer = {
-			.lcd_w = 600,
-			.lcd_h = 1280,
+			.lcd_w = timing.lcd_w,
+			.lcd_h = timing.lcd_h,
 			.w = 200,
 			.h = 320,
 			.fmt = LAY_FBFMT_ARGB_8888,
@@ -36,7 +64,7 @@ void display_task_init(void)
 				.y1 = 1280,
 			},
 	};
- 	de_set_layer(layer);
+ 	de_config(layer,blender);
 
 	uint32_t w = de_layer_get_w();
  	uint32_t h = de_layer_get_h();

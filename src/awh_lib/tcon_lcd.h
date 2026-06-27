@@ -28,8 +28,8 @@ typedef struct{
 	uint32_t pixclk;
 	uint32_t lcd_w;
 	uint32_t lcd_h;
-	uint32_t scale_w;
-    uint32_t scale_h;
+	uint32_t lcd_scale_w;
+    uint32_t lcd_scale_h;
 	uint32_t hbp;
 	uint32_t ht;
 	uint32_t hspw;

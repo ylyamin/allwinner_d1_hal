@@ -15,8 +15,8 @@ timing_t timing = {
 	.pixclk = 55000000, //Mhz 907752
 	.lcd_w = 480,
 	.lcd_h = 1280,
-    .scale_w = 480,
-    .scale_h = 1280,
+    .lcd_scale_w = 480,
+    .lcd_scale_h = 1280,
 
 	.hbp = 150, //hsync back porch(pixel) + hsync plus width(pixel)
 	.ht = 694,  //hsync total cycle(pixel)

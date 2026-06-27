@@ -29,6 +29,19 @@ uint8_t fmtpitch[] = {
 	[LAY_FBFMT_BGRA_5551] = 2,
 };
 
+struct blender_t blender = {
+	.lcd_w = 600,
+	.lcd_h = 1280,
+	.lcd_offset_w = 60,
+	.lcd_offset_h = 0,
+	.pipe[0] = {
+		.pipe_w = 480,
+		.pipe_h = 768,
+		.pipe_offset_w = 0,
+		.pipe_offset_h = 256,
+	},
+};
+
 struct layer_t layers[1] = {
 	{
 		.lcd_w = 600,
@@ -47,14 +60,14 @@ struct layer_t layers[1] = {
 	},
 };
 
-
 uint32_t fmt_to_pitch(uint8_t fmt)
 {
 	return fmtpitch[fmt];
 }
 
-void de_set_layer(struct layer_t layer)
+void de_config(struct layer_t layer, struct blender_t new_blender)
 {
+	blender = new_blender;
 	layers[0] = layer;
 }
 
@@ -74,7 +87,7 @@ void de_init(void)
 	DE_MUX_GLB->CTL = BV(0); //enable
 	DE_MUX_GLB->STS = 0;
 	DE_MUX_GLB->DBUFFER = 1; //register value be ready for update  
-	DE_MUX_GLB->SIZE = ((layers[0].lcd_h-1) << 16) | (layers[0].lcd_w-1);
+	DE_MUX_GLB->SIZE = ((blender.lcd_h-1) << 16) | (blender.lcd_w-1);
 
 	// disable all overlay units (and all layers)
 	for (uint32_t i = 0; i < 4; i ++) {
@@ -97,13 +110,12 @@ void de_init(void)
 	DE_MUX_FCC->FCC_CTL_REG = 0;
 	DE_MUX_DCSC->BYPASS_REG = 0;
 	
-
 	// setup blender
 	DE_MUX_BLD->FILLCOLOR_CTL = 0x0101; // enable pipe 0 and pipe 0 fill color
 	DE_MUX_BLD->CH_RTCTL = 0x1; // route channel 1(UI1) to pipe 0 of blender
 	DE_MUX_BLD->PREMUL_CTL = 0; //all alpha data is no-pre-multiply alpha
 	DE_MUX_BLD->BK_COLOR = 0x80FF00; // RGB no alpha
-	DE_MUX_BLD->SIZE = ((layers[0].lcd_h-1) << 16) | (layers[0].lcd_w-1); // lcd size
+	DE_MUX_BLD->SIZE = ((blender.lcd_h-1) << 16) | (blender.lcd_w-1); // lcd size
 
 	// no color keying 
 	DE_MUX_BLD->KEY_CTL = 0;
@@ -111,8 +123,8 @@ void de_init(void)
 
 	DE_MUX_BLD->CTL[0] = 0x03010301;
 	DE_MUX_BLD->PIPE[0].FILL_COLOR = 0xFFFF8000;
-	DE_MUX_BLD->PIPE[0].CH_ISIZE = ((768-1) << 16) | (480-1);
-	DE_MUX_BLD->PIPE[0].CH_OFFSET = (256 << 16) | (60);
+	DE_MUX_BLD->PIPE[0].CH_ISIZE = ((blender.pipe[0].pipe_h-1) << 16) | (blender.pipe[0].pipe_w-1);
+	DE_MUX_BLD->PIPE[0].CH_OFFSET = ((blender.lcd_offset_h + blender.pipe[0].pipe_offset_h) << 16) | (blender.lcd_offset_w + blender.pipe[0].pipe_offset_w);
 
 	de_commit();
 }

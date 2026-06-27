@@ -7,7 +7,7 @@
 #include <ccu.h>
 #include <de.h>
 #include <console_task.h>
-#include "hid.h"
+#include <hid_app.h>
 
 #include "DOOM.h"
 #include "doomdef.h"
@@ -20,7 +20,6 @@ extern struct fifo_t joystick_fifo;
 
 extern uint32_t *doom_framebuffer;
 extern uint32_t *framebuffer;
-extern uint32_t *framebuffer2;
 
 void doom_print_fnc(const char* fmt)
 {
@@ -119,27 +118,10 @@ void doom_task_init(void)
 
     char argv[0]; 
     doom_init(0, *argv, 0);
-
-
     //de_layer_set(framebuffer2, 0);
 }
 
-typedef union {
-    uint8_t byte;
-    struct
-      {
-        uint8_t button_x : 1;
-        uint8_t button_a : 1; 
-        uint8_t button_b : 1; 
-        uint8_t button_y : 1; 
-        uint8_t x_left   : 1; 
-        uint8_t x_right  : 1; 
-        uint8_t y_up     : 1; 
-        uint8_t y_down   : 1; 
-      } bit;
-} joystick_out_t;
-
-uint8_t key, previous_key;
+uint8_t key, previous_key, frame_cnt;
 
 void doom_task_exec(void)
 {
@@ -170,14 +152,13 @@ void doom_task_exec(void)
         ( joystick_out.bit.y_down )  ? doom_key_down(DOOM_KEY_DOWN_ARROW ) : doom_key_up(DOOM_KEY_DOWN_ARROW );
     }
 
-    uint64_t frame_start = get_time_ms();
+        uint64_t frame_start = get_time_ms();
 
     doom_force_update();
    	g2d_rot(doom_framebuffer, framebuffer);
 
-    uint64_t frame_stop = get_time_ms();
+        uint64_t frame_stop = get_time_ms();
 
-    static int frame_cnt = 0;
     if (previous_key && (++frame_cnt == 2))
     {
         doom_key_up(previous_key);

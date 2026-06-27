@@ -80,8 +80,8 @@ timing_t timing = {
 	.pixclk = 54000000, //54.23Mhz
 	.lcd_w = 600,      //width 
 	.lcd_h = 1280,       //hight
-    .scale_w = 600,
-    .scale_h = 1280,
+    .lcd_scale_w = 480,
+    .lcd_scale_h = 1280,
 
 	.hbp = 44,          //horizontal back porch
 	.ht = 600+44+46+2,  //horizontal Total Size

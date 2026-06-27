@@ -2,6 +2,20 @@
 #define DE_H_
 #include "de_priv.h"
 
+struct blender_t {
+	uint32_t lcd_w;
+	uint32_t lcd_h;
+	uint32_t lcd_offset_w;
+	uint32_t lcd_offset_h;
+	// pipes
+	struct {
+		uint32_t pipe_w;
+		uint32_t pipe_h;
+		uint32_t pipe_offset_w;
+		uint32_t pipe_offset_h;
+	} pipe[4];
+};
+
 struct layer_t {
 	uint32_t lcd_w;
 	uint32_t lcd_h;
@@ -28,7 +42,7 @@ struct layer_t {
 	} win;
 };
 
-void de_set_layer(struct layer_t layer);
+void de_config(struct layer_t layer, struct blender_t new_blender);
 void de_init(void);
 void de_commit(void);
 uint32_t fmt_to_pitch(uint8_t fmt);
