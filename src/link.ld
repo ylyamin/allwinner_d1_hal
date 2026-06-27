@@ -4,7 +4,7 @@
 
 MEMORY
 {
-  RAM : ORIGIN = 0x40000000, LENGTH = 30M
+  RAM : ORIGIN = 0x40000000, LENGTH = 35M
 }
 
 /* Library configurations */
@@ -195,6 +195,7 @@ SECTIONS
 	{
  		PROVIDE(__RAMNC_BASE = .);
  		__bss2_start__ = .;
+		. = . + 10M;
 
 		*(.ramnc*)
 
@@ -203,7 +204,7 @@ SECTIONS
  		PROVIDE(__RAMNC_TOP = .);
  	} > RAM
 
-	.heap (NOLOAD):
+	.heap :/* (NOLOAD):*/
 	{
 		PROVIDE(__HeapBase = .);
 		. = . + 15M;

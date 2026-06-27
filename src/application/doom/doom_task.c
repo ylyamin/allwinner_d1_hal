@@ -178,7 +178,7 @@ void doom_task_exec(void)
     uint64_t frame_stop = get_time_ms();
 
     static int frame_cnt = 0;
-    if (++frame_cnt == 2)
+    if (previous_key && (++frame_cnt == 2))
     {
         doom_key_up(previous_key);
         frame_cnt = 0;

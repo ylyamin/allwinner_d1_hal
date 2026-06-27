@@ -299,10 +299,10 @@ static void process_joystick_report(hid_joystick_report_t const * report, uint16
     joystick_out.bit.button_a = (report->Buttons & (uint32_t)JOYSTICK_BUTTON_A) ? 1 : 0;
     joystick_out.bit.button_b = (report->Buttons & (uint32_t)JOYSTICK_BUTTON_B) ? 1 : 0;
     joystick_out.bit.button_y = (report->Buttons & (uint32_t)JOYSTICK_BUTTON_Y) ? 1 : 0;
-    joystick_out.bit.x_left  = (report->X == X_LEFT)  ? 1 : 0;
-    joystick_out.bit.x_right = (report->X == X_RIGHT) ? 1 : 0;
-    joystick_out.bit.y_up  = (report->Y == Y_UP)    ? 1 : 0;
-    joystick_out.bit.y_down = (report->Y == Y_DOWN)  ? 1 : 0;
+    joystick_out.bit.x_left  =  (report->X == X_LEFT)  ? 1 : 0;
+    joystick_out.bit.x_right =  (report->X == X_RIGHT) ? 1 : 0;
+    joystick_out.bit.y_up  =    (report->Y == Y_UP)    ? 1 : 0;
+    joystick_out.bit.y_down =   (report->Y == Y_DOWN)  ? 1 : 0;
     joystick_write(joystick_out.byte);
   }
 }
