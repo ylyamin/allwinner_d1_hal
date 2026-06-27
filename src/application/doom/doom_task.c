@@ -16,6 +16,8 @@
 
 extern tlsf_t mem_pool;
 extern struct fifo_t keyboard_fifo;
+extern struct fifo_t joystick_fifo;
+
 extern uint32_t *doom_framebuffer;
 extern uint32_t *framebuffer;
 extern uint32_t *framebuffer2;
@@ -122,6 +124,21 @@ void doom_task_init(void)
     //de_layer_set(framebuffer2, 0);
 }
 
+typedef union {
+    uint8_t byte;
+    struct
+      {
+        uint8_t button_x : 1;
+        uint8_t button_a : 1; 
+        uint8_t button_b : 1; 
+        uint8_t button_y : 1; 
+        uint8_t x_left   : 1; 
+        uint8_t x_right  : 1; 
+        uint8_t y_up     : 1; 
+        uint8_t y_down   : 1; 
+      } bit;
+} joystick_out_t;
+
 uint8_t key, previous_key;
 
 void doom_task_exec(void)
@@ -139,7 +156,18 @@ void doom_task_exec(void)
         if(key == HID_KEY_CONTROL_RIGHT  )key = DOOM_KEY_CTRL;
         if(key == HID_KEY_CONTROL_LEFT   )key = DOOM_KEY_CTRL;
         doom_key_down(key);
-        //doom_button_down(doom_button_t button);
+    }
+
+    if(fifo_empty(&joystick_fifo) != 1)
+    {
+        joystick_out_t joystick_out = (joystick_out_t) joystick_read();
+        ( joystick_out.bit.button_b) ? doom_key_down(DOOM_KEY_ENTER      ) : doom_key_up(DOOM_KEY_ENTER      );
+        ( joystick_out.bit.button_y) ? doom_key_down(DOOM_KEY_SPACE      ) : doom_key_up(DOOM_KEY_SPACE      );
+        ( joystick_out.bit.button_a) ? doom_key_down(DOOM_KEY_CTRL       ) : doom_key_up(DOOM_KEY_CTRL       );
+        ( joystick_out.bit.x_left  ) ? doom_key_down(DOOM_KEY_LEFT_ARROW ) : doom_key_up(DOOM_KEY_LEFT_ARROW );
+        ( joystick_out.bit.x_right ) ? doom_key_down(DOOM_KEY_RIGHT_ARROW) : doom_key_up(DOOM_KEY_RIGHT_ARROW);
+        ( joystick_out.bit.y_up  )   ? doom_key_down(DOOM_KEY_UP_ARROW   ) : doom_key_up(DOOM_KEY_UP_ARROW   );
+        ( joystick_out.bit.y_down )  ? doom_key_down(DOOM_KEY_DOWN_ARROW ) : doom_key_up(DOOM_KEY_DOWN_ARROW );
     }
 
     uint64_t frame_start = get_time_ms();

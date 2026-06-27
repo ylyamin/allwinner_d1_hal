@@ -39,6 +39,21 @@ uint8_t keyboard_read(void)
     return *read_addr;
 }
 
+void joystick_write(uint8_t ch)
+{
+    uint32_t * write_addr = fifo_get_write_addr(&joystick_fifo);
+    *write_addr = ch;
+    fifo_write_done(&joystick_fifo);
+}
+
+uint8_t joystick_read(void)
+{
+    uint32_t * read_addr = fifo_get_read_addr(&joystick_fifo);
+    fifo_read_done(&joystick_fifo);
+    return *read_addr;
+}
+
+
 int shift_x, shift_y;
 
 void console_task_exec(void)

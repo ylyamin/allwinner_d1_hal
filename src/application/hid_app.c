@@ -255,10 +255,10 @@ static void process_mouse_report(hid_mouse_report_t const * report)
 
 typedef enum
 {
-  JOYSTICK_BUTTON_X  = 0x1,
-  JOYSTICK_BUTTON_A  = 0x2,
-  JOYSTICK_BUTTON_B  = 0x4,
-  JOYSTICK_BUTTON_Y  = 0x8,
+  JOYSTICK_BUTTON_X  = (1 << 0),
+  JOYSTICK_BUTTON_A  = (1 << 1),
+  JOYSTICK_BUTTON_B  = (1 << 2),
+  JOYSTICK_BUTTON_Y  = (1 << 3),
 } hid_joystick_button_bm_t;
 
 typedef enum
@@ -266,34 +266,46 @@ typedef enum
   X_LEFT   = 0,
   X_CENTER = 511,
   X_RIGHT  = 1023,
-} hid_joystick_axes_t;
+} hid_joystick_X_t;
+
+typedef enum
+{
+  Y_UP     = 0,
+  Y_CENTER = 511,
+  Y_DOWN   = 1023,
+} hid_joystick_Y_t;
+
+typedef union {
+    uint8_t byte;
+    struct
+      {
+        uint8_t button_x : 1;
+        uint8_t button_a : 1; 
+        uint8_t button_b : 1; 
+        uint8_t button_y : 1; 
+        uint8_t x_left   : 1; 
+        uint8_t x_right  : 1; 
+        uint8_t y_up   : 1; 
+        uint8_t y_down  : 1; 
+      } bit;
+} joystick_out_t;
 
 static void process_joystick_report(hid_joystick_report_t const * report, uint16_t len)
 {
-  small_printf("process_joystick_report:\n\r");
-  small_printf("(\n\r");
-
-  if (len < 100)
+  joystick_out_t joystick_out;
+  if (len == 12)
   {
-    if(report->Buttons == JOYSTICK_BUTTON_X) small_printf("Button X \n\r");
-    if(report->Buttons == JOYSTICK_BUTTON_A) small_printf("Button A \n\r");
-    if(report->Buttons == JOYSTICK_BUTTON_B) small_printf("Button B \n\r");
-    if(report->Buttons == JOYSTICK_BUTTON_Y) small_printf("Button Y \n\r");
-    if(report->X == X_LEFT) small_printf("X_LEFT \n\r");
-    if(report->X == X_CENTER) small_printf("X_CENTER \n\r");
-    if(report->X == X_RIGHT) small_printf("X_RIGHT \n\r");
-    if(report->Y == X_LEFT) small_printf("Y_LEFT \n\r");
-    if(report->Y == X_CENTER) small_printf("Y_CENTER \n\r");
-    if(report->Y == X_RIGHT) small_printf("Y_RIGHT \n\r");
-
-      small_printf("Buttons %x \n\r",       report->Buttons   );
-      small_printf("X %d \n\r" ,            report->X         );//<- ->: 0-511-1023
-      small_printf("Y %d \n\r",             report->Y         ); //^ v: 0-511-1023
+    joystick_out.bit.button_x = (report->Buttons & (uint32_t)JOYSTICK_BUTTON_X) ? 1 : 0;
+    joystick_out.bit.button_a = (report->Buttons & (uint32_t)JOYSTICK_BUTTON_A) ? 1 : 0;
+    joystick_out.bit.button_b = (report->Buttons & (uint32_t)JOYSTICK_BUTTON_B) ? 1 : 0;
+    joystick_out.bit.button_y = (report->Buttons & (uint32_t)JOYSTICK_BUTTON_Y) ? 1 : 0;
+    joystick_out.bit.x_left  = (report->X == X_LEFT)  ? 1 : 0;
+    joystick_out.bit.x_right = (report->X == X_RIGHT) ? 1 : 0;
+    joystick_out.bit.y_up  = (report->Y == Y_UP)    ? 1 : 0;
+    joystick_out.bit.y_down = (report->Y == Y_DOWN)  ? 1 : 0;
+    joystick_write(joystick_out.byte);
   }
-
-  small_printf(")\n\r");
 }
-
 //--------------------------------------------------------------------+
 // Generic Report
 //--------------------------------------------------------------------+
