@@ -156,17 +156,19 @@ void doom_task_exec(void)
 
     doom_force_update();
 
-    struct g2d_rot_t g2d_rot_config = {
+    struct g2d_rot_t g2d_rot_doom_config = {
         .src_fb = doom_framebuffer,
         .dst_fb = framebuffer2,
         .src_w = 320,
         .src_h = 200,
         .dst_w = 200,
         .dst_h = 320,
+        .rot_angle = CW_270,
         .fmt = LAY_FBFMT_ARGB_8888,
     };
 
-   	g2d_rot(g2d_rot_config);
+   	g2d_rot(g2d_rot_doom_config);
+	while(g2d_rot_finish());
 
         uint64_t frame_stop = get_time_ms();
 

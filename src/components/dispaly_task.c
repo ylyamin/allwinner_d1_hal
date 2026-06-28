@@ -17,9 +17,10 @@ extern void LCD_panel_init(void);
 
 extern tlsf_t mem_pool;
 
-unsigned char *framebuffer; 
-unsigned char *framebuffer1; 
-unsigned char *framebuffer2; 
+uint8_t *framebuffer; 
+uint8_t *framebuffer1; 
+uint8_t *framebuffer2; 
+struct g2d_rot_t g2d_rot_config;
 
 void display_task_init(void)
 {
@@ -37,15 +38,15 @@ void display_task_init(void)
 		.lcd_h = timing.lcd_h, //1280
 		.lcd_offset_w = (timing.lcd_w - timing.lcd_scale_w)/2, //60
 		.lcd_offset_h = (timing.lcd_h - timing.lcd_scale_h)/2, //0
-		.pipe = {
-			{
+		.pipe = { 
+			{ //main screen
 				.pipe_enable = 1,
 				.pipe_w = timing.lcd_scale_w, //480
 				.pipe_h = timing.lcd_scale_h, //1280
 				.pipe_offset_w = 0,
 				.pipe_offset_h = 0,
 			},
-			{
+			{ //doom screen
 				.pipe_enable = CONFIG_USE_DOOM,
 				.pipe_w = scaled_doom_w, //480
 				.pipe_h = scaled_doom_h, //768
@@ -55,9 +56,13 @@ void display_task_init(void)
 		},
 	};
 
+    framebuffer =  tlsf_memalign(mem_pool, 16, timing.lcd_scale_h * timing.lcd_scale_w * 4);
+    framebuffer1 = tlsf_memalign(mem_pool, 16, timing.lcd_scale_w * timing.lcd_scale_h * 4);
+    framebuffer2 = tlsf_memalign(mem_pool, 16, doom_w * doom_h * 4);
+
 	struct layer_t layers = {
 		.layer = {
-			{
+			{ //main screen
 				.w = timing.lcd_scale_w,
 				.h = timing.lcd_scale_h,
 				.offset_w = 0,
@@ -65,7 +70,7 @@ void display_task_init(void)
 				.fmt = LAY_FBFMT_ARGB_8888,
 				.alpha = 0xff,
 			},	
-			{
+			{ //doom screen
 				.w = doom_w,
 				.h = doom_h,
 				.offset_w = 0,
@@ -79,24 +84,21 @@ void display_task_init(void)
  	de_config(layers,blender);
 
 //debug lines in framebuffer for pipe 0
-	h = timing.lcd_scale_w;  //480
- 	w = timing.lcd_scale_h; //1280
-
-    framebuffer = tlsf_malloc(mem_pool, w * h * 4);
-    framebuffer1 = tlsf_malloc(mem_pool, h * w * 4);
+	w = timing.lcd_scale_h;  //1280
+ 	h = timing.lcd_scale_w;  //480 
 
 	gr_fill(framebuffer,w,h, 0xff0000ff);
-	gr_draw_hline_xyw(framebuffer, w, h, /*x*/ 10,		/*y*/ 10,		/*ww*/ w - 20, 0x00ff0000);
-	gr_draw_hline_xyw(framebuffer, w, h, /*x*/ 10,		/*y*/ h - 10,	/*ww*/ w - 20, 0x0000ff00);
-	gr_draw_vline_xyh(framebuffer, w, h, /*x*/ 10,		/*y*/ 10,		/*hh*/ h - 10, 0x00ff00ff);
-	gr_draw_vline_xyh(framebuffer, w, h, /*x*/ w - 10,  /*y*/ 10,		/*hh*/ h - 10, 0x00ffff00);
+	gr_draw_hline_xyw(framebuffer, w, h, /*x*/ 10,		/*y*/ 10,		/*ww*/ w - 20, 0xffffffff);
+	gr_draw_hline_xyw(framebuffer, w, h, /*x*/ 10,		/*y*/ h - 10,	/*ww*/ w - 20, 0xffffffff);
+	gr_draw_vline_xyh(framebuffer, w, h, /*x*/ 10,		/*y*/ 10,		/*hh*/ h - 20, 0xffffffff);
+	gr_draw_vline_xyh(framebuffer, w, h, /*x*/ w - 10,  /*y*/ 10,		/*hh*/ h - 20, 0xffffffff);
  	gr_draw_line(framebuffer,w,h, 0, 0, w-1, h-1, 0xff00ffff);
 	gr_draw_line(framebuffer,w,h, w-1, 0, 0, h-1, 0xff00ffff);
 
 //debug lines in framebuffer for pipe 1
 	w = doom_w;
  	h = doom_h;
-    framebuffer2 = tlsf_malloc(mem_pool, w * h * 4);
+
 	gr_fill(framebuffer2,w,h, 0xff00ff00);
  	gr_draw_line(framebuffer2,w,h, 0, 0, w-1, h-1, 0xff0000ff);
 	gr_draw_line(framebuffer2,w,h, w-1, 0, 0, h-1, 0xff0000ff);
@@ -118,17 +120,17 @@ void display_task_init(void)
 	g2d_init();
 	de_init();
 
-    struct g2d_rot_t g2d_rot_config = {
-        .src_fb = framebuffer,
-        .dst_fb = framebuffer1,
-        .src_w = timing.lcd_scale_h,//1280
-        .src_h = timing.lcd_scale_w,//480
-        .dst_w = timing.lcd_scale_w,//480
-        .dst_h = timing.lcd_scale_h,//1280
-        .fmt = LAY_FBFMT_ARGB_8888,
-    };
+    g2d_rot_config.src_fb = framebuffer;
+    g2d_rot_config.dst_fb = framebuffer1;
+    g2d_rot_config.src_w = timing.lcd_scale_h;//1280
+    g2d_rot_config.src_h = timing.lcd_scale_w;//480
+    g2d_rot_config.dst_w = timing.lcd_scale_w;//480
+    g2d_rot_config.dst_h = timing.lcd_scale_h;//1280
+	g2d_rot_config.rot_angle = CW_270;
+    g2d_rot_config.fmt = LAY_FBFMT_ARGB_8888;
 
-   	g2d_rot(g2d_rot_config); //rotate framebuffer
+   	g2d_rot(g2d_rot_config); //rotate framebuffer - after rotation vertical lines gone ?
+	while(g2d_rot_finish());
 
 	de_layer_set(framebuffer1, framebuffer2);
 
@@ -141,17 +143,18 @@ unsigned long ms;
 
 void display_task_exec(void)
 {
+
 //debug lines in framebuffer for pipe 0
-	uint32_t h = de_layer_get_w();
  	uint32_t w = de_layer_get_h();
+	uint32_t h = de_layer_get_w();
 	timing_t timing = LCD_get_param();
 
     if (get_time_ms() > ms + 200)
 	{
 		ms = get_time_ms();
-		
-		gr_draw_line(framebuffer, w, h, line_x, 0, line_x, h-1, 0x000000ff);	// clean previous
-		gr_draw_line(framebuffer, w, h, 0, line_y, w-1, line_y, 0x000000ff);	// clean previous
+#if 0
+		gr_draw_line(framebuffer, w, h, line_x, 0, line_x, h-1, 0xff0000ff);	// clean previous
+		gr_draw_line(framebuffer, w, h, 0, line_y, w-1, line_y, 0xff0000ff);	// clean previous
 
 		gr_draw_line(framebuffer,w,h, 0, 0, w-1, h-1, 0xff00ffff);
 		gr_draw_line(framebuffer,w,h, w-1, 0, 0, h-1, 0xff00ffff);
@@ -159,23 +162,17 @@ void display_task_exec(void)
 		line_x += w / 20;
 		line_y += h / 20;
 
-		gr_draw_line(framebuffer, w, h, line_x, 0, line_x, h-1, 0xff00ffff);	// draw new
-		gr_draw_line(framebuffer, w, h, 0, line_y, w-1, line_y, 0xff00ffff);	// draw new
+		gr_draw_line(framebuffer, w, h, line_x, 0, line_x, h-1, 0xffffffff);	// draw new
+		gr_draw_line(framebuffer, w, h, 0, line_y, w-1, line_y, 0xffffffff);	// draw new
 
 		if (line_x > w) line_x = 0; 									//reset in the end
 		if (line_y > h) line_y = 0; 									//reset in the end
+#endif
+		g2d_rot(g2d_rot_config); //rotate framebuffer
+		while(g2d_rot_finish());
+	}
 
-		struct g2d_rot_t g2d_rot_config = {
-			.src_fb = framebuffer,
-			.dst_fb = framebuffer1,
-			.src_w = timing.lcd_scale_h,
-			.src_h = timing.lcd_scale_w,
-			.dst_w = timing.lcd_scale_w,
-			.dst_h = timing.lcd_scale_h,
-			.fmt = LAY_FBFMT_ARGB_8888,
-    	};
 
-   		g2d_rot(g2d_rot_config); //rotate framebuffer TODO wait finish
-	}	 
+
 
 }

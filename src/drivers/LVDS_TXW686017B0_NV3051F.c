@@ -77,9 +77,9 @@ Delay(20);  //延迟20ms
 
 timing_t timing = {
     .lcd_type = LVDS,
-	.pixclk = 54000000, //54.23Mhz
-	.lcd_w = 600,      //width 
-	.lcd_h = 1280,       //hight
+	.pixclk = 54000000, 	//54.23Mhz
+	.lcd_w = 600,      		//width 
+	.lcd_h = 1280,       	//hight
     .lcd_scale_w = 480,
     .lcd_scale_h = 1280,
 

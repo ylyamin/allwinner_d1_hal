@@ -25,8 +25,6 @@ void main(void)
 
     display_task_init();	
 
-    console_render();
-
     console_task_init();
 
     #ifdef CONFIG_USE_DOOM
@@ -42,6 +40,8 @@ void main(void)
         #ifdef CONFIG_USE_DOOM
             doom_task_exec();
         #endif
+
+        console_render();
 
         display_task_exec();	
     }
