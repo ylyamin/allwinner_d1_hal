@@ -22,6 +22,10 @@ uint8_t *framebuffer1;
 uint8_t *framebuffer2; 
 struct g2d_rot_t g2d_rot_config;
 
+#define FONT_COLOR_1 0xff00004f
+#define FONT_COLOR_2 0xff004f00
+#define LINE_COLOR_1 0xff4f4f4f
+
 void display_task_init(void)
 {
 	LOG_D("display_task_init");
@@ -87,21 +91,21 @@ void display_task_init(void)
 	w = timing.lcd_scale_h;  //1280
  	h = timing.lcd_scale_w;  //480 
 
-	gr_fill(framebuffer,w,h, 0xff0000ff);
-	gr_draw_hline_xyw(framebuffer, w, h, /*x*/ 10,		/*y*/ 10,		/*ww*/ w - 20, 0xffffffff);
-	gr_draw_hline_xyw(framebuffer, w, h, /*x*/ 10,		/*y*/ h - 10,	/*ww*/ w - 20, 0xffffffff);
-	gr_draw_vline_xyh(framebuffer, w, h, /*x*/ 10,		/*y*/ 10,		/*hh*/ h - 20, 0xffffffff);
-	gr_draw_vline_xyh(framebuffer, w, h, /*x*/ w - 10,  /*y*/ 10,		/*hh*/ h - 20, 0xffffffff);
- 	gr_draw_line(framebuffer,w,h, 0, 0, w-1, h-1, 0xff00ffff);
-	gr_draw_line(framebuffer,w,h, w-1, 0, 0, h-1, 0xff00ffff);
+	gr_fill(framebuffer,w,h, FONT_COLOR_1);
+	gr_draw_hline_xyw(framebuffer, w, h, /*x*/ 10,		/*y*/ 10,		/*ww*/ w - 20, LINE_COLOR_1);
+	gr_draw_hline_xyw(framebuffer, w, h, /*x*/ 10,		/*y*/ h - 10,	/*ww*/ w - 20, LINE_COLOR_1);
+	gr_draw_vline_xyh(framebuffer, w, h, /*x*/ 10,		/*y*/ 10,		/*hh*/ h - 20, LINE_COLOR_1);
+	gr_draw_vline_xyh(framebuffer, w, h, /*x*/ w - 10,  /*y*/ 10,		/*hh*/ h - 20, LINE_COLOR_1);
+ 	gr_draw_line(framebuffer,w,h, 0, 0, w-1, h-1, LINE_COLOR_1);
+	gr_draw_line(framebuffer,w,h, w-1, 0, 0, h-1, LINE_COLOR_1);
 
 //debug lines in framebuffer for pipe 1
 	w = doom_w;
  	h = doom_h;
 
-	gr_fill(framebuffer2,w,h, 0xff00ff00);
- 	gr_draw_line(framebuffer2,w,h, 0, 0, w-1, h-1, 0xff0000ff);
-	gr_draw_line(framebuffer2,w,h, w-1, 0, 0, h-1, 0xff0000ff);
+	gr_fill(framebuffer2,w,h, FONT_COLOR_2);
+ 	gr_draw_line(framebuffer2,w,h, 0, 0, w-1, h-1, LINE_COLOR_1);
+	gr_draw_line(framebuffer2,w,h, w-1, 0, 0, h-1, LINE_COLOR_1); 
 ////
 
 	//1
@@ -153,17 +157,17 @@ void display_task_exec(void)
 	{
 		ms = get_time_ms();
 #if 0
-		gr_draw_line(framebuffer, w, h, line_x, 0, line_x, h-1, 0xff0000ff);	// clean previous
-		gr_draw_line(framebuffer, w, h, 0, line_y, w-1, line_y, 0xff0000ff);	// clean previous
+		gr_draw_line(framebuffer, w, h, line_x, 0, line_x, h-1, FONT_COLOR_1);	// clean previous
+		gr_draw_line(framebuffer, w, h, 0, line_y, w-1, line_y, FONT_COLOR_1);	// clean previous
 
-		gr_draw_line(framebuffer,w,h, 0, 0, w-1, h-1, 0xff00ffff);
-		gr_draw_line(framebuffer,w,h, w-1, 0, 0, h-1, 0xff00ffff);
+		gr_draw_line(framebuffer,w,h, 0, 0, w-1, h-1, LINE_COLOR_1);
+		gr_draw_line(framebuffer,w,h, w-1, 0, 0, h-1, LINE_COLOR_1);
 
 		line_x += w / 20;
 		line_y += h / 20;
 
-		gr_draw_line(framebuffer, w, h, line_x, 0, line_x, h-1, 0xffffffff);	// draw new
-		gr_draw_line(framebuffer, w, h, 0, line_y, w-1, line_y, 0xffffffff);	// draw new
+		gr_draw_line(framebuffer, w, h, line_x, 0, line_x, h-1, LINE_COLOR_1);	// draw new
+		gr_draw_line(framebuffer, w, h, 0, line_y, w-1, line_y, LINE_COLOR_1);	// draw new
 
 		if (line_x > w) line_x = 0; 									//reset in the end
 		if (line_y > h) line_y = 0; 									//reset in the end

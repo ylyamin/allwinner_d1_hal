@@ -5,7 +5,7 @@
 #include <de.h>
 #include <gr.h>
 #include <font8x8_basic.h>
-//#include <font16x16.h>
+#include <font16x16.h>
 
 #define BUFF_SIZE 100
 
@@ -61,33 +61,31 @@ int shift_y = 20;
 void console_render(void)
 {
     uint8_t ch;
-    uint8_t ch_size = 8;
     char *str = "Hello RISC-V ";
     uint32_t w = de_layer_get_h();
     uint32_t h = de_layer_get_w();
 
-/*     if(fifo_empty(&keyboard_fifo) != 1)
-    {
-        ch = keyboard_read();
-        LOG_I("%c",ch); */
-    for (int i = 0; i < 13; i++)
-    {
-        char *bitmap = font8x8_basic[str[i]];
-        //uint8_t *bitmap = font16x16[str[i]];
 
-        int x,y,set;
-        for (x=0; x < ch_size; x++) {
-            for (y=0; y < ch_size; y++) {
-                set = bitmap[x] & 1 << y;
-                if(set)
-                    gr_draw_pixel(framebuffer, w, h, y + shift_x, x + shift_y, 0xffffffff);
-                else
-                    gr_draw_pixel(framebuffer, w, h, y + shift_x, x + shift_y, 0xff0000ff);
+    for (int i = 0; i < 12; i++)
+    {
+///drow char        
+        uint8_t ch_size = 16;
+        //uint8_t *bitmap = font8x8_basic[str[i]];
+        uint8_t *bitmap = font16x16[str[i]];
+        int x,y,b,set;
+        for (y=0; y < ch_size; y++) {
+            for (x=0; x < ch_size; x++) {
+                    set = bitmap[(y * (ch_size / 8)) + (x / 8)] & (1 << 7 - (x - ((x / 8) * 8)));
+                    if(set)
+                        gr_draw_pixel(framebuffer, w, h, x + shift_x, y + shift_y, 0xffffffff);
+                    else
+                        gr_draw_pixel(framebuffer, w, h, x + shift_x, y + shift_y, 0xff00004f);
             }
         }
+///   
         shift_x += ch_size;
         if(!(shift_x %= w)) shift_y += ch_size;
         shift_y %= h; 
     }
-/*     } */
+
 }

@@ -18,8 +18,8 @@ extern tlsf_t mem_pool;
 extern struct fifo_t keyboard_fifo;
 extern struct fifo_t joystick_fifo;
 
-extern uint32_t *doom_framebuffer;
 extern uint32_t *framebuffer2;
+extern uint32_t *doom_framebuffer;
 
 void doom_print_fnc(const char* fmt)
 {
@@ -28,7 +28,7 @@ void doom_print_fnc(const char* fmt)
 
 void* doom_malloc_fnc(int size) 
 {
-    return tlsf_malloc(mem_pool, size);
+    return tlsf_memalign(mem_pool, 16, size);
 }
 void doom_free_fnc(void* ptr) 
 {

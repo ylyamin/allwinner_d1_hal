@@ -19,7 +19,7 @@ void main(void)
 	LOG_W("heap: creating mem pool @ %08x size %d\n", &__HeapBase, s);
 	mem_pool = tlsf_create_with_pool((void *)&__HeapBase, s);
 
-    #ifdef CONFIG_USE_USB
+    #if CONFIG_USE_USB
         usb_task_init();
     #endif
 
@@ -27,21 +27,21 @@ void main(void)
 
     console_task_init();
 
-    #ifdef CONFIG_USE_DOOM
+    console_render();
+
+    #if CONFIG_USE_DOOM
         doom_task_init();
     #endif
 
     while(1)
     {
-        #ifdef CONFIG_USE_USB
+        #if CONFIG_USE_USB
             usb_task_exec();
         #endif
 
-        #ifdef CONFIG_USE_DOOM
+        #if CONFIG_USE_DOOM
             doom_task_exec();
         #endif
-
-        console_render();
 
         display_task_exec();	
     }
