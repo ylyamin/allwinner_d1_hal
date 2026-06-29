@@ -79,31 +79,47 @@ void console_render_font_buffer(void)
     }
 }
 
-int shift_x = 20; 
-int shift_y = 20;
+uint32_t shift_x = 0; 
+uint32_t shift_y = 0;
 
 void console_render(void)
 {
+    int ms = get_time_ms();
     uint32_t w = de_layer_get_h();
     uint32_t h = de_layer_get_w();
 
+    uint32_t w_margin = 10;
+    uint32_t h_margin = 10;
+    
+    uint32_t w_space = w - w_margin * 2;
+    uint32_t h_space = h - w_margin * 2;
+
+    uint32_t col_num = w_space / ch_size;
+    uint32_t row_num = h_space / ch_size;
+
     console_render_font_buffer();
 
-    char *str = "Hello RISC-V ";
+    char *str = " Hello RISC-V ";
+
+    for (int j = 0; j < ((col_num * row_num) / 13); j++)
+    {
 
 ///render char
-    for (int i = 0; i < 12; i++)
+    for (int i = 0; i < 13; i++)
     {
         int offset = str[i] * ch_size * ch_size * 4;
         for (int y = 0; y < ch_size; y++) {
             for (int x = 0; x < ch_size; x++) {
-                *(volatile uint32_t *)((uint32_t) framebuffer + 4 * ((y + shift_y) * w + x + shift_x)) = 
+                *(volatile uint32_t *)((uint32_t) framebuffer + 4 * ((y + shift_y + h_margin) * w + x + shift_x + w_margin)) = 
                 *(volatile uint32_t *)((uint32_t) font_buffer + 4 * (y*ch_size + x) + offset);
             }
         }
 ///
         shift_x += ch_size;
-        if(!(shift_x %= w)) shift_y += ch_size;
-        shift_y %= h; 
+        if((shift_x / ch_size) == col_num) { shift_x = 0; shift_y += ch_size; };
+        if((shift_y / ch_size) == row_num) { shift_y = 0; };
     }
+
+    }
+    LOG_E("tine: %d\n\r",  (get_time_ms() - ms) );
 }
