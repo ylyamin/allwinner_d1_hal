@@ -6,8 +6,11 @@
 #include <gr.h>
 #include <font8x8_basic.h>
 #include <font16x16.h>
+#include <tlsf.h>
 
 #define BUFF_SIZE 100
+
+extern tlsf_t mem_pool;
 
 struct fifo_t keyboard_fifo;
 struct fifo_t mouse_fifo;
@@ -54,38 +57,53 @@ uint8_t joystick_read(void)
     return *read_addr;
 }
 
+uint8_t ch_size = 16;
+uint8_t *font_buffer;
+
+void console_render_font_buffer(void)
+{
+    font_buffer = tlsf_memalign(mem_pool, 16, ch_size * ch_size * 4 * 128);
+
+    for (int i = 0; i < 128; i++)
+    {        
+        //bitmap = font8x8_basic[i];
+        int offset = i * ch_size * ch_size * 4;
+        for (int y = 0; y < ch_size; y++) {
+            for (int x = 0; x < ch_size; x++) {
+                    if(font16x16[i][(y * (ch_size / 8)) + (x / 8)] & (1 << 7 - (x - ((x / 8) * 8))))
+                        *(volatile uint32_t *)((uint32_t) font_buffer + 4 * (y*ch_size + x) + offset) = 0xffffffff;
+                    else
+                        *(volatile uint32_t *)((uint32_t) font_buffer + 4 * (y*ch_size + x) + offset) = 0xff00004f;
+            }
+        }        
+    }
+}
 
 int shift_x = 20; 
 int shift_y = 20;
 
 void console_render(void)
 {
-    uint8_t ch;
-    char *str = "Hello RISC-V ";
     uint32_t w = de_layer_get_h();
     uint32_t h = de_layer_get_w();
 
+    console_render_font_buffer();
 
+    char *str = "Hello RISC-V ";
+
+///render char
     for (int i = 0; i < 12; i++)
     {
-///drow char        
-        uint8_t ch_size = 16;
-        //uint8_t *bitmap = font8x8_basic[str[i]];
-        uint8_t *bitmap = font16x16[str[i]];
-        int x,y,b,set;
-        for (y=0; y < ch_size; y++) {
-            for (x=0; x < ch_size; x++) {
-                    set = bitmap[(y * (ch_size / 8)) + (x / 8)] & (1 << 7 - (x - ((x / 8) * 8)));
-                    if(set)
-                        gr_draw_pixel(framebuffer, w, h, x + shift_x, y + shift_y, 0xffffffff);
-                    else
-                        gr_draw_pixel(framebuffer, w, h, x + shift_x, y + shift_y, 0xff00004f);
+        int offset = str[i] * ch_size * ch_size * 4;
+        for (int y = 0; y < ch_size; y++) {
+            for (int x = 0; x < ch_size; x++) {
+                *(volatile uint32_t *)((uint32_t) framebuffer + 4 * ((y + shift_y) * w + x + shift_x)) = 
+                *(volatile uint32_t *)((uint32_t) font_buffer + 4 * (y*ch_size + x) + offset);
             }
         }
-///   
+///
         shift_x += ch_size;
         if(!(shift_x %= w)) shift_y += ch_size;
         shift_y %= h; 
     }
-
 }
