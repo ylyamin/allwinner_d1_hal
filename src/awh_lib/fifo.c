@@ -106,6 +106,14 @@ void fifo_write_done(struct fifo_t *b)
 
 }
 
+void fifo_write_cyclic_done(struct fifo_t *b)
+{
+	uint32_t w = b->write;
+	w ++;
+	w %= b->e_num;
+	b->write = w;
+}
+
 // returns length of continuous buffer
 uint32_t fifo_get_read_size_cont(struct fifo_t *b)
 {

@@ -153,7 +153,7 @@ void display_task_exec(void)
 	uint32_t h = de_layer_get_w();
 	timing_t timing = LCD_get_param();
 
-    if (get_time_ms() > ms + 200)
+    if (get_time_ms() > ms + 1)
 	{
 		ms = get_time_ms();
 #if 0

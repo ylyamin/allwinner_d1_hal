@@ -31,6 +31,7 @@ void fifo_read_done(struct fifo_t *b);
 
 void *fifo_get_write_addr(struct fifo_t *b);
 void fifo_write_done(struct fifo_t *b);
+void fifo_write_cyclic_done(struct fifo_t *b);
 
 uint32_t fifo_get_read_size_cont(struct fifo_t *b);
 void fifo_read_done_size(struct fifo_t *b, uint32_t size);
