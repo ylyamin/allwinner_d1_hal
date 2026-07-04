@@ -4,6 +4,7 @@
 #include <ccu.h>
 #include <de.h>
 #include <gr.h>
+#include <g2d.h>
 #include <font8x8_basic.h>
 #include <font16x16.h>
 #include <tlsf.h>
@@ -21,10 +22,13 @@ struct fifo_t console_string_buf_fifo;
 uint8_t keyboard_buf[BUFF_SIZE];
 uint8_t mouse_buf[BUFF_SIZE];
 uint8_t joystick_buf[BUFF_SIZE];
-uint32_t console_new_line_buf[BUFF_SIZE];
-uint8_t console_string_buf[2200];
+uint32_t *console_new_line_buf;
+uint8_t *console_string_buf;
 
 extern uint8_t *framebuffer; 
+extern struct g2d_rot_t g2d_rot_config;
+
+
 uint16_t ch_size = 16;
 uint8_t *font_buffer;
 
@@ -32,11 +36,14 @@ void console_render_font_buffer(void);
 
 void console_task_init(void)
 {
-	fifo_init(&keyboard_fifo, keyboard_buf, sizeof(uint8_t), sizeof(keyboard_buf));
-    fifo_init(&mouse_fifo, mouse_buf, sizeof(uint8_t), sizeof(mouse_buf));
-	fifo_init(&joystick_fifo, joystick_buf, sizeof(uint8_t), sizeof(joystick_buf));
-    fifo_init(&console_new_line_buf_fifo, console_new_line_buf, sizeof(uint32_t), sizeof(console_new_line_buf));
-    fifo_init(&console_string_buf_fifo, console_string_buf, sizeof(uint8_t), sizeof(console_string_buf));
+    console_string_buf =  tlsf_memalign(mem_pool, 16, 2200);
+    console_new_line_buf =  tlsf_memalign(mem_pool, 16, 100);
+
+	fifo_init(&keyboard_fifo, keyboard_buf, sizeof(uint8_t), ARRAY_SIZE(keyboard_buf));
+    fifo_init(&mouse_fifo, mouse_buf, sizeof(uint8_t), ARRAY_SIZE(mouse_buf));
+	fifo_init(&joystick_fifo, joystick_buf, sizeof(uint8_t), ARRAY_SIZE(joystick_buf));
+    fifo_init(&console_new_line_buf_fifo, console_new_line_buf, sizeof(uint32_t), 100);
+    fifo_init(&console_string_buf_fifo, console_string_buf, sizeof(uint8_t), 2200);
 
     console_render_font_buffer();
 }
@@ -141,24 +148,18 @@ void console_fill_string(void)
 {
     char *str = "Hello-RISC-V";
 
-/*     if (get_time_ms() > ms1 + 20)
+    if (get_time_ms() > ms1 + 100)
 	{
-		ms1 = get_time_ms();
- */
-        for (int j = 0; j < 10; j++)//78*28
+        ms1 = get_time_ms();
+
+        for (int i = 0; i < 1; i++)
         {
-            for (int i = 33; i < 110; i++)
+            for (int k = 33; k < 110; k++)
             {
-                console_string_buf_write(i);
+                console_string_buf_write(k);
             }
         }
-
-            for (int i = 33; i < 44; i++)
-            {
-                console_string_buf_write(i);
-            }
-
-/*     } */
+    }
 }
 
 void console_render(void)
@@ -173,53 +174,54 @@ void console_render(void)
 
     if(fifo_empty(&console_string_buf_fifo) != 1)
     {
+
+        LOG_E("read: %d",console_string_buf_fifo.read );
+        LOG_E("write: %d",console_string_buf_fifo.write );
+        LOG_E("nl write: %d",console_new_line_buf_fifo.write );
+
         if(console_string_buf_fifo.read == 0) console_new_line_buf_write( fifo_get_read_addr(&console_string_buf_fifo)); //add 1 row first symbol addres
-/* 
-        while(fifo_get_read_size_cont(&console_string_buf_fifo))
-        { */
-            if(need_rerender) { //shift screen up
 
+        if(!need_rerender) {  //normal symbol
 
-                while((uint32_t)need_rerender != (uint32_t)fifo_get_read_addr(&console_string_buf_fifo))
-                {
-                    symbol = (char) *((uint32_t *)need_rerender);
-                    console_render_char(symbol);
-                    need_rerender = need_rerender + sizeof(uint8_t);
+            symbol = console_string_buf_read();
+            console_render_char(symbol);
 
-                    shift_x += ch_size;
-                    if((shift_x / ch_size) == col_num) { //new line by row end
-                        shift_x = 0; 
-                        shift_y += ch_size; 
-                    }
-                }
-
-                for(int i = 0; i++; i < col_num)
-                {
-                    console_render_char("_");
-                    shift_x += ch_size;
-                }
-
-                need_rerender = 0;
+            shift_x += ch_size;
+            if((shift_x / ch_size) == col_num) { //new line by row end
+                shift_x = 0; 
+                shift_y += ch_size; 
+                console_new_line_buf_write( fifo_get_read_addr(&console_string_buf_fifo));
             }
-            else
+            
+            if((shift_y / ch_size) == 10) { ////end screen
+                shift_y = 0; 
+                uint32_t * addr = console_new_line_buf_addr_read() - (sizeof(uint32_t) * 9); // 2 row first symbol addres
+                need_rerender = *addr; 
+            }
+        }
+        else
+        {
+            //shift screen up
+            while((uint32_t)need_rerender != (uint32_t)fifo_get_read_addr(&console_string_buf_fifo))
             {
-
-                symbol = console_string_buf_read();
+                symbol = (char) *((uint32_t *)need_rerender);
                 console_render_char(symbol);
-
+                need_rerender = need_rerender + sizeof(uint8_t);
 
                 shift_x += ch_size;
                 if((shift_x / ch_size) == col_num) { //new line by row end
                     shift_x = 0; 
                     shift_y += ch_size; 
-                    console_new_line_buf_write( fifo_get_read_addr(&console_string_buf_fifo));
-                }
-                
-                if((shift_y / ch_size) == 10) { ////end screen
-                    shift_y = 0; 
-                    uint32_t * addr = console_new_line_buf_addr_read() - (sizeof(uint32_t) * 9); // 2 row first symbol addres
-                    need_rerender = *addr; 
                 }
             }
+
+            while((shift_x / ch_size) == col_num)
+            {
+                console_render_char(' ');
+                shift_x += ch_size;
+            }
+            shift_x = 0; 
+            need_rerender = 0;
+        }
     }
 }

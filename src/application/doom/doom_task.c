@@ -168,7 +168,7 @@ void doom_task_exec(void)
     };
 
    	g2d_rot(g2d_rot_doom_config);
-	while(g2d_rot_finish());
+	while(!g2d_rot_finish());
 
         uint64_t frame_stop = get_time_ms();
 

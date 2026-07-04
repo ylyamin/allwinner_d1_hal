@@ -31,7 +31,6 @@ void main(void)
         doom_task_init();
     #endif
     
-    console_fill_string();
 
     while(1)
     {
@@ -43,7 +42,8 @@ void main(void)
             doom_task_exec();
         #endif
 
-
+        console_fill_string();
+        
         console_render();
 
         display_task_exec();	
