@@ -30,11 +30,7 @@ void main(void)
     #if CONFIG_USE_DOOM
         doom_task_init();
     #endif
-
-    console_fill_string();
-    
-    unsigned long ms2;
-    
+        
     while(1)
     {
         #if CONFIG_USE_USB
@@ -45,14 +41,10 @@ void main(void)
             doom_task_exec();
         #endif
 
-/* 
-        if (get_time_ms() > ms2 + 100)
-        {
-            ms2 = get_time_ms(); */
-    
-            console_render();
+        console_fill_string();
 
-            display_task_exec();	
-   /*      } */
+        console_render();    
+        
+        display_task_exec();	
     }
 }

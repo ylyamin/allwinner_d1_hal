@@ -61,7 +61,6 @@ void console_render_font_buffer(void)
 
     for (int i = 0; i < 128; i++)
     {        
-        //bitmap = font8x8_basic[i];
         int offset = i * ch_size * ch_size * 4;
         for (int y = 0; y < ch_size; y++) {
             for (int x = 0; x < ch_size; x++) {
@@ -117,7 +116,6 @@ uint32_t shift_y = 0;
 void console_render_char(uint8_t symbol)
 {
     int offset = symbol * ch_size * ch_size * 4;
-
     for (int y = 0; y < ch_size; y++) {
         for (int x = 0; x < ch_size; x++) {
             *(volatile uint32_t *)((uint32_t) framebuffer + 4 * ((y + shift_y + h_margin) * w + x + shift_x + w_margin)) = 
@@ -126,19 +124,31 @@ void console_render_char(uint8_t symbol)
     }
 }
 
-uint64_t fstr = 33;
-unsigned long ms1;
+int str_a = 0;
+int str_b = 0;
+unsigned long ms2;
 
 void console_fill_string(void)
 {
-    char *str_out;
+    if (get_time_ms() > ms2 + 100)
+    {
+        ms2 = get_time_ms();
 
-    for(int i = 0; i < 5; i++)
-    {    
-        int num = tfp_sprintf(str_out, "String %d \n", i);
-        for(int j = 0; j < num; j++)
-        {
-            console_string_buf_write(str_out[j]);
+        if(str_a < 20){
+
+            char str_out[20];
+            int num = tfp_sprintf(str_out, "String %d \n", str_a);
+
+            if(str_b < num)
+            {
+                console_string_buf_write(str_out[str_b]);
+                str_b++;
+            }
+            else 
+            {
+                str_b = 0;
+                str_a++;
+            }
         }
     }
 }
@@ -151,21 +161,24 @@ void console_render(void)
     uint32_t h_space = h - w_margin * 2;
     uint32_t col_num = w_space / ch_size;
     uint32_t row_num = 10; //h_space / ch_size;
-    
     int need_rerender = 0;
 
     while( (fifo_empty(&console_string_buf_fifo) != 1) && !need_rerender)
     {
-        console_render_char(console_string_buf_read());
-        shift_x += ch_size;
+        char symbol = console_string_buf_read();
 
-        if((shift_x / ch_size) == col_num) { //new line by row end
+        if(symbol > 31) { //normal symbol
+            console_render_char(symbol);
+            shift_x += ch_size;
+        }
+
+        if( (shift_x / ch_size) == col_num || symbol == '\n') { //new line by row end
             shift_x = 0; 
             shift_y += ch_size; 
             console_new_line_buf_write(console_string_buf_fifo.read);
         }
         
-        if((shift_y / ch_size) == row_num) { //end screen
+        if( (shift_y / ch_size) == row_num ) { //end screen
   
             shift_y = ch_size * (row_num - 1); 
             for(int i; i < col_num; i++) //clean last row
