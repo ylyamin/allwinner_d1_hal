@@ -8,6 +8,7 @@
 #include <font8x8_basic.h>
 #include <font16x16.h>
 #include <tlsf.h>
+#include <tinyprintf.h>
 
 #define BUFF_SIZE 100
 
@@ -22,8 +23,9 @@ struct fifo_t console_string_buf_fifo;
 uint8_t keyboard_buf[BUFF_SIZE];
 uint8_t mouse_buf[BUFF_SIZE];
 uint8_t joystick_buf[BUFF_SIZE];
-uint32_t *console_new_line_buf;
+
 uint8_t *console_string_buf;
+uint32_t *console_new_line_buf;
 
 extern uint8_t *framebuffer; 
 extern struct g2d_rot_t g2d_rot_config;
@@ -34,46 +36,22 @@ uint8_t *font_buffer;
 
 void console_render_font_buffer(void);
 
+void console_new_line_buf_write(uint32_t elem);
+
 void console_task_init(void)
 {
-    console_string_buf =  tlsf_memalign(mem_pool, 16, 2200);
-    console_new_line_buf =  tlsf_memalign(mem_pool, 16, 100);
+    console_string_buf =  tlsf_malloc(mem_pool, 2000);
+    console_new_line_buf =  tlsf_malloc(mem_pool, 100 * 4);
 
 	fifo_init(&keyboard_fifo, keyboard_buf, sizeof(uint8_t), ARRAY_SIZE(keyboard_buf));
     fifo_init(&mouse_fifo, mouse_buf, sizeof(uint8_t), ARRAY_SIZE(mouse_buf));
 	fifo_init(&joystick_fifo, joystick_buf, sizeof(uint8_t), ARRAY_SIZE(joystick_buf));
+
+    fifo_init(&console_string_buf_fifo, console_string_buf, sizeof(uint8_t), 2000);
     fifo_init(&console_new_line_buf_fifo, console_new_line_buf, sizeof(uint32_t), 100);
-    fifo_init(&console_string_buf_fifo, console_string_buf, sizeof(uint8_t), 2200);
 
+    console_new_line_buf_write( fifo_get_read_addr(&console_string_buf_fifo));
     console_render_font_buffer();
-}
-
-void keyboard_write(uint8_t ch)
-{
-    uint32_t * write_addr = fifo_get_write_addr(&keyboard_fifo);
-    *write_addr = ch;
-    fifo_write_done(&keyboard_fifo);
-}
-
-uint8_t keyboard_read(void)
-{
-    uint32_t * read_addr = fifo_get_read_addr(&keyboard_fifo);
-    fifo_read_done(&keyboard_fifo);
-    return *read_addr;
-}
-
-void joystick_write(uint8_t ch)
-{
-    uint32_t * write_addr = fifo_get_write_addr(&joystick_fifo);
-    *write_addr = ch;
-    fifo_write_done(&joystick_fifo);
-}
-
-uint8_t joystick_read(void)
-{
-    uint32_t * read_addr = fifo_get_read_addr(&joystick_fifo);
-    fifo_read_done(&joystick_fifo);
-    return *read_addr;
 }
 
 
@@ -117,9 +95,16 @@ void console_new_line_buf_write(uint32_t elem)
     fifo_write_cyclic_done(&console_new_line_buf_fifo);
 }
 
-uint32_t console_new_line_buf_addr_read(void)
+uint32_t console_new_line_buf_read(int offset)
 {
-    return fifo_get_write_addr(&console_new_line_buf_fifo) - sizeof(uint32_t);
+    uint32_t * write_addr;
+
+    if(console_new_line_buf_fifo.write >= offset)
+        write_addr = ((uint32_t)console_new_line_buf_fifo.buffer + console_new_line_buf_fifo.write * console_new_line_buf_fifo.e_size) - (sizeof(uint32_t) * (offset));
+    else 
+        write_addr = ((uint32_t)console_new_line_buf_fifo.buffer + console_new_line_buf_fifo.e_num  * console_new_line_buf_fifo.e_size) - (sizeof(uint32_t) * (offset - console_new_line_buf_fifo.write));
+    
+    return *write_addr;
 }
 
 uint32_t w = 0;
@@ -128,11 +113,11 @@ uint32_t w_margin = 10;
 uint32_t h_margin = 10;
 uint32_t shift_x = 0; 
 uint32_t shift_y = 0;
-uint32_t need_rerender = 0;
 
 void console_render_char(uint8_t symbol)
 {
     int offset = symbol * ch_size * ch_size * 4;
+
     for (int y = 0; y < ch_size; y++) {
         for (int x = 0; x < ch_size; x++) {
             *(volatile uint32_t *)((uint32_t) framebuffer + 4 * ((y + shift_y + h_margin) * w + x + shift_x + w_margin)) = 
@@ -141,23 +126,19 @@ void console_render_char(uint8_t symbol)
     }
 }
 
-uint64_t fstr = 0;
+uint64_t fstr = 33;
 unsigned long ms1;
 
 void console_fill_string(void)
 {
-    char *str = "Hello-RISC-V";
+    char *str_out;
 
-    if (get_time_ms() > ms1 + 100)
-	{
-        ms1 = get_time_ms();
-
-        for (int i = 0; i < 1; i++)
+    for(int i = 0; i < 5; i++)
+    {    
+        int num = tfp_sprintf(str_out, "String %d \n", i);
+        for(int j = 0; j < num; j++)
         {
-            for (int k = 33; k < 110; k++)
-            {
-                console_string_buf_write(k);
-            }
+            console_string_buf_write(str_out[j]);
         }
     }
 }
@@ -169,59 +150,62 @@ void console_render(void)
     uint32_t w_space = w - w_margin * 2;
     uint32_t h_space = h - w_margin * 2;
     uint32_t col_num = w_space / ch_size;
-    uint32_t row_num = h_space / ch_size;
-    uint8_t symbol;
+    uint32_t row_num = 10; //h_space / ch_size;
+    
+    int need_rerender = 0;
 
-    if(fifo_empty(&console_string_buf_fifo) != 1)
+    while( (fifo_empty(&console_string_buf_fifo) != 1) && !need_rerender)
     {
+        console_render_char(console_string_buf_read());
+        shift_x += ch_size;
 
-        LOG_E("read: %d",console_string_buf_fifo.read );
-        LOG_E("write: %d",console_string_buf_fifo.write );
-        LOG_E("nl write: %d",console_new_line_buf_fifo.write );
-
-        if(console_string_buf_fifo.read == 0) console_new_line_buf_write( fifo_get_read_addr(&console_string_buf_fifo)); //add 1 row first symbol addres
-
-        if(!need_rerender) {  //normal symbol
-
-            symbol = console_string_buf_read();
-            console_render_char(symbol);
-
-            shift_x += ch_size;
-            if((shift_x / ch_size) == col_num) { //new line by row end
-                shift_x = 0; 
-                shift_y += ch_size; 
-                console_new_line_buf_write( fifo_get_read_addr(&console_string_buf_fifo));
-            }
-            
-            if((shift_y / ch_size) == 10) { ////end screen
-                shift_y = 0; 
-                uint32_t * addr = console_new_line_buf_addr_read() - (sizeof(uint32_t) * 9); // 2 row first symbol addres
-                need_rerender = *addr; 
-            }
+        if((shift_x / ch_size) == col_num) { //new line by row end
+            shift_x = 0; 
+            shift_y += ch_size; 
+            console_new_line_buf_write(console_string_buf_fifo.read);
         }
-        else
-        {
-            //shift screen up
-            while((uint32_t)need_rerender != (uint32_t)fifo_get_read_addr(&console_string_buf_fifo))
-            {
-                symbol = (char) *((uint32_t *)need_rerender);
-                console_render_char(symbol);
-                need_rerender = need_rerender + sizeof(uint8_t);
-
-                shift_x += ch_size;
-                if((shift_x / ch_size) == col_num) { //new line by row end
-                    shift_x = 0; 
-                    shift_y += ch_size; 
-                }
-            }
-
-            while((shift_x / ch_size) == col_num)
+        
+        if((shift_y / ch_size) == row_num) { //end screen
+  
+            shift_y = ch_size * (row_num - 1); 
+            for(int i; i < col_num; i++) //clean last row
             {
                 console_render_char(' ');
                 shift_x += ch_size;
             }
+            console_string_buf_fifo.read = console_new_line_buf_read(row_num); // 2 row first symbol addres
+            need_rerender = 1;
             shift_x = 0; 
-            need_rerender = 0;
+            shift_y = 0; 
         }
-    }
+    } 
 }
+
+void keyboard_write(uint8_t ch)
+{
+    uint32_t * write_addr = fifo_get_write_addr(&keyboard_fifo);
+    *write_addr = ch;
+    fifo_write_done(&keyboard_fifo);
+}
+
+uint8_t keyboard_read(void)
+{
+    uint32_t * read_addr = fifo_get_read_addr(&keyboard_fifo);
+    fifo_read_done(&keyboard_fifo);
+    return *read_addr;
+}
+
+void joystick_write(uint8_t ch)
+{
+    uint32_t * write_addr = fifo_get_write_addr(&joystick_fifo);
+    *write_addr = ch;
+    fifo_write_done(&joystick_fifo);
+}
+
+uint8_t joystick_read(void)
+{
+    uint32_t * read_addr = fifo_get_read_addr(&joystick_fifo);
+    fifo_read_done(&joystick_fifo);
+    return *read_addr;
+}
+

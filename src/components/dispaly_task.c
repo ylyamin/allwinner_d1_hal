@@ -153,9 +153,9 @@ void display_task_exec(void)
 	uint32_t h = de_layer_get_w();
 	timing_t timing = LCD_get_param();
 
-    //if (get_time_ms() > ms + 1)
-	//{
-	//	ms = get_time_ms();
+    if (get_time_ms() > ms + 5)
+	{
+		ms = get_time_ms();
 #if 0
 		gr_draw_line(framebuffer, w, h, line_x, 0, line_x, h-1, FONT_COLOR_1);	// clean previous
 		gr_draw_line(framebuffer, w, h, 0, line_y, w-1, line_y, FONT_COLOR_1);	// clean previous
@@ -175,6 +175,6 @@ void display_task_exec(void)
 		g2d_rot(g2d_rot_config); //rotate framebuffer
 		while(!g2d_rot_finish());
 		//de_commit();
-	//}
+	} 
 
 }
