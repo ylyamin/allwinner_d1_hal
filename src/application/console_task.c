@@ -130,11 +130,11 @@ unsigned long ms2;
 
 void console_fill_string(void)
 {
-    if (get_time_ms() > ms2 + 100)
+    if (get_time_ms() > ms2 + 10)
     {
         ms2 = get_time_ms();
 
-        if(str_a < 20){
+        if(str_a < 2000){
 
             char str_out[20];
             int num = tfp_sprintf(str_out, "String %d \n", str_a);
@@ -153,6 +153,8 @@ void console_fill_string(void)
     }
 }
 
+int need_rerender = 0;
+
 void console_render(void)
 {
     w = de_layer_get_h();
@@ -161,7 +163,6 @@ void console_render(void)
     uint32_t h_space = h - w_margin * 2;
     uint32_t col_num = w_space / ch_size;
     uint32_t row_num = 10; //h_space / ch_size;
-    int need_rerender = 0;
 
     while( (fifo_empty(&console_string_buf_fifo) != 1) && !need_rerender)
     {
@@ -179,19 +180,22 @@ void console_render(void)
         }
         
         if( (shift_y / ch_size) == row_num ) { //end screen
-  
-            shift_y = ch_size * (row_num - 1); 
-            for(int i; i < col_num; i++) //clean last row
-            {
-                console_render_char(' ');
-                shift_x += ch_size;
-            }
             console_string_buf_fifo.read = console_new_line_buf_read(row_num); // 2 row first symbol addres
             need_rerender = 1;
-            shift_x = 0; 
-            shift_y = 0; 
         }
     } 
+
+    if(need_rerender){ //clean last row
+        shift_y = ch_size * (row_num - 1); 
+        for(int i; i < col_num; i++) 
+        {
+            console_render_char((char)' ');
+            shift_x += ch_size;
+        }
+        shift_x = 0; 
+        shift_y = 0; 
+        need_rerender = 0;
+    }
 }
 
 void keyboard_write(uint8_t ch)
