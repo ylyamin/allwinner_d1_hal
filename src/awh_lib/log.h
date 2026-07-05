@@ -8,7 +8,8 @@
 #include <config.h>
 #include <tinyprintf.h>
 
-#define small_printf tfp_printf
+int small_printf(const char *fmt, ...);
+//#define small_printf tfp_printf
 
 /* DEBUG level */
 #define LOG_ERROR           0

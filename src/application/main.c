@@ -30,7 +30,11 @@ void main(void)
     #if CONFIG_USE_DOOM
         doom_task_init();
     #endif
-        
+
+    small_printf("test\n");
+
+    //console_fill_string_init();
+
     while(1)
     {
         #if CONFIG_USE_USB
@@ -40,8 +44,6 @@ void main(void)
         #if CONFIG_USE_DOOM
             doom_task_exec();
         #endif
-
-        console_fill_string();
 
         console_render();    
         

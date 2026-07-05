@@ -78,6 +78,7 @@ void console_string_buf_write(uint8_t ch)
     uint32_t * write_addr = fifo_get_write_addr(&console_string_buf_fifo);
     *write_addr = ch;
     fifo_write_done(&console_string_buf_fifo);
+    //if(console_string_buf_fifo.write == console_string_buf_fifo.e_num - 1) fifo_reset(&console_string_buf_fifo);
 }
 
 uint8_t console_string_buf_read(void)
@@ -124,6 +125,22 @@ void console_render_char(uint8_t symbol)
     }
 }
 
+
+void console_fill_string_init(void)
+{
+    for(int i; i < 2000;i++){
+
+        char str_out[20];
+        int num = tfp_sprintf(str_out, "String %d \n", i);
+
+        for(int j = 0; j < num; j++)
+        {
+            console_string_buf_write(str_out[j]);
+        }
+        
+    }
+}
+
 int str_a = 0;
 int str_b = 0;
 unsigned long ms2;
@@ -164,11 +181,11 @@ void console_render(void)
     uint32_t col_num = w_space / ch_size;
     uint32_t row_num = 10; //h_space / ch_size;
 
-    while( (fifo_empty(&console_string_buf_fifo) != 1) && !need_rerender)
+    while( fifo_get_available(&console_string_buf_fifo) && !need_rerender)
     {
         char symbol = console_string_buf_read();
 
-        if(symbol > 31) { //normal symbol
+        if(symbol > 31 && symbol < 127) { //normal symbol
             console_render_char(symbol);
             shift_x += ch_size;
         }
