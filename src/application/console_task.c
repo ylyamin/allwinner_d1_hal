@@ -183,7 +183,7 @@ void console_render(void)
     uint32_t w_space = w - w_margin * 2;
     uint32_t h_space = h - w_margin * 2;
     uint32_t col_num = w_space / ch_size;
-    uint32_t row_num = 10; //h_space / ch_size;
+    uint32_t row_num = h_space / ch_size;
 
     while( fifo_get_available(&console_string_buf_fifo) && !need_rerender)
     {
@@ -193,6 +193,10 @@ void console_render(void)
             console_render_char(symbol);
             shift_x += ch_size;
         }
+        
+        if(symbol == '\033') while(console_string_buf_read() != 'm'); //skip color modifer
+ 
+        if(symbol == '\r') shift_x = 0; //carriage return
 
         if( (shift_x / ch_size) == col_num || symbol == '\n') { //new line by row end
             shift_x = 0; 
