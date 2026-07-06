@@ -422,8 +422,8 @@ void tfp_format(void *putp, putcf putf, const char *fmt, va_list va)
 }
 
 #if TINYPRINTF_DEFINE_TFP_PRINTF
-static putcf stdout_putf;
-static void *stdout_putp;
+putcf stdout_putf;
+void *stdout_putp;
 
 void init_printf(void *putp, putcf putf)
 {

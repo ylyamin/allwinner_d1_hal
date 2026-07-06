@@ -38,6 +38,8 @@ void console_render_font_buffer(void);
 
 void console_new_line_buf_write(uint32_t elem);
 
+uint8_t console_task_init_done = 0;
+
 void console_task_init(void)
 {
     console_string_buf =  tlsf_malloc(mem_pool, 2000);
@@ -52,6 +54,8 @@ void console_task_init(void)
 
     console_new_line_buf_write( fifo_get_read_addr(&console_string_buf_fifo));
     console_render_font_buffer();
+
+    console_task_init_done = 1;
 }
 
 

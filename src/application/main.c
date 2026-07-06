@@ -31,8 +31,6 @@ void main(void)
         doom_task_init();
     #endif
 
-    small_printf("test\n");
-
     //console_fill_string_init();
 
     while(1)
