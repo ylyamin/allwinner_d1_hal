@@ -39,7 +39,7 @@
 
 #define MAX_REPORT  4
 
-static uint8_t const keycode2ascii[128][2] =  { HID_KEYCODE_TO_ASCII };
+static uint8_t const keycode2ascii[128][2] =  { HID_KEYCODE_TO_ASCII_EXT };
 
 // Each HID instance can has multiple reports
 static struct
@@ -69,13 +69,13 @@ void hid_app_task(void)
 // therefore report_desc = NULL, desc_len = 0
 void tuh_hid_mount_cb(uint8_t dev_addr, uint8_t instance, uint8_t const* desc_report, uint16_t desc_len)
 {
-  LOG_D("HID device address = %d, instance = %d is mounted\n", dev_addr, instance);
+  LOG_D("HID device address = %d, instance = %d is mounted", dev_addr, instance);
 
   // Interface protocol (hid_interface_protocol_enum_t)
   const char* protocol_str[] = { "None", "Keyboard", "Mouse" };
   uint8_t const itf_protocol = tuh_hid_interface_protocol(dev_addr, instance);
 
-  LOG_D("HID Interface Protocol = %s\n", protocol_str[itf_protocol]);
+  LOG_D("HID Interface Protocol = %s", protocol_str[itf_protocol]);
 
   // By default host stack will use activate boot protocol on supported interface.
   // Therefore for this simple example, we only need to parse generic report descriptor (with built-in parser)
@@ -85,21 +85,21 @@ void tuh_hid_mount_cb(uint8_t dev_addr, uint8_t instance, uint8_t const* desc_re
     //for (uint32_t i = 0; i < desc_len; i++) small_printf("%02X ", *desc_report++);
 
     hid_info[instance].report_count = tuh_hid_parse_report_descriptor(hid_info[instance].report_info, MAX_REPORT, desc_report, desc_len);
-    LOG_D("HID has %u reports \n", hid_info[instance].report_count);
+    LOG_D("HID has %u reports", hid_info[instance].report_count);
   }
 
   // request to receive report
   // tuh_hid_report_received_cb() will be invoked when report is available
   if ( !tuh_hid_receive_report(dev_addr, instance) )
   {
-    LOG_E("Error: cannot request to receive report\n");
+    LOG_E("Error: cannot request to receive report");
   }
 }
 
 // Invoked when device with hid interface is un-mounted
 void tuh_hid_umount_cb(uint8_t dev_addr, uint8_t instance)
 {
-  LOG_D("HID device address = %d, instance = %d is unmounted\n", dev_addr, instance);
+  LOG_D("HID device address = %d, instance = %d is unmounted", dev_addr, instance);
 }
 
 // Invoked when received report from device via interrupt endpoint
@@ -110,12 +110,12 @@ void tuh_hid_report_received_cb(uint8_t dev_addr, uint8_t instance, uint8_t cons
   switch (itf_protocol)
   {
     case HID_ITF_PROTOCOL_KEYBOARD:
-      TU_LOG2("HID receive boot keyboard report\n");
+      TU_LOG2("HID receive boot keyboard report");
       process_kbd_report( (hid_keyboard_report_t const*) report );
     break;
 
     case HID_ITF_PROTOCOL_MOUSE:
-      TU_LOG2("HID receive boot mouse report\n");
+      TU_LOG2("HID receive boot mouse report");
       process_mouse_report( (hid_mouse_report_t const*) report );
     break;
 
@@ -128,7 +128,7 @@ void tuh_hid_report_received_cb(uint8_t dev_addr, uint8_t instance, uint8_t cons
   // continue to request to receive report
   if ( !tuh_hid_receive_report(dev_addr, instance) )
   {
-    LOG_E("Error: cannot request to receive report\n");
+    LOG_E("Error: cannot request to receive report");
   }
 }
 
@@ -215,9 +215,9 @@ void cursor_movement(int8_t x, int8_t y, int8_t wheel)
     LOG_D(ANSI_SCROLL_DOWN(%d), wheel); // scroll down
   }
 
-  LOG_D("\n");
+  LOG_D("");
 #else
-  //LOG_I("(%d %d %d)\n", x, y, wheel);
+  //LOG_I("(%d %d %d)", x, y, wheel);
 #endif
 }
 
@@ -293,7 +293,7 @@ static void process_generic_report(uint8_t dev_addr, uint8_t instance, uint8_t c
 
   if (!rpt_info)
   {
-    LOG_E("Couldn't find report info !\n");
+    LOG_E("Couldn't find report info !");
     return;
   }
 
@@ -310,19 +310,19 @@ static void process_generic_report(uint8_t dev_addr, uint8_t instance, uint8_t c
     switch (rpt_info->usage)
     {
       case HID_USAGE_DESKTOP_KEYBOARD:
-        TU_LOG1("HID receive keyboard report\n");
+        TU_LOG1("HID receive keyboard report");
         // Assume keyboard follow boot report layout
         process_kbd_report( (hid_keyboard_report_t const*) report );
       break;
 
       case HID_USAGE_DESKTOP_MOUSE:
-        TU_LOG1("HID receive mouse report\n");
+        TU_LOG1("HID receive mouse report");
         // Assume mouse follow boot report layout
         process_mouse_report( (hid_mouse_report_t const*) report );
       break;
 
       case HID_USAGE_DESKTOP_JOYSTICK:
-        TU_LOG1("HID receive joustic report\n");
+        TU_LOG1("HID receive joustic report");
         process_joystick_report( (hid_joystick_report_t const*) report , len);
       break;
 

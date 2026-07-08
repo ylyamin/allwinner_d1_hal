@@ -250,7 +250,7 @@ uint8_t joystick_read(void)
     return *read_addr;
 }
 
-uint8_t command_string[100];
+uint8_t command_string[BUFF_SIZE];
 int command_string_num;
 
 void console_command_handler(void)
@@ -259,18 +259,20 @@ void console_command_handler(void)
     {
         uint8_t symbol = keyboard_read();
 
-        tfp_printf("%c",symbol);
-        console_string_buf_write(symbol);
-
-        if (symbol == '\r' || command_string_num > 99) //Enter 
-        {
+        if (symbol == '\r') //Enter 
+        {   
+            symbol = '>';
+            small_printf("\n Command: '%s' not found \n", command_string);
             command_string_num = 0;
-            LOG_E("\n Command: %s not found", command_string);
         } else
         {
-            command_string[command_string_num] = symbol;
-            command_string_num++;
+            if(command_string_num < BUFF_SIZE)
+            {
+                command_string[command_string_num] = symbol;
+                command_string_num++;
+            }
         }
-
+        tfp_printf("%c",symbol);
+        console_string_buf_write(symbol);
     }
 }
