@@ -129,15 +129,15 @@ void doom_task_exec(void)
     if(fifo_empty(&keyboard_fifo) != 1)
     {
         key = keyboard_read();
-        if(key == HID_KEY_ENTER          )key = DOOM_KEY_ENTER;
-        if(key == HID_KEY_SPACE          )key = DOOM_KEY_SPACE;
-        if(key == HID_KEY_ARROW_RIGHT    )key = DOOM_KEY_RIGHT_ARROW;
-        if(key == HID_KEY_ARROW_LEFT     )key = DOOM_KEY_LEFT_ARROW;
-        if(key == HID_KEY_ARROW_DOWN     )key = DOOM_KEY_DOWN_ARROW;
-        if(key == HID_KEY_ARROW_UP       )key = DOOM_KEY_UP_ARROW;
-        if(key == HID_KEY_CONTROL_RIGHT  )key = DOOM_KEY_CTRL;
+        if(key == HID_KEY_ENTER          )key = DOOM_KEY_ENTER;//28 \r
+        if(key == HID_KEY_SPACE          )key = DOOM_KEY_SPACE;//2c 
+        if(key == HID_KEY_ARROW_RIGHT    )key = DOOM_KEY_RIGHT_ARROW;//4f
+        if(key == HID_KEY_ARROW_LEFT     )key = DOOM_KEY_LEFT_ARROW;//50
+        if(key == HID_KEY_ARROW_DOWN     )key = DOOM_KEY_DOWN_ARROW;//51
+        if(key == HID_KEY_ARROW_UP       )key = DOOM_KEY_UP_ARROW;//52
+        if(key == HID_KEY_CONTROL_RIGHT  )key = DOOM_KEY_CTRL;//e4
         if(key == HID_KEY_CONTROL_LEFT   )key = DOOM_KEY_CTRL;
-        doom_key_down(key);
+        doom_key_down(key);//esc 29
     }
 
     if(fifo_empty(&joystick_fifo) != 1)

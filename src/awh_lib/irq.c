@@ -73,7 +73,7 @@ void handle_trap(void)
     } else {
 		if(mcause < ARRAY_SIZE(exception_names))
 		{
-			LOG_D("Exception %d: %s\r\n", mcause, exception_names[mcause]);
+			LOG_D("Exception %d: %s", mcause, exception_names[mcause]);
 			handle_exception(mcause);
 			asm volatile("csrr t0, mepc");
 			asm volatile("addi t0, t0, 0x4");
@@ -81,7 +81,7 @@ void handle_trap(void)
 		}
 		else
 		{
-			LOG_E("Unknown exception %d\r\n", mcause);
+			LOG_E("Unknown exception %d", mcause);
 			while(1)
 				;
 		}	
@@ -89,8 +89,8 @@ void handle_trap(void)
 }
 
 void handle_exception(uint64_t mcause) {
-	LOG_E("Stored pc: %x\r\n", csr_read_mepc());
-	LOG_E("Stored mtval: %x\r\n", csr_read_mtval());
+	LOG_E("Stored pc: %x", csr_read_mepc());
+	LOG_E("Stored mtval: %x", csr_read_mtval());
 	while(1)
 		;
 }

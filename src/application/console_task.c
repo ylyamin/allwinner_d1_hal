@@ -250,3 +250,27 @@ uint8_t joystick_read(void)
     return *read_addr;
 }
 
+uint8_t command_string[100];
+int command_string_num;
+
+void console_command_handler(void)
+{
+    while(fifo_get_available(&keyboard_fifo))
+    {
+        uint8_t symbol = keyboard_read();
+
+        tfp_printf("%c",symbol);
+        console_string_buf_write(symbol);
+
+        if (symbol == '\r' || command_string_num > 99) //Enter 
+        {
+            command_string_num = 0;
+            LOG_E("\n Command: %s not found", command_string);
+        } else
+        {
+            command_string[command_string_num] = symbol;
+            command_string_num++;
+        }
+
+    }
+}

@@ -9,6 +9,7 @@ void console_render(void);
 void console_render_font_buffer(void);
 void console_new_line_buf_write(uint32_t elem);
 void console_string_buf_write(uint8_t ch);
+void console_command_handler(void);
 
 void console_fill_string(void);
 void console_fill_string_init(void);
