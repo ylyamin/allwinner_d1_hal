@@ -250,19 +250,70 @@ uint8_t joystick_read(void)
     return *read_addr;
 }
 
+#define WELCOME '>'
 uint8_t command_string[BUFF_SIZE];
 int command_string_num;
+int command_welcome = 1;
+
+#include <string.h>
+
+void test(void)
+{
+    LOG_E("func run");
+}
+
+typedef struct
+{
+    char *command;
+    void (*func)(void);    
+} commands_t;
+
+commands_t commands[2] = {
+    {.command = "test1", .func = test,},
+    {.command = "test2", .func = test,},
+};
+
+
+void console_find_command(const char *str, size_t n)
+{
+    int found;
+
+    for(int i = 0; i < 2; i++)
+    {
+        int f = strncmp(commands[i].command, str, n);
+        if(!f) found = i;
+    }
+
+    if(found)
+    {
+        small_printf("\n found \n");
+        commands[found].func();
+    }
+    else
+    {
+        small_printf("\n Command: '%s' not found \n", str);
+    }
+}
 
 void console_command_handler(void)
 {
+    if(command_welcome)
+    {
+        tfp_printf("%c",WELCOME);
+        console_string_buf_write(WELCOME);
+        command_welcome = 0;
+    }
+
     while(fifo_get_available(&keyboard_fifo))
     {
         uint8_t symbol = keyboard_read();
-
+        
+        if (symbol == '\x1b') symbol = '\0'; //Esc
+        
         if (symbol == '\r') //Enter 
         {   
-            symbol = '>';
-            small_printf("\n Command: '%s' not found \n", command_string);
+            symbol = WELCOME;
+            console_find_command(command_string,command_string_num);
             command_string_num = 0;
         } else
         {

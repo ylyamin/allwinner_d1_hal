@@ -31,11 +31,7 @@ void main(void)
 
     console_task_init();
     console_task_inputs_init();
-
-    for(int i = 0; i < 256; i++)
-        tfp_printf("{0     , 0      }, /* 0x%x */ \\\n",i);
-    
-
+        
     while(1)
     {
         #if CONFIG_USE_USB
