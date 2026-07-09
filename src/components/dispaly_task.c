@@ -51,7 +51,7 @@ void display_task_init(void)
 				.pipe_offset_h = 0,
 			},
 			{ //doom screen
-				.pipe_enable = CONFIG_USE_DOOM,
+				.pipe_enable = 0,
 				.pipe_w = scaled_doom_w, //480
 				.pipe_h = scaled_doom_h, //768
 				.pipe_offset_w = (timing.lcd_scale_w - scaled_doom_w) / 2, //0

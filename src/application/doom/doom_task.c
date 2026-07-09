@@ -21,6 +21,9 @@ extern struct fifo_t joystick_fifo;
 extern uint32_t *framebuffer2;
 extern uint32_t *doom_framebuffer;
 
+uint8_t doom_inited = 0;
+uint8_t doom_run = 0;
+
 void doom_print_fnc(const char* fmt)
 {
     small_printf(fmt);
@@ -101,6 +104,13 @@ char* doom_getenv_fnc(const char* var)
     return "/home"; 
 }
 
+void doom_exit_fnc(int code)
+{
+    doom_run = 0;
+    //doom_inited = 0;
+    de_pipe(1,0);
+}
+
 void doom_task_init(void)
 {
     doom_set_print(doom_print_fnc);
@@ -113,12 +123,11 @@ void doom_task_init(void)
                       doom_tell_fnc,
                       doom_eof_fnc);
     doom_set_gettime(doom_gettime_fnc);
-    //doom_set_exit(doom_exit_fnc);
+    doom_set_exit(doom_exit_fnc);
     doom_set_getenv(doom_getenv_fnc);
 
     char argv[0]; 
     doom_init(0, *argv, 0);
-    //de_layer_set(framebuffer2, 0);
 }
 
 uint8_t key, previous_key, frame_cnt;
@@ -176,4 +185,25 @@ void doom_task_exec(void)
     //doom_mouse_move(int delta_x, int delta_y);
     
     //LOG_D("FPS: %d", 1000 / (frame_stop - frame_start));
+}
+
+extern void usb_task_exec(void);
+
+void doom_task_run(void)
+{
+    de_pipe(1,1);
+    doom_run = 1;
+    
+    if(!doom_inited)
+    {
+
+        doom_task_init();
+        doom_inited = 1;
+
+    }
+    while(doom_run) 
+    {
+        usb_task_exec();
+        doom_task_exec();
+    }
 }

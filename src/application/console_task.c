@@ -43,7 +43,7 @@ void console_task_init(void)
 
     fifo_init(&console_string_buf_fifo, console_string_buf, sizeof(uint8_t), STRING_BUFF_SIZE);
     fifo_init(&console_new_line_buf_fifo, console_new_line_buf, sizeof(uint32_t), NEW_LINE_BUFF_SIZE);
-    //console_new_line_buf_write( fifo_get_read_addr(&console_string_buf_fifo));
+    console_new_line_buf_write( fifo_get_read_addr(&console_string_buf_fifo));
     console_render_font_buffer();
     console_task_init_done = 1;
 }

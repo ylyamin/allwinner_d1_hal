@@ -21,36 +21,24 @@ void main(void)
 	mem_pool = tlsf_create_with_pool((void *)&__HeapBase, s);
 
     console_task_init();
+
     console_task_inputs_init();
 
-    #if CONFIG_USE_USB
-        usb_task_init();
-    #endif
+    usb_task_init();
 
     display_task_init();	
 
-    #if CONFIG_USE_DOOM
-        doom_task_init();
-    #endif
-
-    run_command("help");
+    run_command("doom");
 
     while(1)
     {
-        #if CONFIG_USE_USB
-            usb_task_exec();
-        #endif
-
-        #if CONFIG_USE_DOOM
-            doom_task_exec();
-        #endif
+        usb_task_exec();
 
         console_command_handler();
         
         console_render();    
         
         display_task_exec();	
-
     }
 }
 

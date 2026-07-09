@@ -30,7 +30,5 @@
 //#define CONFIG_USE_PMP    1
 //#define CONFIG_USE_MMU    1
 #define CONFIG_USE_TWI      1
-#define CONFIG_USE_USB      1
-#define CONFIG_USE_DOOM     0
 
 #endif  //CONFIG_H_

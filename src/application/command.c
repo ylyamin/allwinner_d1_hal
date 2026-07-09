@@ -7,10 +7,12 @@
 
 void cmd_help(void);
 extern void logo(void);
+extern void doom_task_run(void);
 
 commands_t commands[] = {
-    {.cmd = "help",     .hlp = "show commands", .func = cmd_help,   },
-    {.cmd = "version",  .hlp = "show version",  .func = logo,       },
+    {.cmd = "help",     .hlp = "show commands", .func = cmd_help,       },
+    {.cmd = "version",  .hlp = "show version",  .func = logo,           },
+    {.cmd = "doom",     .hlp = "doom game",     .func = doom_task_run,  },
 };
 
 void cmd_help(void)

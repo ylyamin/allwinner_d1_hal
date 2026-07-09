@@ -126,6 +126,16 @@ void de_init(void)
 	de_commit();
 }
 
+void de_pipe(uint8_t pipe_0_enable, uint8_t pipe_1_enable)
+{
+	DE_MUX_GLB->CTL = ~BV(0); //disable
+	DE_MUX_BLD->FILLCOLOR_CTL = (pipe_1_enable << 9) | // 0x0303 enable pipe 0,1 and pipe 0,1 fill color
+								(pipe_0_enable << 8) | 
+								(pipe_1_enable << 1) | 
+								(pipe_0_enable << 0); 
+	DE_MUX_GLB->CTL = BV(0); //enable
+}
+
 static void de_commit_wait(void)
 {
 	while (DE_MUX_GLB->DBUFFER & 1);
