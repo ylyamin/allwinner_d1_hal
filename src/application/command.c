@@ -2,7 +2,7 @@
 #include <command.h>
 #include <console_task.h>
 #include <log.h>
-#include <tinyprintf.h>
+#include <ccu.h>
 #include <string.h>
 
 void cmd_help(void);
@@ -17,7 +17,14 @@ void cmd_help(void)
 {
     small_printf("List of commands:\n");
     for(int i = 0; i < ARRAY_SIZE(commands); i++)
-        small_printf("%5s - %s\n",commands[i].cmd,commands[i].hlp);
+        small_printf("%10s - %s\n",commands[i].cmd,commands[i].hlp);
+}
+
+void run_command(const char *str)
+{
+    for(int i = 0; i < ARRAY_SIZE(str); i++)
+        keyboard_write(str[i]);
+    keyboard_write('\r');
 }
 
 void console_find_command(const char *str, size_t n)
@@ -47,6 +54,7 @@ int command_welcome = 1;
 
 void console_command_handler(void)
 {
+
     if(command_welcome)
     {
         small_printf(WELCOME);

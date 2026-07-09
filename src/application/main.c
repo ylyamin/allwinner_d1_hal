@@ -6,6 +6,7 @@
 #include <usb_task.h>
 #include <dispaly_task.h>
 #include <console_task.h>
+#include <command.h>
 #include <doom_task.h>
 #include <tlsf.h>
 
@@ -19,6 +20,9 @@ void main(void)
 	LOG_W("heap: creating mem pool @ %08x size %d\n", &__HeapBase, s);
 	mem_pool = tlsf_create_with_pool((void *)&__HeapBase, s);
 
+    console_task_init();
+    console_task_inputs_init();
+
     #if CONFIG_USE_USB
         usb_task_init();
     #endif
@@ -29,9 +33,8 @@ void main(void)
         doom_task_init();
     #endif
 
-    console_task_init();
-    console_task_inputs_init();
-        
+    run_command("help");
+
     while(1)
     {
         #if CONFIG_USE_USB
@@ -41,12 +44,13 @@ void main(void)
         #if CONFIG_USE_DOOM
             doom_task_exec();
         #endif
-        
-        console_command_handler();
 
+        console_command_handler();
+        
         console_render();    
         
         display_task_exec();	
+
     }
 }
 

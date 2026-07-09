@@ -176,7 +176,7 @@ void de_layer_set(void *fb0, void *fb1)
 		uint64_t tmp = 0;
 		uint64_t vstep = 0;
 		// enable GSU (scaler unit)
-		LOG_D("de: enable scaler\n\r");
+		LOG_D("de: enable scaler");
 
 		// set input resolution and output resolution
 		DE_MUX_GSU1->OUTSIZE_REG = ((dst_h-1) << 16) | (dst_w - 1);

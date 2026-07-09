@@ -13,4 +13,7 @@ typedef struct
 
 extern struct fifo_t keyboard_fifo;
 
+void run_command(const char *str);
+void console_command_handler(void);
+
 #endif /* COMMAND_H_ */

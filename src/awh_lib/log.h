@@ -9,7 +9,6 @@
 #include <tinyprintf.h>
 
 int small_printf(const char *fmt, ...);
-//#define small_printf tfp_printf
 
 /* DEBUG level */
 #define LOG_ERROR           0
@@ -36,7 +35,7 @@ int small_printf(const char *fmt, ...);
 
 #define LOG_LAYOUT      "%s%s%s:%s"
 #define LOG_COLOR(log_lv, log_color, log_format, ...)   \
-    small_printf(LOG_LAYOUT log_format "%s""\n\r",      \
+    small_printf(LOG_LAYOUT log_format "%s""\n",      \
            log_color, log_lv, LOG_COLOR_OFF,            \
            log_color, ##__VA_ARGS__, LOG_COLOR_OFF)
 
