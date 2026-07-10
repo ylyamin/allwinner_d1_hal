@@ -12,6 +12,7 @@
 #include <tinyprintf.h>
 
 #define BG_COLOR_1 0xff00004f
+#define BG_COLOR_2 0xff00004fff00004f
 #define FONT_COLOR_1 0xffffffff
 #define STRING_BUFF_SIZE 2000
 #define NEW_LINE_BUFF_SIZE 300
@@ -32,8 +33,8 @@ uint32_t w_margin = 10;
 uint32_t h_margin = 10;
 uint32_t shift_x = 0; 
 uint32_t shift_y = 0;
-uint32_t col_num;
-uint32_t row_num;
+uint32_t col_num = 0;
+uint32_t row_num = 0;
 uint8_t console_task_init_done = 0;
 
 void console_task_init(void)
@@ -69,10 +70,13 @@ void console_render_font_buffer(void)
 void console_render_char(uint8_t symbol)
 {
     int offset = symbol * ch_size * ch_size * 4;
+    int offset_y = shift_y + h_margin;
+    int offset_x = shift_x + w_margin;
+
     for (int y = 0; y < ch_size; y++) {
-        for (int x = 0; x < ch_size; x++) {
-            *(volatile uint32_t *)((uint32_t) framebuffer + 4 * ((y + shift_y + h_margin) * w + x + shift_x + w_margin)) = 
-            *(volatile uint32_t *)((uint32_t) font_buffer + 4 * (y*ch_size + x) + offset);
+        for (int x = 0; x < ch_size; x += 2) {
+            *(volatile uint64_t *)((uint32_t) framebuffer + 4 * ((y + offset_y) * w + x + offset_x)) = 
+            *(volatile uint64_t *)((uint32_t) font_buffer + 4 * (y*ch_size + x) + offset);
         }
     }
 }
@@ -82,11 +86,22 @@ uint32_t max_col_num;
 void console_clean_row(uint32_t shift_x)
 {
     max_col_num = MAX(max_col_num, shift_x);
+    int offset_y = shift_y + h_margin;
+    int offset_x = shift_x + w_margin;
 
-    for (int y = 0; y < ch_size; y++) {
-        for (int x = 0; x < max_col_num - shift_x; x++) {
-            *(volatile uint32_t *)((uint32_t) framebuffer + 4 * ((y + shift_y + h_margin) * w + x + shift_x + w_margin)) = BG_COLOR_1;
+    for (int x = 0; x < max_col_num - shift_x; x += 2) {
+        for (int y = 0; y < ch_size; y++) {
+            *(volatile uint64_t *)((uint32_t) framebuffer + 4 * ((y + offset_y) * w + x + offset_x)) = BG_COLOR_2;
         }
+    }
+}
+
+void console_clean_end_row(void)
+{
+    int offset_y = (shift_y + h_margin) * w;
+
+    for (int y = offset_y ; y < offset_y + (ch_size * w); y += 2) {
+        *(volatile uint64_t *)((uint32_t) framebuffer + 4 * y) = BG_COLOR_2;
     }
 }
 
@@ -95,7 +110,6 @@ void console_string_buf_write(uint8_t ch)
     uint32_t * write_addr = fifo_get_write_addr(&console_string_buf_fifo);
     *write_addr = ch;
     fifo_write_done(&console_string_buf_fifo);
-    //if(console_string_buf_fifo.write == console_string_buf_fifo.e_num - 1) fifo_reset(&console_string_buf_fifo);
 }
 
 uint8_t console_string_buf_read(void)
@@ -150,11 +164,11 @@ void console_render(void)
             shift_y += ch_size; 
             console_new_line_buf_write(console_string_buf_fifo.read);
         }
-        
+
         if( (shift_y / ch_size) == row_num ) { //end screen
-            console_string_buf_fifo.read = console_new_line_buf_read(row_num); // 2 row first symbol addres            
+            console_string_buf_fifo.read = console_new_line_buf_read(row_num); // 2 row first symbol addres      
             shift_y -= ch_size; 
-            console_clean_row(shift_x); //clean last row
+            console_clean_end_row(); //clean last row
             max_col_num = 0;
             shift_y = 0; 
             return;
@@ -166,8 +180,8 @@ void console_fill_string_init(void)
 {
     for(int i; i < 200;i++){
 
-        char str_out[20];
-        int num = tfp_sprintf(str_out, "String %d \n\n", i);
+        char str_out[70];
+        int num = tfp_sprintf(str_out, "String %d \n", i);
 
         for(int j = 0; j < num; j++)
         {
@@ -190,7 +204,7 @@ void console_fill_string(void)
         if(str_a < 5){
 
             char str_out[20];
-            int num = tfp_sprintf(str_out, "String %d \n\n", str_a);
+            int num = tfp_sprintf(str_out, "String %d \n", str_a);
 
             if(str_b < num)
             {
@@ -248,4 +262,12 @@ uint8_t joystick_read(void)
     uint32_t * read_addr = fifo_get_read_addr(&joystick_fifo);
     fifo_read_done(&joystick_fifo);
     return *read_addr;
+}
+
+void perf(const char * str, void (*func)())
+{
+    unsigned long us;
+    us = get_time_us();
+    func();
+    tfp_printf("%s: %d\n", str, get_time_us() - us);
 }

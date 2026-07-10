@@ -147,8 +147,8 @@ unsigned long ms;
 
 void display_task_exec(void)
 {
-
-//debug lines in framebuffer for pipe 0
+#if 0
+	//debug lines in framebuffer for pipe 0
  	uint32_t w = de_layer_get_h();
 	uint32_t h = de_layer_get_w();
 	timing_t timing = LCD_get_param();
@@ -156,7 +156,7 @@ void display_task_exec(void)
     /* if (get_time_ms() > ms + 5)
 	{
 		ms = get_time_ms(); */
-#if 0
+
 		gr_draw_line(framebuffer, w, h, line_x, 0, line_x, h-1, BG_COLOR_1);	// clean previous
 		gr_draw_line(framebuffer, w, h, 0, line_y, w-1, line_y, BG_COLOR_1);	// clean previous
 
@@ -173,7 +173,7 @@ void display_task_exec(void)
 		if (line_y > h) line_y = 0; 									//reset in the end
 #endif
 		g2d_rot(g2d_rot_config); //rotate framebuffer
-		while(!g2d_rot_finish());
+		//while(!g2d_rot_finish());
 		//de_commit();
 	//} 
 

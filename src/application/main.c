@@ -19,16 +19,16 @@ void main(void)
     size_t s = (size_t)(&__HeapLimit - &__HeapBase);
 	LOG_W("heap: creating mem pool @ %08x size %d\n", &__HeapBase, s);
 	mem_pool = tlsf_create_with_pool((void *)&__HeapBase, s);
-
-    console_task_init();
-
-    console_task_inputs_init();
-
+    
     usb_task_init();
 
     display_task_init();	
 
-    run_command("doom");
+    console_task_init();
+
+    console_task_inputs_init();
+    
+    //run_command("doom");
 
     while(1)
     {
