@@ -57,7 +57,7 @@ static int multiply = 1;
 static int lastmousex = 0;
 static int lastmousey = 0;
 
-uint32_t pal[256];
+uint64_t pal[256];
 uint32_t *doom_framebuffer;
 
 void I_ShutdownGraphics(void)
@@ -100,8 +100,8 @@ void I_UpdateNoBlit(void)
 //
 void I_FinishUpdate(void)
 {
-    for (int i = 0; i < SCREENWIDTH * SCREENHEIGHT; ++i) {
-        doom_framebuffer[i] = pal[((uint8_t *)screens[0])[i]];
+    for (int i = 0; i < (SCREENWIDTH * SCREENHEIGHT); i+=2) {
+         *(volatile uint64_t *)(doom_framebuffer + i) = (pal[((uint8_t *)screens[0])[i+1]] << 32) | pal[((uint8_t *)screens[0])[i]];
     }
 
     static int lasttic;

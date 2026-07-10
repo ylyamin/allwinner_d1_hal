@@ -24,11 +24,11 @@ void main(void)
 
     display_task_init();	
 
-    console_task_init();
+    console_task_init(); //FIXME stack if before display
 
     console_task_inputs_init();
-    
-    //run_command("doom");
+
+    run_command("doom");
 
     while(1)
     {
