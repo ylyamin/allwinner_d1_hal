@@ -4,7 +4,7 @@
 
 MEMORY
 {
-  RAM : ORIGIN = 0x40000000, LENGTH = 40M
+  RAM : ORIGIN = 0x40000000, LENGTH = 60M
 }
 
 /* Library configurations */
@@ -207,7 +207,7 @@ SECTIONS
 	.heap :/* (NOLOAD):*/
 	{
 		PROVIDE(__HeapBase = .);
-		. = . + 20M;
+		. = . + 30M;
 		__end__ = .;
 		end = __end__;
 		KEEP(*(.heap*))

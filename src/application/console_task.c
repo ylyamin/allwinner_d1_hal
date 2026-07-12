@@ -19,12 +19,14 @@
 
 extern tlsf_t mem_pool;
 extern uint8_t *framebuffer; 
+extern struct g2d_rot_t g2d_rot_config;
 
 struct fifo_t console_new_line_buf_fifo;
 struct fifo_t console_string_buf_fifo;
 uint8_t *console_string_buf;
 uint32_t *console_new_line_buf;
 uint8_t *font_buffer;
+uint8_t *console_framebuffer; 
 
 uint16_t ch_size = 16;
 uint32_t w = 0;
@@ -35,16 +37,30 @@ uint32_t shift_x = 0;
 uint32_t shift_y = 0;
 uint32_t col_num = 0;
 uint32_t row_num = 0;
+uint32_t row_num_max = 0;
 uint8_t console_task_init_done = 0;
 
 void console_task_init(void)
 {
+    w = de_layer_get_h();
+    h = de_layer_get_w();
+    col_num = (w - w_margin * 2) / ch_size;
+    row_num = (h - h_margin * 2) / ch_size;
+    row_num_max = row_num * 2;
+
     console_string_buf =  tlsf_malloc(mem_pool, STRING_BUFF_SIZE);
     console_new_line_buf =  tlsf_malloc(mem_pool, NEW_LINE_BUFF_SIZE * 4);
 
+    console_framebuffer =  tlsf_memalign(mem_pool, 16, w * h * 4 * 3);
+
+    gr_fill(console_framebuffer, w, h * 3, BG_COLOR_1);
+    g2d_rot_config.src_fb = console_framebuffer;
+
     fifo_init(&console_string_buf_fifo, console_string_buf, sizeof(uint8_t), STRING_BUFF_SIZE);
     fifo_init(&console_new_line_buf_fifo, console_new_line_buf, sizeof(uint32_t), NEW_LINE_BUFF_SIZE);
-    console_new_line_buf_write( fifo_get_read_addr(&console_string_buf_fifo));
+
+    //console_new_line_buf_write( fifo_get_read_addr(&console_string_buf_fifo));
+    console_new_line_buf_write((uint32_t) console_framebuffer );
     console_render_font_buffer();
     console_task_init_done = 1;
 }
@@ -67,23 +83,27 @@ void console_render_font_buffer(void)
     }
 }
 
-void console_render_char(uint8_t symbol)
+void console_render_char(uint8_t symbol, uint32_t override_shift_y)
 {
     int offset = symbol * ch_size * ch_size * 4;
-    int offset_y = shift_y + h_margin;
+    int offset_y = override_shift_y + h_margin;
     int offset_x = shift_x + w_margin;
 
     for (int y = 0; y < ch_size; y++) {
         for (int x = 0; x < ch_size; x += 2) {
-            *(volatile uint64_t *)((uint32_t) framebuffer + 4 * ((y + offset_y) * w + x + offset_x)) = 
+            *(volatile uint64_t *)((uint32_t) console_framebuffer + 4 * ((y + offset_y) * w + x + offset_x)) = 
             *(volatile uint64_t *)((uint32_t) font_buffer + 4 * (y*ch_size + x) + offset);
         }
     }
 }
 
+uint32_t console_fb_addr(void){
+    return (uint32_t)(console_framebuffer + 4 * (shift_y * w + shift_x));
+}
+
 uint32_t max_col_num;
 
-void console_clean_row(uint32_t shift_x)
+void console_clean_row(void)
 {
     max_col_num = MAX(max_col_num, shift_x);
     int offset_y = shift_y + h_margin;
@@ -91,7 +111,7 @@ void console_clean_row(uint32_t shift_x)
 
     for (int x = 0; x < max_col_num - shift_x; x += 2) {
         for (int y = 0; y < ch_size; y++) {
-            *(volatile uint64_t *)((uint32_t) framebuffer + 4 * ((y + offset_y) * w + x + offset_x)) = BG_COLOR_2;
+            *(volatile uint64_t *)((uint32_t) console_framebuffer + 4 * ((y + offset_y) * w + x + offset_x)) = BG_COLOR_2;
         }
     }
 }
@@ -101,7 +121,7 @@ void console_clean_end_row(void)
     int offset_y = (shift_y + h_margin) * w;
 
     for (int y = offset_y ; y < offset_y + (ch_size * w); y += 2) {
-        *(volatile uint64_t *)((uint32_t) framebuffer + 4 * y) = BG_COLOR_2;
+        *(volatile uint64_t *)((uint32_t) console_framebuffer + 4 * y) = BG_COLOR_2;
     }
 }
 
@@ -140,17 +160,18 @@ uint32_t console_new_line_buf_read(int offset)
 
 void console_render(void)
 {
-    w = de_layer_get_h();
-    h = de_layer_get_w();
-    col_num = (w - w_margin * 2) / ch_size;
-    row_num = (h - h_margin * 2) / ch_size;
-
     while(fifo_get_available(&console_string_buf_fifo))
     {
         char symbol = console_string_buf_read();
 
         if(symbol > 31 && symbol < 127) { //normal symbol
-            console_render_char(symbol);
+            console_render_char(symbol, shift_y);
+            
+            //if buffer close to end then also copy to start of buffer
+            if( (shift_y / ch_size) > row_num_max - row_num ) {
+                console_render_char(symbol, shift_y - (ch_size * (row_num_max - row_num + 1)));
+            }
+
             shift_x += ch_size;
         }
         
@@ -159,18 +180,20 @@ void console_render(void)
         if(symbol == '\r') shift_x = 0; //carriage return
 
         if( ((shift_x / ch_size) == col_num) || symbol == '\n') { //new line by row end
-            console_clean_row(shift_x); //clean after \n FIXME: if \r\n is clean symbols in row
+            console_clean_row(); //clean after \n FIXME: if \r\n is clean symbols in row
             shift_x = 0; 
             shift_y += ch_size; 
-            console_new_line_buf_write(console_string_buf_fifo.read);
+            console_new_line_buf_write(console_fb_addr());
         }
 
-        if( (shift_y / ch_size) == row_num ) { //end screen
-            console_string_buf_fifo.read = console_new_line_buf_read(row_num); // 2 row first symbol addres      
-            shift_y -= ch_size; 
-            console_clean_end_row(); //clean last row
-            max_col_num = 0;
-            shift_y = 0; 
+        if( (shift_y / ch_size) >= row_num ) { //end screen
+            g2d_rot_config.src_fb = console_new_line_buf_read(row_num); // 2 row addres      
+        }
+
+        if( (shift_y / ch_size) == row_num_max ) { //end buffer
+            shift_y = (row_num - 1) * ch_size;   
+            console_new_line_buf_fifo.write = (row_num - 1);
+            g2d_rot_config.src_fb = console_framebuffer; 
             return;
         }
     } 
@@ -178,7 +201,7 @@ void console_render(void)
 
 void console_fill_string_init(void)
 {
-    for(int i; i < 200;i++){
+    for(int i; i < 40;i++){
 
         char str_out[70];
         int num = tfp_sprintf(str_out, "String %d \n", i);
@@ -197,11 +220,11 @@ unsigned long ms2;
 
 void console_fill_string(void)
 {
-    if (get_time_ms() > ms2 + 10)
+    if (get_time_ms() > ms2 + 50)
     {
         ms2 = get_time_ms();
 
-        if(str_a < 5){
+        if(str_a < 400){
 
             char str_out[20];
             int num = tfp_sprintf(str_out, "String %d \n", str_a);
