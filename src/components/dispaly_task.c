@@ -173,8 +173,8 @@ void display_task_exec(void)
 		if (line_y > h) line_y = 0; 									//reset in the end
 #endif
 		g2d_rot(g2d_rot_config); //rotate framebuffer
-		//while(!g2d_rot_finish());
-		//de_commit();
+		while(!g2d_rot_finish());
+		de_commit();
 	//} 
 
 }

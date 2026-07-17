@@ -14,7 +14,7 @@
 #define BG_COLOR_1 0xff00004f
 #define BG_COLOR_2 0xff00004fff00004f
 #define FONT_COLOR_1 0xffffffff
-#define STRING_BUFF_SIZE 2000
+#define STRING_BUFF_SIZE 3000
 #define NEW_LINE_BUFF_SIZE 300
 
 extern tlsf_t mem_pool;
@@ -45,11 +45,11 @@ void console_task_init(void)
     w = de_layer_get_h();
     h = de_layer_get_w();
     col_num = (w - w_margin * 2) / ch_size;
-    row_num = (h - h_margin * 2) / ch_size;
-    row_num_max = row_num * 2;
+    row_num = 5;//(h - h_margin * 2) / ch_size;
+    row_num_max = row_num * 3;
 
     console_string_buf =  tlsf_malloc(mem_pool, STRING_BUFF_SIZE);
-    console_new_line_buf =  tlsf_malloc(mem_pool, NEW_LINE_BUFF_SIZE * 4);
+    console_new_line_buf =  tlsf_malloc(mem_pool, NEW_LINE_BUFF_SIZE);
 
     console_framebuffer =  tlsf_memalign(mem_pool, 16, w * h * 4 * 3);
 
@@ -105,7 +105,6 @@ uint32_t max_col_num;
 
 void console_clean_row(void)
 {
-    max_col_num = MAX(max_col_num, shift_x);
     int offset_y = shift_y + h_margin;
     int offset_x = shift_x + w_margin;
 
@@ -166,9 +165,9 @@ void console_render(void)
 
         if(symbol > 31 && symbol < 127) { //normal symbol
             console_render_char(symbol, shift_y);
-            
+
             //if buffer close to end then also copy to start of buffer
-            if( (shift_y / ch_size) > row_num_max - row_num ) {
+            if( (shift_y / ch_size) >= row_num_max - row_num + 1 ) {
                 console_render_char(symbol, shift_y - (ch_size * (row_num_max - row_num + 1)));
             }
 
@@ -180,21 +179,23 @@ void console_render(void)
         if(symbol == '\r') shift_x = 0; //carriage return
 
         if( ((shift_x / ch_size) == col_num) || symbol == '\n') { //new line by row end
-            console_clean_row(); //clean after \n FIXME: if \r\n is clean symbols in row
+            max_col_num = MAX(max_col_num, shift_x); //remmber max row waith
             shift_x = 0; 
             shift_y += ch_size; 
-            console_new_line_buf_write(console_fb_addr());
+            console_new_line_buf_write(console_fb_addr()); //save addr next row
         }
 
         if( (shift_y / ch_size) >= row_num ) { //end screen
-            g2d_rot_config.src_fb = console_new_line_buf_read(row_num); // 2 row addres      
+            g2d_rot_config.src_fb = console_new_line_buf_read(row_num); // jump to second row addres  
+            if(shift_x == 0) console_clean_row(); //clean previous row
+            //return;
         }
 
-        if( (shift_y / ch_size) == row_num_max ) { //end buffer
+        if( (shift_y / ch_size) == row_num_max ) { //end buffer back to first screen
             shift_y = (row_num - 1) * ch_size;   
-            console_new_line_buf_fifo.write = (row_num - 1);
+            console_new_line_buf_fifo.write = (row_num);
+            if(shift_x == 0) console_clean_row();
             g2d_rot_config.src_fb = console_framebuffer; 
-            return;
         }
     } 
 }
@@ -214,19 +215,19 @@ void console_fill_string_init(void)
     }
 }
 
-int str_a = 0;
+int str_a = 1;
 int str_b = 0;
 unsigned long ms2;
 
 void console_fill_string(void)
 {
-    if (get_time_ms() > ms2 + 50)
+    if (get_time_ms() > ms2 + 100)
     {
         ms2 = get_time_ms();
 
-        if(str_a < 400){
+        if(str_a < 30){
 
-            char str_out[20];
+            char str_out[70];
             int num = tfp_sprintf(str_out, "String %d \n", str_a);
 
             if(str_b < num)

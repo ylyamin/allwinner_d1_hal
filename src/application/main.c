@@ -28,12 +28,16 @@ void main(void)
 
     console_task_inputs_init();
 
+    //console_fill_string_init();
+
     //run_command("doom");
     
     while(1)
     {
         //usb_task_exec();
+        
         console_fill_string();
+        
         //console_command_handler();
         
         console_render();    
