@@ -179,6 +179,11 @@ void console_render(void)
             shift_x += ch_size;
         }
         
+        if((symbol == '\b') && (shift_x > ch_size)) { //backspace
+            shift_x -= ch_size; 
+            console_render_char(' ', shift_y);
+        }
+
         if(symbol == '\033') while(console_string_buf_read() != 'm'); //skip color modifier
  
         if(symbol == '\r') shift_x = 0; //carriage return

@@ -16,6 +16,7 @@ extern void LCD_bl_close(void);
 extern void LCD_panel_init(void);
 
 extern tlsf_t mem_pool;
+extern uint8_t *console_framebuffer; 
 
 uint8_t *framebuffer; 
 uint8_t *framebuffer1; 
@@ -88,12 +89,12 @@ void display_task_init(void)
  	de_config(layers,blender);
 
 //debug lines in framebuffer for pipe 0
-
+#if 0
 	w = timing.lcd_scale_h;  //1280
  	h = timing.lcd_scale_w;  //480 
 
 	gr_fill(framebuffer,w,h, BG_COLOR_1);
-#if 0
+
 	gr_draw_hline_xyw(framebuffer, w, h, /*x*/ 10,		/*y*/ 10,		/*ww*/ w - 20, LINE_COLOR_1);
 	gr_draw_hline_xyw(framebuffer, w, h, /*x*/ 10,		/*y*/ h - 10,	/*ww*/ w - 20, LINE_COLOR_1);
 	gr_draw_vline_xyh(framebuffer, w, h, /*x*/ 10,		/*y*/ 10,		/*hh*/ h - 20, LINE_COLOR_1);
@@ -127,7 +128,7 @@ void display_task_init(void)
 	g2d_init();
 	de_init();
 
-    g2d_rot_config.src_fb = framebuffer;
+    g2d_rot_config.src_fb = console_framebuffer; //framebuffer;
     g2d_rot_config.dst_fb = framebuffer1;
     g2d_rot_config.src_w = timing.lcd_scale_h;//1280
     g2d_rot_config.src_h = timing.lcd_scale_w;//480

@@ -51,7 +51,7 @@ void console_find_command(const char *str, size_t n)
 }
 
 uint8_t command_string[BUFF_SIZE];
-int command_string_num;
+int command_string_num = 0;
 int command_welcome = 1;
 
 void console_command_handler(void)
@@ -76,9 +76,15 @@ void console_command_handler(void)
             small_printf(WELCOME);
 
             //flush command
-            for(int i = 0; i < command_string_num; i++) command_string[i] = 0;
+            for(int i = 0; i < BUFF_SIZE; i++) command_string[i] = 0;
             command_string_num = 0;
-        } 
+        }
+        else if((symbol == '\b') && command_string_num) //backspace
+        {
+            command_string_num--;
+            command_string[command_string_num] = 0;
+            small_printf("%c",symbol);
+        }
         else
         {
             if(command_string_num < BUFF_SIZE)
