@@ -10,16 +10,19 @@
 #include <font16x16.h>
 #include <tlsf.h>
 #include <tinyprintf.h>
+#include <tcon_lcd.h>
 
 #define BG_COLOR_1 0xff00004f
 #define BG_COLOR_2 0xff00004fff00004f
 #define FONT_COLOR_1 0xffffffff
 #define STRING_BUFF_SIZE 3000
 #define NEW_LINE_BUFF_SIZE 300
+#define FB_MULTIPLY 2
 
 extern tlsf_t mem_pool;
 extern uint8_t *framebuffer; 
 extern struct g2d_rot_t g2d_rot_config;
+extern timing_t LCD_get_param(void);
 
 struct fifo_t console_new_line_buf_fifo;
 struct fifo_t console_string_buf_fifo;
@@ -31,8 +34,8 @@ uint8_t *console_framebuffer;
 uint16_t ch_size = 16;
 uint32_t w = 0;
 uint32_t h = 0;
-uint32_t w_margin = 10;
-uint32_t h_margin = 10;
+uint32_t w_margin = 16;
+uint32_t h_margin = 16;
 uint32_t shift_x = 0; 
 uint32_t shift_y = 0;
 uint32_t col_num = 0;
@@ -42,24 +45,25 @@ uint8_t console_task_init_done = 0;
 
 void console_task_init(void)
 {
-    w = de_layer_get_h();
-    h = de_layer_get_w();
-    col_num = (w - w_margin * 2) / ch_size;
-    row_num = 5;//(h - h_margin * 2) / ch_size;
-    row_num_max = row_num * 3;
+    timing_t timing = LCD_get_param();
+    w = timing.lcd_scale_h;
+    h = timing.lcd_scale_w;
+
+    col_num = (w - w_margin * 2) / ch_size; // margin left and right
+    row_num = (h - h_margin) / ch_size; // margin only top
+    row_num_max = row_num * FB_MULTIPLY;
 
     console_string_buf =  tlsf_malloc(mem_pool, STRING_BUFF_SIZE);
     console_new_line_buf =  tlsf_malloc(mem_pool, NEW_LINE_BUFF_SIZE);
 
-    console_framebuffer =  tlsf_memalign(mem_pool, 16, w * h * 4 * 3);
+    console_framebuffer =  tlsf_memalign(mem_pool, 16, w * h * 4 * FB_MULTIPLY);
 
-    gr_fill(console_framebuffer, w, h * 3, BG_COLOR_1);
+    gr_fill(console_framebuffer, w, h * FB_MULTIPLY, BG_COLOR_1);
     g2d_rot_config.src_fb = console_framebuffer;
 
     fifo_init(&console_string_buf_fifo, console_string_buf, sizeof(uint8_t), STRING_BUFF_SIZE);
     fifo_init(&console_new_line_buf_fifo, console_new_line_buf, sizeof(uint32_t), NEW_LINE_BUFF_SIZE);
 
-    //console_new_line_buf_write( fifo_get_read_addr(&console_string_buf_fifo));
     console_new_line_buf_write((uint32_t) console_framebuffer );
     console_render_font_buffer();
     console_task_init_done = 1;
@@ -103,10 +107,11 @@ uint32_t console_fb_addr(void){
 
 uint32_t max_col_num;
 
-void console_clean_row(void)
+void console_clean_row(uint32_t shift_x, uint32_t shift_y)
 {
     int offset_y = shift_y + h_margin;
     int offset_x = shift_x + w_margin;
+    max_col_num = MAX(max_col_num, shift_x); //remember max row width
 
     for (int x = 0; x < max_col_num - shift_x; x += 2) {
         for (int y = 0; y < ch_size; y++) {
@@ -179,7 +184,14 @@ void console_render(void)
         if(symbol == '\r') shift_x = 0; //carriage return
 
         if( ((shift_x / ch_size) == col_num) || symbol == '\n') { //new line by row end
-            max_col_num = MAX(max_col_num, shift_x); //remmber max row waith
+            
+                console_clean_row(shift_x, shift_y); //clean after \n
+
+            //if buffer close to end then also copy clean to start of buffer
+            if( (shift_y / ch_size) >= row_num_max - row_num + 1 ) {
+                console_clean_row(shift_x, shift_y - (ch_size * (row_num_max - row_num + 1)));
+            }
+
             shift_x = 0; 
             shift_y += ch_size; 
             console_new_line_buf_write(console_fb_addr()); //save addr next row
@@ -187,22 +199,24 @@ void console_render(void)
 
         if( (shift_y / ch_size) >= row_num ) { //end screen
             g2d_rot_config.src_fb = console_new_line_buf_read(row_num); // jump to second row addres  
-            if(shift_x == 0) console_clean_row(); //clean previous row
-            //return;
+            if(shift_x == 0) console_clean_row(shift_x, shift_y); //clean previous row
         }
 
         if( (shift_y / ch_size) == row_num_max ) { //end buffer back to first screen
             shift_y = (row_num - 1) * ch_size;   
             console_new_line_buf_fifo.write = (row_num);
-            if(shift_x == 0) console_clean_row();
+            if(shift_x == 0) console_clean_row(shift_x, shift_y);
             g2d_rot_config.src_fb = console_framebuffer; 
+            return;
         }
     } 
 }
 
+//load test
+
 void console_fill_string_init(void)
 {
-    for(int i; i < 40;i++){
+    for(int i = 1; i < 300;i++){
 
         char str_out[70];
         int num = tfp_sprintf(str_out, "String %d \n", i);
@@ -221,11 +235,11 @@ unsigned long ms2;
 
 void console_fill_string(void)
 {
-    if (get_time_ms() > ms2 + 100)
+    if (get_time_ms() > ms2 + 5)
     {
         ms2 = get_time_ms();
 
-        if(str_a < 30){
+        if(str_a < 1000){
 
             char str_out[70];
             int num = tfp_sprintf(str_out, "String %d \n", str_a);

@@ -88,16 +88,19 @@ void display_task_init(void)
  	de_config(layers,blender);
 
 //debug lines in framebuffer for pipe 0
+
 	w = timing.lcd_scale_h;  //1280
  	h = timing.lcd_scale_w;  //480 
 
 	gr_fill(framebuffer,w,h, BG_COLOR_1);
+#if 0
 	gr_draw_hline_xyw(framebuffer, w, h, /*x*/ 10,		/*y*/ 10,		/*ww*/ w - 20, LINE_COLOR_1);
 	gr_draw_hline_xyw(framebuffer, w, h, /*x*/ 10,		/*y*/ h - 10,	/*ww*/ w - 20, LINE_COLOR_1);
 	gr_draw_vline_xyh(framebuffer, w, h, /*x*/ 10,		/*y*/ 10,		/*hh*/ h - 20, LINE_COLOR_1);
 	gr_draw_vline_xyh(framebuffer, w, h, /*x*/ w - 10,  /*y*/ 10,		/*hh*/ h - 20, LINE_COLOR_1);
  	gr_draw_line(framebuffer,w,h, 0, 0, w-1, h-1, LINE_COLOR_1);
 	gr_draw_line(framebuffer,w,h, w-1, 0, 0, h-1, LINE_COLOR_1);
+#endif
 
 //debug lines in framebuffer for pipe 1
 	w = doom_w;

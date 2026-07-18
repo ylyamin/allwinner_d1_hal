@@ -20,13 +20,13 @@ void main(void)
 	LOG_W("heap: creating mem pool @ %08x size %d\n", &__HeapBase, s);
 	mem_pool = tlsf_create_with_pool((void *)&__HeapBase, s);
     
-    //usb_task_init();
+    console_task_init();
 
     display_task_init();	
 
-    console_task_init(); //FIXME stack if before display
-
     console_task_inputs_init();
+
+    usb_task_init();
 
     //console_fill_string_init();
 
@@ -34,11 +34,11 @@ void main(void)
     
     while(1)
     {
-        //usb_task_exec();
+        usb_task_exec();
         
-        console_fill_string();
+        //console_fill_string();
         
-        //console_command_handler();
+        console_command_handler();
         
         console_render();    
         
@@ -46,5 +46,9 @@ void main(void)
     }
 }
 
+//TODO 
+// perf
+// backspace
+//enter mix
 
 
