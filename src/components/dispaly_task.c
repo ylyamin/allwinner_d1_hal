@@ -18,12 +18,14 @@ extern void LCD_panel_init(void);
 extern tlsf_t mem_pool;
 extern uint8_t *console_framebuffer; 
 extern uint8_t *gui_framebuffer; 
+extern uint32_t *doom_framebuffer;
 
 uint8_t *framebuffer1; 
 uint8_t *framebuffer2; 
 uint8_t *framebuffer3; 
 
 struct g2d_rot_t g2d_rot_config;
+struct g2d_rot_t g2d_rot_doom_config;
 struct g2d_rot_t g2d_rot_config_gui;
 
 #define BG_COLOR_1 0xff00004f
@@ -136,7 +138,8 @@ void display_task_init(void)
 
 	//4
 	tcon_lcd_enable();
-
+	
+	//5
 	de_init();	
 	g2d_init();
 
@@ -151,6 +154,15 @@ void display_task_init(void)
 
 	g2d_rot(g2d_rot_config); //rotate framebuffer - after rotation vertical lines gone ?
 	while(g2d_rot_finish());
+
+    g2d_rot_doom_config.src_fb = doom_framebuffer;
+    g2d_rot_doom_config.dst_fb = framebuffer2;
+    g2d_rot_doom_config.src_w = 320;
+    g2d_rot_doom_config.src_h = 200;
+    g2d_rot_doom_config.dst_w = 200;
+    g2d_rot_doom_config.dst_h = 320;
+    g2d_rot_doom_config.rot_angle = CW_270;
+    g2d_rot_doom_config.fmt = LAY_FBFMT_ARGB_8888;
 
     g2d_rot_config_gui.src_fb = gui_framebuffer;
     g2d_rot_config_gui.dst_fb = framebuffer3;

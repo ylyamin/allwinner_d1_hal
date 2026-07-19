@@ -230,13 +230,20 @@ void gui_init(void)
 void gui(void)
 {
     uint32_t gui_shift_x;
+    int num1,num2;
     char str_out[70];
 
-    int num = tfp_sprintf(str_out, "Terminal: %d", get_time_ms());
+    num1 = tfp_sprintf(str_out, "Terminal: %d", get_time_ms());
 
-    for(int j = 0; j < num; j++)
+    for(int j = 0; j < num1; j++)
     {
         console_render_char(str_out[j], gui_shift_x, -h_margin, gui_framebuffer);
+        gui_shift_x += ch_size;
+    }
+
+    for(int j = 0; j < col_num - num1; j++)
+    {
+        console_render_char(' ', gui_shift_x, -h_margin, gui_framebuffer);
         gui_shift_x += ch_size;
     }
 

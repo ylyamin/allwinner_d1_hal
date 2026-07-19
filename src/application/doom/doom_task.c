@@ -18,8 +18,8 @@ extern tlsf_t mem_pool;
 extern struct fifo_t keyboard_fifo;
 extern struct fifo_t joystick_fifo;
 
-extern uint32_t *framebuffer2;
 extern uint32_t *doom_framebuffer;
+extern struct g2d_rot_t g2d_rot_doom_config;
 
 uint8_t doom_inited = 0;
 uint8_t doom_run = 0;
@@ -154,25 +154,11 @@ void doom_task_exec(void)
         ( joystick_out.bit.y_down )  ? doom_key_down(DOOM_KEY_DOWN_ARROW ) : doom_key_up(DOOM_KEY_DOWN_ARROW );
     }
 
-        uint64_t frame_start = get_time_ms();
+    uint64_t frame_start = get_time_ms();
 
     doom_force_update();
 
-    struct g2d_rot_t g2d_rot_doom_config = {
-        .src_fb = doom_framebuffer,
-        .dst_fb = framebuffer2,
-        .src_w = 320,
-        .src_h = 200,
-        .dst_w = 200,
-        .dst_h = 320,
-        .rot_angle = CW_270,
-        .fmt = LAY_FBFMT_ARGB_8888,
-    };
-
-   	g2d_rot(g2d_rot_doom_config);
-	while(!g2d_rot_finish());
-
-        uint64_t frame_stop = get_time_ms();
+    uint64_t frame_stop = get_time_ms();
 
     if (previous_key && (++frame_cnt == 2))
     {
@@ -198,6 +184,7 @@ void doom_task_run(void)
     {
 
         doom_task_init();
+        g2d_rot_doom_config.src_fb = doom_framebuffer;
         doom_inited = 1;
 
     }
@@ -205,5 +192,7 @@ void doom_task_run(void)
     {
         usb_task_exec();
         doom_task_exec();
+        g2d_rot(g2d_rot_doom_config);
+        while(!g2d_rot_finish());
     }
 }
