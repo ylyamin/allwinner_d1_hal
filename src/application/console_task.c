@@ -12,9 +12,9 @@
 #include <tinyprintf.h>
 #include <tcon_lcd.h>
 
-#define BG_COLOR_1 0xff00004f
-#define BG_COLOR_2 0xff00004fff00004f
-#define FONT_COLOR_1 0xffffffff
+#define BG_COLOR_1 0x0f00004f
+#define BG_COLOR_2 0x0f00004f0f00004f
+#define FONT_COLOR_1 0x0fffffff
 #define STRING_BUFF_SIZE 3000
 #define NEW_LINE_BUFF_SIZE 300
 #define FB_MULTIPLY 2
@@ -30,12 +30,13 @@ uint8_t *console_string_buf;
 uint32_t *console_new_line_buf;
 uint8_t *font_buffer;
 uint8_t *console_framebuffer; 
+uint8_t *gui_framebuffer; 
 
 uint16_t ch_size = 16;
 uint32_t w = 0;
 uint32_t h = 0;
 uint32_t w_margin = 16;
-uint32_t h_margin = 16;
+uint32_t h_margin = 32;
 uint32_t shift_x = 0; 
 uint32_t shift_y = 0;
 uint32_t col_num = 0;
@@ -57,9 +58,7 @@ void console_task_init(void)
     console_new_line_buf =  tlsf_malloc(mem_pool, NEW_LINE_BUFF_SIZE);
 
     console_framebuffer =  tlsf_memalign(mem_pool, 16, w * h * 4 * FB_MULTIPLY);
-
     gr_fill(console_framebuffer, w, h * FB_MULTIPLY, BG_COLOR_1);
-    g2d_rot_config.src_fb = console_framebuffer;
 
     fifo_init(&console_string_buf_fifo, console_string_buf, sizeof(uint8_t), STRING_BUFF_SIZE);
     fifo_init(&console_new_line_buf_fifo, console_new_line_buf, sizeof(uint32_t), NEW_LINE_BUFF_SIZE);
@@ -87,15 +86,15 @@ void console_render_font_buffer(void)
     }
 }
 
-void console_render_char(uint8_t symbol, uint32_t override_shift_y)
+void console_render_char(uint8_t symbol, int32_t shift_x, int32_t shift_y, void *fb)
 {
     int offset = symbol * ch_size * ch_size * 4;
-    int offset_y = override_shift_y + h_margin;
+    int offset_y = shift_y + h_margin;
     int offset_x = shift_x + w_margin;
 
     for (int y = 0; y < ch_size; y++) {
         for (int x = 0; x < ch_size; x += 2) {
-            *(volatile uint64_t *)((uint32_t) console_framebuffer + 4 * ((y + offset_y) * w + x + offset_x)) = 
+            *(volatile uint64_t *)((uint32_t) fb + 4 * ((y + offset_y) * w + x + offset_x)) = 
             *(volatile uint64_t *)((uint32_t) font_buffer + 4 * (y*ch_size + x) + offset);
         }
     }
@@ -169,11 +168,11 @@ void console_render(void)
         char symbol = console_string_buf_read();
 
         if(symbol > 31 && symbol < 127) { //normal symbol
-            console_render_char(symbol, shift_y);
+            console_render_char(symbol, shift_x, shift_y, console_framebuffer);
 
             //if buffer close to end then also copy to start of buffer
             if( (shift_y / ch_size) >= row_num_max - row_num + 1 ) {
-                console_render_char(symbol, shift_y - (ch_size * (row_num_max - row_num + 1)));
+                console_render_char(symbol, shift_x, shift_y - (ch_size * (row_num_max - row_num + 1)), console_framebuffer);
             }
 
             shift_x += ch_size;
@@ -181,7 +180,7 @@ void console_render(void)
         
         if((symbol == '\b') && (shift_x > ch_size)) { //backspace
             shift_x -= ch_size; 
-            console_render_char(' ', shift_y);
+            console_render_char(' ', shift_x, shift_y, console_framebuffer);
         }
 
         if(symbol == '\033') while(console_string_buf_read() != 'm'); //skip color modifier
@@ -215,6 +214,32 @@ void console_render(void)
             return;
         }
     } 
+}
+
+void gui_init(void)
+{
+    timing_t timing = LCD_get_param();
+    w = timing.lcd_scale_h;
+    h = timing.lcd_scale_w;
+    
+    gui_framebuffer =  tlsf_memalign(mem_pool, 16, w * 20 * 4);
+    gr_fill(gui_framebuffer, w, 20, BG_COLOR_1);
+	gr_draw_hline_xyw(gui_framebuffer, w, h, /*x*/ 10, /*y*/ 18, /*ww*/ w - 20, 0xffffffff);
+}
+
+void gui(void)
+{
+    uint32_t gui_shift_x;
+    char str_out[70];
+
+    int num = tfp_sprintf(str_out, "Terminal: %d", get_time_ms());
+
+    for(int j = 0; j < num; j++)
+    {
+        console_render_char(str_out[j], gui_shift_x, -h_margin, gui_framebuffer);
+        gui_shift_x += ch_size;
+    }
+
 }
 
 //load test

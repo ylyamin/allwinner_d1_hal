@@ -146,13 +146,13 @@ void de_commit(void)
 	DE_MUX_GLB->DBUFFER = 1;
 }
 
-void de_layer_set(void *fb0, void *fb1)
+void de_layer_set(void *fb0, void *fb1, void *fb2)
 {
 	de_commit_wait();
 
 	layers.layer[0].fb[0] = fb0;
 	layers.layer[1].fb[0] = fb1;
-
+	layers.layer[2].fb[0] = fb2;
 
 /* 	layers.layer[0].fb[1] = fb1;
 	layers.layer[0].fb_idx = 0;
@@ -169,6 +169,12 @@ void de_layer_set(void *fb0, void *fb1)
 	DE_MUX_OVL_V->LAYER[0].PITCH0 = p * layers.layer[0].w; //layer memmory
 	DE_MUX_OVL_V->LAYER[0].TOP_LADD0 = (uint32_t)layers.layer[0].fb[0];
 	DE_MUX_OVL_V->SIZE = ((layers.layer[0].h-1) << 16) | (layers.layer[0].w-1); //overlay heigh width
+
+	DE_MUX_OVL_V->LAYER[1].ATTCTL = BV(0) | (layers.layer[2].fmt << 8) | BV(15);
+	DE_MUX_OVL_V->LAYER[1].MBSIZE = ((layers.layer[2].h-1) << 16) | (layers.layer[2].w-1); //layers heigh width
+	DE_MUX_OVL_V->LAYER[1].COOR = ((layers.layer[2].offset_h) << 16) | (layers.layer[2].offset_w); //coor layer on overlay window
+	DE_MUX_OVL_V->LAYER[1].PITCH0 = p * layers.layer[2].w; //layer memmory
+	DE_MUX_OVL_V->LAYER[1].TOP_LADD0 = (uint32_t)layers.layer[2].fb[0];
 
  	DE_MUX_OVL_UI1->LAYER[0].ATTCTL = BV(0) | (layers.layer[1].fmt << 8) | BV(1) | (layers.layer[1].alpha << 24); 
 	DE_MUX_OVL_UI1->LAYER[0].MBSIZE = ((layers.layer[1].h-1) << 16) | (layers.layer[1].w-1); //layers heigh width

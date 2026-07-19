@@ -32,7 +32,7 @@ struct layer_t {
 	uint32_t fmt;
 	uint8_t  alpha;
 	//! SemaphoreHandle_t semaphore;
-	} layer[2];
+	} layer[3];
 };
 
 void de_config(struct layer_t new_layers, struct blender_t new_blender);
@@ -40,7 +40,7 @@ void de_init(void);
 void de_commit(void);
 uint32_t fmt_to_pitch(uint8_t fmt);
 
-void de_layer_set(void *fb, void *fb1);
+void de_layer_set(void *fb, void *fb1, void *fb2);
 uint32_t de_layer_get_h(void);
 uint32_t de_layer_get_w(void);
 void *de_layer_get_fb(void);

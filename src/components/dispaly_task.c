@@ -17,11 +17,14 @@ extern void LCD_panel_init(void);
 
 extern tlsf_t mem_pool;
 extern uint8_t *console_framebuffer; 
+extern uint8_t *gui_framebuffer; 
 
-uint8_t *framebuffer; 
 uint8_t *framebuffer1; 
 uint8_t *framebuffer2; 
+uint8_t *framebuffer3; 
+
 struct g2d_rot_t g2d_rot_config;
+struct g2d_rot_t g2d_rot_config_gui;
 
 #define BG_COLOR_1 0xff00004f
 #define BG_COLOR_2 0xff004f00
@@ -61,9 +64,9 @@ void display_task_init(void)
 		},
 	};
 
-    framebuffer =  tlsf_memalign(mem_pool, 16, timing.lcd_scale_h * timing.lcd_scale_w * 4);
     framebuffer1 = tlsf_memalign(mem_pool, 16, timing.lcd_scale_w * timing.lcd_scale_h * 4);
     framebuffer2 = tlsf_memalign(mem_pool, 16, doom_w * doom_h * 4);
+    framebuffer3 = tlsf_memalign(mem_pool, 16, timing.lcd_scale_h * 20 * 4);
 
 	struct layer_t layers = {
 		.layer = {
@@ -83,34 +86,43 @@ void display_task_init(void)
 				.fmt = LAY_FBFMT_ARGB_8888, //    DE_FORMAT_8bpp_palette_LE = 0x1b,
 				.alpha = 0xff,
 			},	
+			{ //gui screen
+				.w = 20,
+				.h = timing.lcd_scale_h,
+				.offset_w = 0,
+				.offset_h = 0,
+				.fmt = LAY_FBFMT_ARGB_8888,
+				.alpha = 0xff,
+			},	
 		}
 	};
 
  	de_config(layers,blender);
 
-//debug lines in framebuffer for pipe 0
-#if 0
+//debug lines in framebuffer1 for pipe 0
 	w = timing.lcd_scale_h;  //1280
  	h = timing.lcd_scale_w;  //480 
+	gr_fill(framebuffer1,w,h, BG_COLOR_1);
 
-	gr_fill(framebuffer,w,h, BG_COLOR_1);
-
-	gr_draw_hline_xyw(framebuffer, w, h, /*x*/ 10,		/*y*/ 10,		/*ww*/ w - 20, LINE_COLOR_1);
-	gr_draw_hline_xyw(framebuffer, w, h, /*x*/ 10,		/*y*/ h - 10,	/*ww*/ w - 20, LINE_COLOR_1);
-	gr_draw_vline_xyh(framebuffer, w, h, /*x*/ 10,		/*y*/ 10,		/*hh*/ h - 20, LINE_COLOR_1);
-	gr_draw_vline_xyh(framebuffer, w, h, /*x*/ w - 10,  /*y*/ 10,		/*hh*/ h - 20, LINE_COLOR_1);
- 	gr_draw_line(framebuffer,w,h, 0, 0, w-1, h-1, LINE_COLOR_1);
-	gr_draw_line(framebuffer,w,h, w-1, 0, 0, h-1, LINE_COLOR_1);
+#if 0
+	gr_draw_hline_xyw(framebuffer1, w, h, /*x*/ 10,		/*y*/ 10,		/*ww*/ w - 20, LINE_COLOR_1);
+	gr_draw_hline_xyw(framebuffer1, w, h, /*x*/ 10,		/*y*/ h - 10,	/*ww*/ w - 20, LINE_COLOR_1);
+	gr_draw_vline_xyh(framebuffer1, w, h, /*x*/ 10,		/*y*/ 10,		/*hh*/ h - 20, LINE_COLOR_1);
+	gr_draw_vline_xyh(framebuffer1, w, h, /*x*/ w - 10,  /*y*/ 10,		/*hh*/ h - 20, LINE_COLOR_1);
+ 	gr_draw_line(framebuffer1,w,h, 0, 0, w-1, h-1, LINE_COLOR_1);
+	gr_draw_line(framebuffer1,w,h, w-1, 0, 0, h-1, LINE_COLOR_1);
 #endif
 
-//debug lines in framebuffer for pipe 1
+//debug lines in framebuffer3 for pipe 1
 	w = doom_w;
  	h = doom_h;
 
 	gr_fill(framebuffer2,w,h, BG_COLOR_2);
  	gr_draw_line(framebuffer2,w,h, 0, 0, w-1, h-1, LINE_COLOR_1);
 	gr_draw_line(framebuffer2,w,h, w-1, 0, 0, h-1, LINE_COLOR_1); 
-////
+
+//debug lines in framebuffer3 for pipe 0
+	gr_fill(framebuffer3, w, 20, BG_COLOR_1);
 
 	//1
 	LCD_gpio_init();
@@ -124,9 +136,9 @@ void display_task_init(void)
 
 	//4
 	tcon_lcd_enable();
-	
+
+	de_init();	
 	g2d_init();
-	de_init();
 
     g2d_rot_config.src_fb = console_framebuffer; //framebuffer;
     g2d_rot_config.dst_fb = framebuffer1;
@@ -137,10 +149,22 @@ void display_task_init(void)
 	g2d_rot_config.rot_angle = CW_270;
     g2d_rot_config.fmt = LAY_FBFMT_ARGB_8888;
 
-   	g2d_rot(g2d_rot_config); //rotate framebuffer - after rotation vertical lines gone ?
+	g2d_rot(g2d_rot_config); //rotate framebuffer - after rotation vertical lines gone ?
 	while(g2d_rot_finish());
 
-	de_layer_set(framebuffer1, framebuffer2);
+    g2d_rot_config_gui.src_fb = gui_framebuffer;
+    g2d_rot_config_gui.dst_fb = framebuffer3;
+    g2d_rot_config_gui.src_w = timing.lcd_scale_h;//1280
+    g2d_rot_config_gui.src_h = 20;//480
+    g2d_rot_config_gui.dst_w = 20;//480
+    g2d_rot_config_gui.dst_h = timing.lcd_scale_h;//1280
+	g2d_rot_config_gui.rot_angle = CW_270;
+    g2d_rot_config_gui.fmt = LAY_FBFMT_ARGB_8888;
+
+   	g2d_rot(g2d_rot_config_gui); //rotate framebuffer - after rotation vertical lines gone ?
+	while(g2d_rot_finish());
+
+	de_layer_set(framebuffer1, framebuffer2, framebuffer3);
 
 	//tcon_dump_regs();
 }
@@ -176,8 +200,12 @@ void display_task_exec(void)
 		if (line_x > w) line_x = 0; 									//reset in the end
 		if (line_y > h) line_y = 0; 									//reset in the end
 #endif
-		g2d_rot(g2d_rot_config); //rotate framebuffer
+ 		g2d_rot(g2d_rot_config); //rotate framebuffer
 		while(!g2d_rot_finish());
+
+		g2d_rot(g2d_rot_config_gui);
+		while(g2d_rot_finish()); 
+
 		de_commit();
 	//} 
 

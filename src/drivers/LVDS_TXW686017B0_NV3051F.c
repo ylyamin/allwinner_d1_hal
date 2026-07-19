@@ -182,6 +182,7 @@ void LCD_panel_init(void)
     LOG_D("LCD_panel_init 3051\n");
 
 	panel_reset_1;
+	delay_ms(5);  
 	axp_LCD_control(TWI0,1);
 	delay_ms(10);  //10
     panel_reset_0;
