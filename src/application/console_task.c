@@ -11,6 +11,7 @@
 #include <tlsf.h>
 #include <tinyprintf.h>
 #include <tcon_lcd.h>
+#include <thermal.h>
 
 #define BG_COLOR_1 0x0f00004f
 #define BG_COLOR_2 0x0f00004f0f00004f
@@ -225,25 +226,34 @@ void gui_init(void)
     gui_framebuffer =  tlsf_memalign(mem_pool, 16, w * 20 * 4);
     gr_fill(gui_framebuffer, w, 20, BG_COLOR_1);
 	gr_draw_hline_xyw(gui_framebuffer, w, h, /*x*/ 10, /*y*/ 18, /*ww*/ w - 20, 0xffffffff);
+
+    ths_init();
 }
 
 void gui(void)
 {
     uint32_t gui_shift_x;
     int num1,num2;
-    char str_out[70];
+    char str_out1[10], str_out2[10];
 
-    num1 = tfp_sprintf(str_out, "Terminal: %d", get_time_ms());
+    num1 = tfp_sprintf(str_out1, "Terminal:");
+    num2 = tfp_sprintf(str_out2, "T:%2dC", ths_get_temp());
 
     for(int j = 0; j < num1; j++)
     {
-        console_render_char(str_out[j], gui_shift_x, -h_margin, gui_framebuffer);
+        console_render_char(str_out1[j], gui_shift_x, -h_margin, gui_framebuffer);
         gui_shift_x += ch_size;
     }
 
-    for(int j = 0; j < col_num - num1; j++)
+    for(int j = 0; j < col_num - num1 - num2; j++)
     {
         console_render_char(' ', gui_shift_x, -h_margin, gui_framebuffer);
+        gui_shift_x += ch_size;
+    }
+
+    for(int j = 0; j < num2; j++)
+    {
+        console_render_char(str_out2[j], gui_shift_x, -h_margin, gui_framebuffer);
         gui_shift_x += ch_size;
     }
 

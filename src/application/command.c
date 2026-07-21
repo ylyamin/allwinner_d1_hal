@@ -4,15 +4,18 @@
 #include <log.h>
 #include <ccu.h>
 #include <string.h>
+#include <gpio.h>
 
 void cmd_help(void);
 extern void logo(void);
 extern void doom_task_run(void);
+void cmd_fan(void);
 
 commands_t commands[] = {
     {.cmd = "help",     .hlp = "show commands", .func = cmd_help,       },
     {.cmd = "version",  .hlp = "show version",  .func = logo,           },
     {.cmd = "doom",     .hlp = "doom game",     .func = doom_task_run,  },
+    {.cmd = "fan",      .hlp = "turn on fan",   .func = cmd_fan,        },
 };
 
 void cmd_help(void)
@@ -28,6 +31,23 @@ void run_command(const char *str)
         keyboard_write(str[i]);
     keyboard_write('\r');
 }
+
+void cmd_fan(void)
+{
+    struct gpio_t fan_gpio[] = {
+        {
+            .gpio = GPIOD,
+            .pin = BV(10),  //FAN
+            .mode = GPIO_MODE_OUTPUT,
+            .pupd = GPIO_PUPD_UP,
+            .drv =  GPIO_DRV_3,
+            .state = GPIO_RESET,
+        },
+    };
+    gpio_init(fan_gpio, ARRAY_SIZE(fan_gpio));
+    gpio_set(&fan_gpio[0], GPIO_SET);
+}
+
 
 void console_find_command(const char *str, size_t n)
 {

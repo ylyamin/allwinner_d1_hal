@@ -48,13 +48,8 @@ void main(void)
         
         display_task_exec();	
 
-        tfp_printf("%d \n", get_time_ms() );
+        //tfp_printf("%d \n", get_time_ms() );
     }
 }
-
-//TODO 
-// perf
-// backspace
-//enter mix
 
 
