@@ -12,4 +12,6 @@ void axp_get_voltage(TWI_TypeDef *twi);
 void axp_USB_control(TWI_TypeDef *twi, int on_off);
 void axp_LCD_control(TWI_TypeDef *twi, int on_off);
 
+int axp_battery_get_soc(TWI_TypeDef *twi);
+
 #endif /* AXP_H_ */

@@ -25,6 +25,9 @@
 #define ALDO2_Voltage_REG 0x29
 #define ALDO3_Voltage_REG 0x2A
 
+#define BAT_Gauge 0xB9
+
+
 //DCDC_CNTRL_REG
 #define ALDO2_Enable BV(7)
 #define ALDO1_Enable BV(6)
@@ -178,4 +181,9 @@ void axp_USB_control(TWI_TypeDef *twi, int on_off)
         axp_set_reg(twi, ELDO_CNTRL_REG,     axp_get_reg(twi, ELDO_CNTRL_REG)     & ~DLDO2_Enable );
         axp_set_reg(twi, DLDO2_Voltage_REG,  axp_get_reg(twi, DLDO2_Voltage_REG)  &  0x00 );
     }    
+}
+
+int axp_battery_get_soc(TWI_TypeDef *twi)
+{
+    return (axp_get_reg(twi, BAT_Gauge) & 0x7F);
 }

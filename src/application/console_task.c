@@ -12,6 +12,7 @@
 #include <tinyprintf.h>
 #include <tcon_lcd.h>
 #include <thermal.h>
+#include <axp228.h>
 
 #define BG_COLOR_1 0x0f00004f
 #define BG_COLOR_2 0x0f00004f0f00004f
@@ -234,10 +235,10 @@ void gui(void)
 {
     uint32_t gui_shift_x;
     int num1,num2;
-    char str_out1[10], str_out2[10];
+    char str_out1[10], str_out2[20];
 
     num1 = tfp_sprintf(str_out1, "Terminal:");
-    num2 = tfp_sprintf(str_out2, "T:%2dC", ths_get_temp());
+    num2 = tfp_sprintf(str_out2, "Tem:%2dC Bat:%2d%%", ths_get_temp(), axp_battery_get_soc(TWI0));
 
     for(int j = 0; j < num1; j++)
     {
@@ -256,7 +257,6 @@ void gui(void)
         console_render_char(str_out2[j], gui_shift_x, -h_margin, gui_framebuffer);
         gui_shift_x += ch_size;
     }
-
 }
 
 //load test
