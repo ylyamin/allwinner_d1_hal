@@ -75,10 +75,12 @@ XFEL_DIR = $(TOOLCHAIN_INSTALL_DIR)/xfel
 T_HEAD_DEBUGSERVER_DIR = $(TOOLCHAIN_INSTALL_DIR)/T-HEAD_DebugServer
 #XUANTIE_900_GCC_ELF_NEWLIB_DIR = $(TOOLCHAIN_INSTALL_DIR)/Xuantie-900-gcc-elf-newlib-x86_64-V2.8.1
 XPACK_RISCV_NONE_ELF_GCC_DIR = $(TOOLCHAIN_INSTALL_DIR)/xpack-riscv-none-elf-gcc-14.2.0-2
+RISCV_MUSLEABI_GCC_DIR = $(TOOLCHAIN_INSTALL_DIR)/riscv64-linux-musleabi_for_x86_64-pc-linux-gnu
 
 T_HEAD_DEBUGSERVER_BIN = $(T_HEAD_DEBUGSERVER_DIR)/DebugServerConsole.elf
 #XUANTIE_900_GCC_ELF_NEWLIB_BIN = $(XUANTIE_900_GCC_ELF_NEWLIB_DIR)/bin/riscv64-unknown-elf-
 XPACK_RISCV_NONE_ELF_GCC_BIN = $(XPACK_RISCV_NONE_ELF_GCC_DIR)/bin/riscv-none-elf-
+RISCV_MUSLEABI_GCC_BIN = $(RISCV_MUSLEABI_GCC_DIR)/bin/riscv64-unknown-linux-musl-
 
 $(XFEL_DIR):
 	@echo XFEL INSTALL
@@ -144,12 +146,12 @@ OBDUMP = ${CROSS_COMPILE}objdump
 SIZE = ${CROSS_COMPILE}size
 
 #DEVICE = -march=rv64gcv0p7_xtheadc -mabi=lp64d -mtune=c906 -mcmodel=medlow  
-
+#DEVICE = -march=rv64imafdc -mabi=lp64 -mcmodel=medany
 DEVICE = -march=rv64imafd_zicsr -mabi=lp64d -mcmodel=medany
 VARS   = -D VERSION_GIT="\"$(VERSION_GIT)\"" -D SOC="'$(SOC_D)'" -D PLATFORM="'$(PLATFORM_D)'"
-CFLAGS = $(DEVICE) $(VARS) -fno-stack-protector -ffunction-sections -fdata-sections -fdiagnostics-color=always -Wno-cpp -Wno-int-conversion
-AFLAGS = $(DEVICE) $(VARS) -x assembler-with-cpp																					
-LFLAGS = $(DEVICE) $(VARS) -T $(SRC_DIR)/link.ld -Wl,--cref,-Map=$(BUILD_DIR)/$(TARGET_NAME).map,--print-memory-usage -nostartfiles
+CFLAGS = $(DEVICE) -fno-stack-protector -fno-common -ffunction-sections -fdata-sections -fstrict-volatile-bitfields -fdiagnostics-color=always -Wno-cpp -Wno-int-conversion $(VARS) 
+AFLAGS = $(DEVICE) -x assembler-with-cpp $(VARS)																					
+LFLAGS = $(DEVICE) -Wl,--gc-sections,--cref,-Map=$(BUILD_DIR)/$(TARGET_NAME).map,--print-memory-usage -nostartfiles -T $(SRC_DIR)/link.ld -static $(VARS) 
 
 # -ffreestanding -std=gnu99 
 # -mstrict-align
@@ -221,7 +223,7 @@ submodules:
 	git submodule update --init
 
 #SD card
-$(SD_IMAGE):
+$(SD_IMAGE): all
 	@echo SD $(SD_IMAGE)
 	$(CMD_PREFIX)$(SRC_DIR)/bootloader/mkimage -T sunxi_toc1 -d $(SRC_DIR)/bootloader/toc1_D1H.cfg $(BUILD_DIR)/$(TARGET_NAME)_sd.bin
 	$(CMD_PREFIX)dd if=$(SRC_DIR)/bootloader/$(BOOTLOADER_NAME) of=$(SD_IMAGE) bs=8192 seek=16

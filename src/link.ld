@@ -4,7 +4,9 @@
 
 MEMORY
 {
-  RAM : ORIGIN = 0x40000000, LENGTH = 60M
+  RAM  : ORIGIN = 0x40000000, LENGTH = 6M
+  USB : ORIGIN = 0x40600000, LENGTH = 16M
+  HEAP  : ORIGIN = 0x41600000, LENGTH = 16M
 }
 
 /* Library configurations */
@@ -120,8 +122,6 @@ SECTIONS
 		__zero_table_start64__ = .;
 		QUAD (__bss_start__)
 		QUAD ((__bss_end__ - __bss_start__) / 4)
-		QUAD (__bss2_start__)
-		QUAD ((__bss2_end__ - __bss2_start__) / 4)
 		__zero_table_end64__ = .;
 	} > RAM
 
@@ -191,29 +191,6 @@ SECTIONS
 		*(.framebuff*)
 	} > RAM
 
-	.ramnc ALIGN(1M):
-	{
- 		PROVIDE(__RAMNC_BASE = .);
- 		__bss2_start__ = .;
-		. = . + 10M;
-
-		*(.ramnc*)
-
-		__bss2_end__ = .;
-		. = ALIGN(1M);
- 		PROVIDE(__RAMNC_TOP = .);
- 	} > RAM
-
-	.heap :/* (NOLOAD):*/
-	{
-		PROVIDE(__HeapBase = .);
-		. = . + 30M;
-		__end__ = .;
-		end = __end__;
-		KEEP(*(.heap*))
-		PROVIDE(__HeapLimit = .);
-	} > RAM
-
 	/* .stack_dummy section doesn't contains any symbols. It is only
 	 * used for linker to calculate size of stack sections, and assign
 	 * values to stack symbols later */
@@ -228,9 +205,30 @@ SECTIONS
 	__StackLimit = __StackTop - SIZEOF(.stack_dummy);
 	PROVIDE(__stack = __StackTop);
 
+    . = ORIGIN(USB);
+
+	.ramnc ALIGN(1M) :
+	{
+		*(.ramnc*)
+		. = . + 9M;
+		. = ALIGN(1M);
+ 	} > USB
+
+   	. = ORIGIN(HEAP);    
+	
+	.heap :/* (NOLOAD):*/
+	{
+		__end__ = .;
+		end = __end__;
+		KEEP(*(.heap*))
+	} > HEAP
+
+	PROVIDE(__HeapBase = ORIGIN(HEAP));
+	PROVIDE(__HeapLimit = ORIGIN(HEAP) + LENGTH(HEAP));
+
 	/* PROVIDE(__TTB_BASE = ORIGIN(TTB)); */
 	/* PROVIDE(__ttb_end__ = ORIGIN(TTB) + LENGTH(TTB)); */
 
 	/* Check if data + heap + stack exceeds RAM limit */
-	ASSERT(__StackLimit >= __HeapLimit, "region RAM overflowed with stack")
-}
+/* 	ASSERT(__StackLimit >= __HeapLimit, "region RAM overflowed with stack")
+ */}

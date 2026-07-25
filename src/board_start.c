@@ -12,8 +12,6 @@
 
 extern unsigned int __bss_start__;
 extern unsigned int __bss_end__;
-extern unsigned int __bss2_start__;
-extern unsigned int __bss2_end__;
 
 extern void main(void);
 
@@ -47,8 +45,6 @@ void logo(void)
 void board_start(void)
 {
 	init_bss(__bss_start__ , __bss_end__);
-	init_bss(__bss2_start__ , __bss2_end__);
-
 	ccu_init();
 	uart_init(CONFIG_UART_NUM, CONFIG_UART_BAUDRATE);
 	init_printf(NULL,uart_putc);
