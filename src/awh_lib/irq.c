@@ -66,14 +66,14 @@ void handle_trap(void)
 		}
 		else
 		{
-			LOG_E("Unknown interrupt %d", mcause & ~(1UL << 63));
+			tfp_printf("Unknown interrupt %d\n", mcause & ~(1UL << 63));
 			while(1)
 				;
 		}	
     } else {
 		if(mcause < ARRAY_SIZE(exception_names))
 		{
-			LOG_D("Exception %d: %s", mcause, exception_names[mcause]);
+			tfp_printf("Exception %d: %s\n", mcause, exception_names[mcause]);
 			handle_exception(mcause);
 			asm volatile("csrr t0, mepc");
 			asm volatile("addi t0, t0, 0x4");
@@ -81,7 +81,7 @@ void handle_trap(void)
 		}
 		else
 		{
-			LOG_E("Unknown exception %d", mcause);
+			tfp_printf("Unknown exception %d\n", mcause);
 			while(1)
 				;
 		}	
@@ -89,8 +89,8 @@ void handle_trap(void)
 }
 
 void handle_exception(uint64_t mcause) {
-	LOG_E("Stored pc: %x", csr_read_mepc());
-	LOG_E("Stored mtval: %x", csr_read_mtval());
+	tfp_printf("Stored pc: %x \n", csr_read_mepc());
+	tfp_printf("Stored mtval: %x \n", csr_read_mtval());
 	while(1)
 		;
 }
@@ -107,7 +107,7 @@ void handle_interrupt(uint64_t mcause) {
 			//LOG_D("Handle irq: %d",irq);
 			(irq_handlers_array[irq])();
 		}else{
-			LOG_E("Unknown irq: %d",irq);
+			tfp_printf("Unknown irq: %d\n",irq);
 			while(1)
 				;
 		}
@@ -121,7 +121,7 @@ void handle_interrupt(uint64_t mcause) {
 
 void irq_enable(int irq)
 {
-	LOG_D("irq_enable %d", irq);
+	tfp_printf("irq_enable %d\n", irq);
 	PLIC->PLIC_IP_REGn[irq / 32] |= (1 << (irq % 32));
 	PLIC->PLIC_PRIO_REGn[irq] = 1;
 	PLIC->PLIC_MIE_REGn[irq / 32] |= (1 << (irq % 32));
@@ -129,7 +129,7 @@ void irq_enable(int irq)
 
 void irq_disable(int irq)
 {
-	LOG_D("irq_disable %d", irq);
+	tfp_printf("irq_disable %d\n", irq);
 	PLIC->PLIC_MIE_REGn[irq / 32] &= ~(1 << (irq % 32));
 }
 
@@ -138,12 +138,12 @@ void irq_assign(int irq, void (*func)(void))
 	if(irq > IRQ_NUM_MIN & irq < IRQ_NUM_MAX)
 		irq_handlers_array[irq] = func;
 	else
-		LOG_E("Unknown irq: %d",irq);
+		tfp_printf("Unknown irq: %d\n",irq);
 }
 
 void dummy_irq_handler(void)
 {
-	LOG_W("dummy_irq_handler");
+	tfp_printf("dummy_irq_handler\n");
 }
 
 void init_irq_handlers(void)
@@ -166,7 +166,7 @@ static void plic_init()
 
 void irq_init(void)
 {
-	LOG_D("irq_init");
+	tfp_printf("irq_init\n");
 	init_irq_handlers();
 	plic_init();
 	csr_set_bits_mie(MIE_MEI_BIT_MASK);	

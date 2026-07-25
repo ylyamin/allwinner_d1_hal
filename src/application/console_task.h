@@ -3,6 +3,7 @@
 #include <fifo.h>
 
 void console_task_init(void);
+int console_task_init_finish(void);
 void console_task_inputs_init(void);
 
 void console_render(void);

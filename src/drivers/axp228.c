@@ -26,7 +26,7 @@
 #define ALDO3_Voltage_REG 0x2A
 
 #define BAT_Gauge 0xB9
-
+#define PEK_Parameter_Set 0x36
 
 //DCDC_CNTRL_REG
 #define ALDO2_Enable BV(7)
