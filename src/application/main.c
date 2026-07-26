@@ -30,27 +30,27 @@ void main(void)
 
     usb_task_init();
 
-    //console_fill_string_init();
+    int i;
 
-    //run_command("doom");
-    
     while(1)
     {
-        usb_task_exec();
-        
-        //console_fill_string();
-        
-        console_command_handler();
-        
+        if(i == 100)
+        {
+            run_command("doom");
+        }
+        i++;
+
+        usb_task_exec(); // usb work only when dcache not enabled 
+                
         console_render();    
         
         gui();
         
-        display_task_exec();	
+        console_command_handler();
 
-        //tfp_printf("%d \n", get_time_ms() );
+        display_task_exec();	
     }
 }
 
-// usb work when not enabled dcache
+
 

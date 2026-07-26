@@ -4,9 +4,9 @@
 
 MEMORY
 {
-  RAM   : ORIGIN = 0x40000000, LENGTH = 6M
-  USB   : ORIGIN = 0x40600000, LENGTH = 10M
-  HEAP  : ORIGIN = 0x42000000, LENGTH = 16M
+  RAM   : ORIGIN = 0x40000000, LENGTH = 16M /* bootloader can't load more that 16.7M*/
+  USB   : ORIGIN = 0x41000000, LENGTH = 10M
+  HEAP  : ORIGIN = 0x42000000, LENGTH = 30M
 }
 
 /* Library configurations */
@@ -201,22 +201,17 @@ SECTIONS
 
 	/* Set stack top to end of RAM, and stack limit move down by
 	 * size of stack_dummy section */
+
 	__StackTop = ORIGIN(RAM) + LENGTH(RAM);
 	__StackLimit = __StackTop - SIZEOF(.stack_dummy);
 	PROVIDE(__stack = __StackTop);
 
-/*     . = ORIGIN(USB); */
-
-	.ramnc ALIGN(1M) :
+	.ramnc :
 	{
 		*(.ramnc*)
-		. = . + 9M;
-		. = ALIGN(1M);
  	} > USB
-
-/*    	. = ORIGIN(HEAP);     */
 	
-	.heap :/* (NOLOAD):*/
+	.heap :
 	{
 		__end__ = .;
 		end = __end__;
