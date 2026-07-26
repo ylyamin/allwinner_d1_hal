@@ -8,14 +8,12 @@
 
 void usb_task_init(void)
 {
-
 	LOG_D("usb_task_init");
-	usb_hw_init();
-	tuh_init(0);
-
 #if (PLATFORM == PLATFORM_DEVTERM)
 	axp_USB_control(TWI0,1);
 #endif
+	usb_hw_init();
+	tuh_init(0);
 }
 
 void usb_task_exec(void)

@@ -51,7 +51,7 @@ void usb_hw_init(void)
 
 void usb_int_handler(void)
 {
-	tuh_int_handler(0);
+	tuh_int_handler(0,0);
 }
 
 #ifdef TUP_USBIP_EHCI

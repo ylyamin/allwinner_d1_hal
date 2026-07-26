@@ -432,8 +432,8 @@ void ccu_init(void)
 	ccu_clk_ahb_set(0);
 	ccu_clk_apb0_set(0);
 
-	ccu_mbus_enable();
 	ccu_dma_enable();
+	ccu_mbus_enable();
 
 	ccu_peri0_pll_set();
 	//ccu_video0_pll_set();

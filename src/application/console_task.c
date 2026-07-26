@@ -44,6 +44,7 @@ uint32_t shift_y = 0;
 uint32_t col_num = 0;
 uint32_t row_num = 0;
 uint32_t row_num_max = 0;
+
 int console_task_init_done = 0;
 
 void console_task_init(void)
@@ -240,10 +241,10 @@ void gui(void)
 {
     uint32_t gui_shift_x;
     int num1,num2;
-    char str_out1[20], str_out2[20];
+    char str_out1[20], str_out2[30];
 
     num1 = tfp_sprintf(str_out1, "AWH Terminal");
-    num2 = tfp_sprintf(str_out2, "Tem:%2dC Bat:%2d%%", ths_get_temp(), axp_battery_get_soc(TWI0));
+    num2 = tfp_sprintf(str_out2, "Tem:%2dC Bat:%3d%%", ths_get_temp(), axp_battery_get_soc(TWI0));
 
     for(int j = 0; j < num1; j++)
     {

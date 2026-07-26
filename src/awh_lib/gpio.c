@@ -54,3 +54,42 @@ enum gpio_state_t gpio_get(struct gpio_t *gpio)
 {
 	return (gpio->gpio->DATA & gpio->pin) ? GPIO_SET : GPIO_RESET;
 }
+
+void jtag_set(void)
+{
+	 struct gpio_t jtag_gpio[] = {
+        {
+            .gpio = GPIOF,
+            .pin = BV(0),
+            .mode = GPIO_MODE_FNC4,
+            .pupd = GPIO_PUPD_UP,
+            .drv =  GPIO_DRV_3,
+            .state = GPIO_SET,
+        },
+                {
+            .gpio = GPIOF,
+            .pin = BV(1),
+            .mode = GPIO_MODE_FNC4,
+            .pupd = GPIO_PUPD_UP,
+            .drv =  GPIO_DRV_3,
+            .state = GPIO_SET,
+        },
+                {
+            .gpio = GPIOF,
+            .pin = BV(3),
+            .mode = GPIO_MODE_FNC4,
+            .pupd = GPIO_PUPD_UP,
+            .drv =  GPIO_DRV_3,
+            .state = GPIO_SET,
+        },
+                {
+            .gpio = GPIOF,
+            .pin = BV(5),
+            .mode = GPIO_MODE_FNC4,
+            .pupd = GPIO_PUPD_UP,
+            .drv =  GPIO_DRV_3,
+            .state = GPIO_SET,
+        },
+    };
+    gpio_init(jtag_gpio, ARRAY_SIZE(jtag_gpio));
+}

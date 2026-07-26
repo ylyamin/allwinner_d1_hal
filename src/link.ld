@@ -4,9 +4,9 @@
 
 MEMORY
 {
-  RAM  : ORIGIN = 0x40000000, LENGTH = 6M
-  USB : ORIGIN = 0x40600000, LENGTH = 16M
-  HEAP  : ORIGIN = 0x41600000, LENGTH = 16M
+  RAM   : ORIGIN = 0x40000000, LENGTH = 6M
+  USB   : ORIGIN = 0x40600000, LENGTH = 10M
+  HEAP  : ORIGIN = 0x42000000, LENGTH = 16M
 }
 
 /* Library configurations */
@@ -205,7 +205,7 @@ SECTIONS
 	__StackLimit = __StackTop - SIZEOF(.stack_dummy);
 	PROVIDE(__stack = __StackTop);
 
-    . = ORIGIN(USB);
+/*     . = ORIGIN(USB); */
 
 	.ramnc ALIGN(1M) :
 	{
@@ -214,7 +214,7 @@ SECTIONS
 		. = ALIGN(1M);
  	} > USB
 
-   	. = ORIGIN(HEAP);    
+/*    	. = ORIGIN(HEAP);     */
 	
 	.heap :/* (NOLOAD):*/
 	{
@@ -231,4 +231,5 @@ SECTIONS
 
 	/* Check if data + heap + stack exceeds RAM limit */
 /* 	ASSERT(__StackLimit >= __HeapLimit, "region RAM overflowed with stack")
- */}
+ */
+ }

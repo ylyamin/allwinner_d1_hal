@@ -16,7 +16,7 @@ SOC = d1h
 PLATFORM = devterm
 SD_IMAGE = image/$(PLATFORM)_sd_image.img
 SD_MOUNT = /dev/sdb
-BOOTLOADER_NAME = boot0_sdcard_sun20iw1p1_d1h.bin
+BOOTLOADER_NAME = boot0_sdcard_sun20iw1p1.bin
 
 .DEFAULT_GOAL := all
 
@@ -73,14 +73,17 @@ include $(SRC_DIR)/external/Makefile
 #Toolcahin
 XFEL_DIR = $(TOOLCHAIN_INSTALL_DIR)/xfel
 T_HEAD_DEBUGSERVER_DIR = $(TOOLCHAIN_INSTALL_DIR)/T-HEAD_DebugServer
-#XUANTIE_900_GCC_ELF_NEWLIB_DIR = $(TOOLCHAIN_INSTALL_DIR)/Xuantie-900-gcc-elf-newlib-x86_64-V2.8.1
+XUANTIE_900_GCC_ELF_NEWLIB_DIR = $(TOOLCHAIN_INSTALL_DIR)/Xuantie-900-gcc-elf-newlib-x86_64-V2.8.1
 XPACK_RISCV_NONE_ELF_GCC_DIR = $(TOOLCHAIN_INSTALL_DIR)/xpack-riscv-none-elf-gcc-14.2.0-2
 RISCV_MUSLEABI_GCC_DIR = $(TOOLCHAIN_INSTALL_DIR)/riscv64-linux-musleabi_for_x86_64-pc-linux-gnu
+RISCV_GLIB_GCC_THEAD_DIR = $(TOOLCHAIN_INSTALL_DIR)/riscv64-glibc-gcc-thead_20200702
+
 
 T_HEAD_DEBUGSERVER_BIN = $(T_HEAD_DEBUGSERVER_DIR)/DebugServerConsole.elf
-#XUANTIE_900_GCC_ELF_NEWLIB_BIN = $(XUANTIE_900_GCC_ELF_NEWLIB_DIR)/bin/riscv64-unknown-elf-
+XUANTIE_900_GCC_ELF_NEWLIB_BIN = $(XUANTIE_900_GCC_ELF_NEWLIB_DIR)/bin/riscv64-unknown-elf-
 XPACK_RISCV_NONE_ELF_GCC_BIN = $(XPACK_RISCV_NONE_ELF_GCC_DIR)/bin/riscv-none-elf-
 RISCV_MUSLEABI_GCC_BIN = $(RISCV_MUSLEABI_GCC_DIR)/bin/riscv64-unknown-linux-musl-
+RISCV_GLIB_GCC_THEAD_BIN = $(RISCV_GLIB_GCC_THEAD_DIR)/bin/riscv64-unknown-linux-gnu-
 
 $(XFEL_DIR):
 	@echo XFEL INSTALL
@@ -148,6 +151,7 @@ SIZE = ${CROSS_COMPILE}size
 #DEVICE = -march=rv64gcv0p7_xtheadc -mabi=lp64d -mtune=c906 -mcmodel=medlow  
 #DEVICE = -march=rv64imafdc -mabi=lp64 -mcmodel=medany
 DEVICE = -march=rv64imafd_zicsr -mabi=lp64d -mcmodel=medany
+
 VARS   = -D VERSION_GIT="\"$(VERSION_GIT)\"" -D SOC="'$(SOC_D)'" -D PLATFORM="'$(PLATFORM_D)'"
 CFLAGS = $(DEVICE) -fno-stack-protector -fno-common -ffunction-sections -fdata-sections -fstrict-volatile-bitfields -fdiagnostics-color=always -Wno-cpp -Wno-int-conversion $(VARS) 
 AFLAGS = $(DEVICE) -x assembler-with-cpp $(VARS)																					
@@ -161,8 +165,8 @@ LFLAGS = $(DEVICE) -Wl,--gc-sections,--cref,-Map=$(BUILD_DIR)/$(TARGET_NAME).map
 # -nostartfiles 
 # -nostdlib
 
-CFLAGS +=  -O0 -ggdb
-AFLAGS +=  -ggdb
+#CFLAGS +=  -O0 -ggdb
+#AFLAGS +=  -ggdb
 
 # Sources
 OBJS = $(SRC:%=$(BUILD_DIR)/%.o)

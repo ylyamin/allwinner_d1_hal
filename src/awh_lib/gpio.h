@@ -52,5 +52,6 @@ struct gpio_t {
 void gpio_init(struct gpio_t *tab, size_t count);
 void gpio_set(struct gpio_t *gpio, enum gpio_state_t state);
 enum gpio_state_t gpio_get(struct gpio_t *gpio);
+void jtag_set(void);
 
 #endif
