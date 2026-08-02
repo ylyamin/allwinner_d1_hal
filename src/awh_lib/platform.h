@@ -7,16 +7,22 @@
 
 #define SOC_D1H 'h'
 #define SOC_D1S 's'
+#define PLATFORM_SIPEED     's'
+#define PLATFORM_DEVTERM    'd'
+#define LCD_LVDS 'l'
+#define LCD_MIPI 'm'
+#define LCD_RGB  'r'
 
 #ifndef SOC
 #define SOC SOC_D1H
 #endif
 
-#define PLATFORM_SIPEED     's'
-#define PLATFORM_DEVTERM    'd'
-
 #ifndef PLATFORM
-#define PLATFORM PLATFORM_SIPEED
+#define PLATFORM PLATFORM_DEVTERM
+#endif
+
+#ifndef LCD
+#define LCD LCD_LVDS
 #endif
 
 #ifndef VERSION_GIT

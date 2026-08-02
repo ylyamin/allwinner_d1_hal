@@ -34,9 +34,10 @@
 #include <log.h>
 #include <ccu.h>
 #include <stdbool.h>
+#include <tlsf.h>
 
 ///////////////
-
+extern tlsf_t mem_pool;
 extern void * memset(void *m, int c, size_t n);
 extern void * memcpy( void *dst0, const void* src0, size_t len0);
 
@@ -193,7 +194,7 @@ static const struct dcs_seq panel_dcs_seq_initlist[] = {
 
 ssize_t mipi_dsi_dcs_write(const uint8_t *data, size_t len);
 
-static void panel_init(void)
+void panel_init(void)
 {
 	int i, ret;
 
@@ -338,7 +339,7 @@ static void dphy_enable(void)
 	       ((4 - 1) << 0) // M-1 ,
 	       CCU_MIPI_DSI_CLK);
  */
-
+#if 1
 //dphy tx power on 
 	dphy_write(DPHY_TX_CTL_REG,
 		   DPHY_TX_CTL_HS_TX_CLK_CONT);
@@ -362,11 +363,13 @@ static void dphy_enable(void)
 	dphy_write(DPHY_TX_TIME4_REG,
 		   DPHY_TX_TIME4_HS_TX_ANA0(3) |
 		   DPHY_TX_TIME4_HS_TX_ANA1(3));
-////
+
 	dphy_write(DPHY_GCTL_REG,
 		   DPHY_GCTL_LANE_NUM(PANEL_LANES) |
 		   DPHY_GCTL_EN);
+#endif
 
+#if 0
 ///A100
 	unsigned long mipi_symbol_rate = PANEL_CLOCK;
 	unsigned int div, n;
@@ -436,10 +439,10 @@ static void dphy_enable(void)
 	dphy_write(SUN50I_COMBO_PHY_REG2,
 		     SUN50I_COMBO_PHY_REG2_HS_STOP_DLY(20));
 	delay_us(1);
-
-
+#endif
+#if 1
 ///A31
-/* 	dphy_write(DPHY_ANA0_REG,
+ 	dphy_write(DPHY_ANA0_REG,
 		   DPHY_ANA0_REG_PWS |
 		   DPHY_ANA0_REG_DMPC |
 		   DPHY_ANA0_REG_SLV(7) |
@@ -469,8 +472,11 @@ static void dphy_enable(void)
 		   DPHY_ANA3_EN_LDOR |
 		   DPHY_ANA3_EN_LDOC |
 		   DPHY_ANA3_EN_LDOD);
-	delay_us(1); */
+	delay_us(1); 
 /////
+#endif
+
+#if 1
 	dphy_update_BVs(DPHY_ANA3_REG,
 			 DPHY_ANA3_EN_VTTC |
 			 DPHY_ANA3_EN_VTTD_MASK,
@@ -495,6 +501,9 @@ static void dphy_enable(void)
 	dphy_update_BVs(DPHY_ANA2_REG,
 			 DPHY_ANA2_EN_P2S_CPU_MASK,
 			 DPHY_ANA2_EN_P2S_CPU(lanes_mask));
+
+#endif
+
 }
 
 // }}}
@@ -1084,9 +1093,7 @@ static void sun6i_dsi_setup_timings(unsigned channel)
         /* How many bytes do we need to send all payloads? */
         bytes = max_t(size_t, max(max(hfp, hblk), max(hsa, hbp)), vblk);
 	
-	//buffer = malloc(bytes);
-	uint8_t malloc[bytes] = {};
-	buffer = &malloc[0];
+	buffer = tlsf_malloc(mem_pool, bytes);
 
         dsi_write(SUN6I_DSI_BASIC_CTL_REG, basic_ctl);
 
@@ -1274,10 +1281,9 @@ ssize_t mipi_dsi_dcs_write(const uint8_t *data, size_t len)
 
 		dsi_write(SUN6I_DSI_CMD_TX_REG(0),
 			  sun6i_dsi_dcs_build_pkt_hdr(MIPI_DSI_DCS_LONG_WRITE, data, len));
-		
-		//bounce = zalloc(len + sizeof(crc) + 4);
-		uint8_t zalloc[len + sizeof(crc) + 4] = {};
-		bounce = &zalloc[0];
+
+		bounce = tlsf_malloc(mem_pool, (len + sizeof(crc) + 4));
+		memset(bounce,0,(len + sizeof(crc) + 4));
 
 		memcpy(bounce, data, len);
 		bounce_len += len;
@@ -1334,8 +1340,8 @@ void dsi_init(void)
 	dsi_write(SUN6I_DSI_BASIC_CTL1_REG,
 		  SUN6I_DSI_BASIC_CTL1_VIDEO_ST_DELAY(delay) |
 		  SUN6I_DSI_BASIC_CTL1_VIDEO_FILL |
-		  SUN6I_DSI_BASIC_CTL1_VIDEO_PRECISION |
-		  SUN6I_DSI_BASIC_CTL1_VIDEO_MODE);
+		  SUN6I_DSI_BASIC_CTL1_VIDEO_PRECISION); /* |
+		  SUN6I_DSI_BASIC_CTL1_VIDEO_MODE); */
 
         sun6i_dsi_setup_burst();
         sun6i_dsi_setup_inst_loop();
@@ -1348,8 +1354,13 @@ void dsi_init(void)
 
 	dphy_enable();
 
-	panel_init();
+	// wait for initialization (5-120ms, depending on mode... hmm?)
+	delay_us(15000);
+}
 
+
+void dsi_start(void)
+{
 	sun6i_dsi_start(DSI_START_HSC);
 	delay_us(1000);
 	sun6i_dsi_start(DSI_START_HSD); 

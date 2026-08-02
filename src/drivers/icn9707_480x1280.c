@@ -49,7 +49,7 @@ struct gpio_t lcd_gpio[] = {
 		.mode = GPIO_MODE_FNC4,
 		.pupd = GPIO_PUPD_OFF,
 		.drv =  GPIO_DRV_3, 
-		.state = GPIO_RESET,//GPIO_SET ?
+		.state = GPIO_RESET,
 	},
 };
 
@@ -110,6 +110,12 @@ void LCD_gpio_init(void)
     gpio_init(lcd_gpio, ARRAY_SIZE(lcd_gpio));
 }
 
+void LCD_gpio_set(void)
+{
+    gpio_set(&lcd_gpio[2], GPIO_SET);
+}
+
+
 void LCD_bl_open(void)
 {
 	panel_bl_1;
@@ -130,6 +136,8 @@ void LCD_panel_init(void)
     axp_LCD_control(TWI0,0);
     delay_ms(100);
 
+	dsi_init();
+
     /*start*/
     panel_rst_1;
     axp_LCD_control(TWI0,1);
@@ -141,23 +149,11 @@ void LCD_panel_init(void)
     /*T3*/
     delay_ms(20);
 
-	dsi_init();
-
-
     /*init sequence*/
-/*     for (i = 0; ; i++) {
-        if(lcd_init_setting[i].cmd == REGFLAG_END_OF_TABLE) {
-            break;
-        } else if (lcd_init_setting[i].cmd == REGFLAG_DELAY) {
-            delay_ms(lcd_init_setting[i].count);
-        } else {
-			mipi_dsi_dcs_write(sel, (uint8_t)lcd_init_setting[i].cmd, lcd_init_setting[i].para_list, lcd_init_setting[i].count);
-            //dsi_dcs_wr(sel, (uint8_t)lcd_init_setting[i].cmd, lcd_init_setting[i].para_list, lcd_init_setting[i].count);
-        }
-    }   */
+	panel_init();
+	dsi_start();
 
-    //!sunxi_lcd_dsi_clk_enable(sel);
 	/* T6 */
-	//delay_ms(120);
+	delay_ms(120);
     LOG_D("LCD_panel_init finish");
 }

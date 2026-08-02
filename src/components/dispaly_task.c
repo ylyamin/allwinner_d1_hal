@@ -104,7 +104,7 @@ void display_task_init(void)
 //debug lines in framebuffer1 for pipe 0
 	w = timing.lcd_scale_h;  //1280
  	h = timing.lcd_scale_w;  //480 
-	gr_fill(framebuffer1,w,h, BG_COLOR_1);
+	gr_fill(framebuffer1,w,h, 0xFFFFFFFF);
 
 #if 0
 	gr_draw_hline_xyw(framebuffer1, w, h, /*x*/ 10,		/*y*/ 10,		/*ww*/ w - 20, LINE_COLOR_1);
@@ -135,7 +135,7 @@ void display_task_init(void)
 
 	//3
 	LCD_panel_init();
-
+	
 	//4
 	tcon_lcd_enable();
 	

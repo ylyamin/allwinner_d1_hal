@@ -4,6 +4,7 @@
 
 timing_t LCD_get_param(void);
 void LCD_gpio_init(void);
+void LCD_gpio_set(void);
 void LCD_bl_open(void);
 void LCD_bl_close(void);
 void LCD_panel_init(void);

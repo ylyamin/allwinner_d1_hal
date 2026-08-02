@@ -173,15 +173,14 @@ SECTIONS
 
 	. = __etext2 + __data2_end__ - __data2_start__;
 
-
 	.bss (NOLOAD):
 	{
-		__bss_start__ = .;
+		PROVIDE(__bss_start__ = .);
 		. = ALIGN(64);
 		*(.bss* .sbss*)
 		*(COMMON)
 
-		__bss_end__ = .;
+		PROVIDE(__bss_end__ = .);
 	} > RAM
 
 	.noinit (NOLOAD):

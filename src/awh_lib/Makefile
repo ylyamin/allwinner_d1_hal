@@ -12,23 +12,22 @@ SRC +=	$(SRC_DIR)/awh_lib/fifo.c
 SRC +=	$(SRC_DIR)/awh_lib/g2d.c
 SRC +=	$(SRC_DIR)/awh_lib/log.c
 SRC +=	$(SRC_DIR)/awh_lib/thermal.c
-
-ifeq ("$(PLATFORM)", "devterm")
-#SRC +=	$(SRC_DIR)/awh_lib/tcon_lcd_rgb.c
-SRC +=	$(SRC_DIR)/awh_lib/tcon_lcd_lvds.c
-#SRC +=	$(SRC_DIR)/awh_lib/tcon_lcd_dsi.c
-#SRC +=	$(SRC_DIR)/awh_lib/mipi_dsi.c
-endif
-
-ifeq ("$(PLATFORM)", "sipeed")
-#SRC +=	$(SRC_DIR)/awh_lib/tcon_lcd_rgb.c
-#SRC +=	$(SRC_DIR)/awh_lib/tcon_lcd_lvds.c
-endif
-
 #SRC +=	$(SRC_DIR)/awh_lib/timer.c
+
+ifeq ($(LCD_D),l)
+SRC +=	$(SRC_DIR)/awh_lib/tcon_lcd_lvds.c
+
+else ifeq ($(LCD_D),m)
+SRC +=	$(SRC_DIR)/awh_lib/mipi_dsi.c
+SRC +=	$(SRC_DIR)/awh_lib/tcon_lcd_dsi.c
+
+else ifeq ($(LCD_D),r)
+SRC +=	$(SRC_DIR)/awh_lib/tcon_lcd_rgb.c
+
+endif
+
 SRC +=	$(SRC_DIR)/awh_lib/twi.c
 SRC +=	$(SRC_DIR)/awh_lib/uart.c
 SRC +=	$(SRC_DIR)/awh_lib/usb.c
-
 
 INC +=	$(SRC_DIR)/awh_lib

@@ -175,21 +175,22 @@ void tcon_lcd_init(timing_t timing)
 
 // Step 1 Select HV interface type 
 	
-	TCON_LCD0->LCD_CTL_REG &= (1 << 24);		// Set the interface type of LCD controlle: 0 - HV(Sync+DE), 1 - 8080 I/F; 
+	TCON_LCD0->LCD_CTL_REG |= (1 << 24);		// Set the interface type of LCD controlle: 0 - HV(Sync+DE), 1 - 8080 I/F; 
 	TCON_LCD0->LCD_CTL_REG &= ~BV(0);			// Source Select: 0 - DE, Color - 1
 	TCON_LCD0->LCD_HV_IF_REG &= ~(0xf << 28); 	// Set the HV mode of LCD controller: 0 = 24bit/1cycle parallel mode
-	TCON_LCD0->LCD_CPU_IF_REG = (1 << 28) | (1 << 17);
+	TCON_LCD0->LCD_CPU_IF_REG |= (1 << 28) | (1 << 16) | (1 << 2) | (1 << 0);
+ 	*(uint32_t *)( 0x05461000 + 0x0f8) |= (1 << 3); //ecc_fifo enable
 
 // Step 2 Clock configuration 
 
 	uint32_t tcon_div = 4;
 	tcon_find_clock(timing.pixclk * tcon_div);
 
-	TCON_LCD0->LCD_DCLK_REG = tcon_div;
+	TCON_LCD0->LCD_DCLK_REG = 7;
 
 	// TODO: where does this 2 come from ?
 	LOG_D("tcon_lcd: tcon clk = %dHz pixclk = %dHz\n", ccu_tcon_get_clk() / tcon_div / 2, timing.pixclk); //clk = 648000000Hz pixclk = 55000000Hz
-	ccu_lvds_enable();
+	//ccu_lvds_enable();
 
 	// init iface
 	uint32_t val = timing.vt - timing.lcd_h - 8;
@@ -209,10 +210,22 @@ void tcon_lcd_init(timing_t timing)
 //Step 4 Open IO output
 
 	// io polarity for h,v,de,clk
-	TCON_LCD0->LCD_IO_TRI_REG = 0; // default is 0xffffff (very bad :-)
-	TCON_LCD0->LCD_IO_POL_REG = 0;//2 < 28; //(0 << 31) | (1 << 28) | (1 << 25) | (1 << 24); //2 << 28; // 2/3phase offset ?! why ?
+	TCON_LCD0->LCD_IO_TRI_REG = 0xffffffff; // default is 0xffffff (very bad :-)
+	//TCON_LCD0->LCD_IO_POL_REG = 0;//2 < 28; //(0 << 31) | (1 << 28) | (1 << 25) | (1 << 24); //2 << 28; // 2/3phase offset ?! why ?
+    
+	unsigned block_space = (timing.ht * 24 / (7 * 4)) - timing.lcd_w + 40;
 
-	setup_lvds();
+	TCON_LCD0->LCD_CPU_TRIx_REG[0] = ((block_space - 1) << 16) | (timing.lcd_w - 1);
+	TCON_LCD0->LCD_CPU_TRIx_REG[1] = (timing.lcd_h - 1);
+
+    unsigned start_delay = (timing.vt - timing.lcd_h - 10 - 1);
+    start_delay = start_delay * timing.ht * 149;
+    start_delay = start_delay / (timing.pixclk / 1000) / 8;
+	TCON_LCD0->LCD_CPU_TRIx_REG[2] = (start_delay << 16) | (10);
+
+	TCON_LCD0->LCD_SAFE_PERIOD_REG = (3000 << 16) | (3);
+	TCON_LCD0->LCD_IO_TRI_REG = 0xe0000000;
+	//setup_lvds();
 
 
 //Step 5-7 Set and open interrupt function
@@ -227,7 +240,7 @@ void tcon_lcd_init(timing_t timing)
 	irq_enable(LCD_IRQn); 
 
 
-	tcon_dither();
+	//tcon_dither();
 	LOG_D("tcon: init done\n");
 }
 
@@ -248,7 +261,7 @@ void tcon_lcd_disable(void)
 	TCON_LCD0->LCD_CTL_REG = 0;
 	TCON_LCD0->LCD_GCTL_REG &= ~BV(31);
 
-	disable_lvds();
+	//disable_lvds();
 }
 
 void tcon_dump_regs(void)

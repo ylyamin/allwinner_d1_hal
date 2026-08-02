@@ -10,27 +10,26 @@ DEBUGGER_INSTALL_DIR ?= $(shell pwd)/debugger
 TARGET_NAME = allwinner_d1_hal
 BUILD_DIR = build
 SRC_DIR = src
-
-# PLATFORM devterm or sipeed
-SOC = d1h
 PLATFORM = devterm
+SOC = d1h
+LCD = lvds
 SD_IMAGE = image/$(PLATFORM)_sd_image.img
 SD_MOUNT = /dev/sdb
-BOOTLOADER_NAME = boot0_sdcard_sun20iw1p1.bin
+BOOTLOADER_NAME = boot0_sdcard_sun20iw1p1.bin #changed to no dcache
 
 .DEFAULT_GOAL := all
 
 # SoC: d1h or d1s
-
 SOC_D = h
 ifeq ("$(origin soc)", "command line")
-	SOC = $(soc)
-	ifeq ("$(SOC)","d1h")
+	ifeq ("$(soc)","d1h")
+		SOC = d1h
 		SOC_D = h
-		BOOTLOADER_NAME = boot0_sdcard_sun20iw1p1_d1h.bin
+		BOOTLOADER_NAME = boot0_sdcard_sun20iw1p1.bin
 	endif
 
-	ifeq ("$(SOC)","d1s")
+	ifeq ("$(soc)","d1s")
+		SOC = d1s
 		SOC_D = s
 		BOOTLOADER_NAME = boot0_sdcard_sun20iw1p1_d1s.bin
 	endif
@@ -40,13 +39,31 @@ endif
 
 PLATFORM_D = d
 ifeq ("$(origin platform)", "command line")
-	PLATFORM = $(platform)
-	ifeq ("$(PLATFORM)","sipeed")
+	ifeq ("$(platform)","sipeed")
+		PLATFORM = sipeed
 		PLATFORM_D = s
 	endif
 
-	ifeq ("$(PLATFORM)","devterm")
+	ifeq ("$(platform)","devterm")
+		PLATFORM = devterm
 		PLATFORM_D = d
+	endif
+endif
+
+# LCD: lvds or mipi or rgb
+LCD_D = l
+ifeq ("$(origin lcd)", "command line")
+	ifeq ("$(lcd)","lvds")
+		LCD = lvds
+		LCD_D = l
+	endif
+	ifeq ("$(lcd)","mipi")
+		LCD = mipi
+		LCD_D = m
+	endif
+	ifeq ("$(lcd)","rgb")
+		LCD = rgb
+		LCD_D = r
 	endif
 endif
 
@@ -77,7 +94,6 @@ XUANTIE_900_GCC_ELF_NEWLIB_DIR = $(TOOLCHAIN_INSTALL_DIR)/Xuantie-900-gcc-elf-ne
 XPACK_RISCV_NONE_ELF_GCC_DIR = $(TOOLCHAIN_INSTALL_DIR)/xpack-riscv-none-elf-gcc-14.2.0-2
 RISCV_MUSLEABI_GCC_DIR = $(TOOLCHAIN_INSTALL_DIR)/riscv64-linux-musleabi_for_x86_64-pc-linux-gnu
 RISCV_GLIB_GCC_THEAD_DIR = $(TOOLCHAIN_INSTALL_DIR)/riscv64-glibc-gcc-thead_20200702
-
 
 T_HEAD_DEBUGSERVER_BIN = $(T_HEAD_DEBUGSERVER_DIR)/DebugServerConsole.elf
 XUANTIE_900_GCC_ELF_NEWLIB_BIN = $(XUANTIE_900_GCC_ELF_NEWLIB_DIR)/bin/riscv64-unknown-elf-
@@ -152,7 +168,7 @@ SIZE = ${CROSS_COMPILE}size
 #DEVICE = -march=rv64imafdc -mabi=lp64 -mcmodel=medany
 DEVICE = -march=rv64imafd_zicsr -mabi=lp64d -mcmodel=medany
 
-VARS   = -D VERSION_GIT="\"$(VERSION_GIT)\"" -D SOC="'$(SOC_D)'" -D PLATFORM="'$(PLATFORM_D)'"
+VARS   = -D VERSION_GIT=\"$(VERSION_GIT)\" -D SOC="'$(SOC_D)'" -D PLATFORM="'$(PLATFORM_D)'" -D LCD="'$(LCD_D)'"
 CFLAGS = $(DEVICE) -fno-stack-protector -fno-common -ffunction-sections -fdata-sections -fstrict-volatile-bitfields -fdiagnostics-color=always -Wno-cpp -Wno-int-conversion $(VARS) 
 AFLAGS = $(DEVICE) -x assembler-with-cpp $(VARS)																					
 LFLAGS = $(DEVICE) -Wl,--gc-sections,--cref,-Map=$(BUILD_DIR)/$(TARGET_NAME).map,--print-memory-usage -nostartfiles -T $(SRC_DIR)/link.ld -static $(VARS) 
@@ -194,7 +210,7 @@ $(BUILD_DIR)/%.S.o: %.S
 	$(CMD_PREFIX)$(AS) $(INC_FLAGS) $(AFLAGS) -c  $< -o $@
 
 $(BUILD_DIR)/$(TARGET_NAME).bin: $(OBJS)
-	@echo SOC:$(SOC) PLATFORM:$(PLATFORM)
+	@echo SOC:$(SOC) PLATFORM:$(PLATFORM) LCD:$(LCD)
 	@echo LD $(BUILD_DIR)/$(TARGET_NAME).elf
 	$(CMD_PREFIX)${LD} -o $(BUILD_DIR)/$(TARGET_NAME).elf ${LFLAGS} $(OBJS)
 	$(CMD_PREFIX)${OBJCOPY} -O binary -S $(BUILD_DIR)/$(TARGET_NAME).elf $(BUILD_DIR)/$(TARGET_NAME).bin

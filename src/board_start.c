@@ -10,14 +10,14 @@
 #include <irq.h>
 #include <twi.h>
 
-extern unsigned int __bss_start__;
-extern unsigned int __bss_end__;
+extern uint32_t __bss_start__;
+extern uint32_t __bss_end__;
 
 extern void main(void);
 
-void init_bss(int start, int end)
+void init_bss(uint32_t start, uint32_t end)
 {
-    unsigned int *dst;
+    uint32_t *dst;
     dst = &start;
     while (dst < &end)
     {
@@ -29,27 +29,33 @@ void logo(void)
 {
 	char * soc = "NA";
 	char * platform = "NA";
+	char * lcd = "NA";
 
 	if (SOC == SOC_D1H) soc = "D1H";
 	if (SOC == SOC_D1S) soc = "D1s";
 	if (PLATFORM == PLATFORM_SIPEED)  platform = "Sipeed Lichee RV";
 	if (PLATFORM == PLATFORM_DEVTERM) platform = "ClockworkPi Devterm R-01";
+	if (LCD == LCD_LVDS) lcd = "LVDS";
+	if (LCD == LCD_MIPI) lcd = "MIPI DSI";
+	if (LCD == LCD_RGB)  lcd = "RGB";
 
 	LOG_I("	\\ | /");
 	LOG_I("	- Allwinner D1 HAL [ver: %s]",VERSION_GIT);
 	LOG_I("	/ | \\");
 	LOG_I("	SoC: %s",soc);
 	LOG_I("	Platform: %s",platform);
+	LOG_I("	LCD: %s", lcd);
 }
+
+extern int console_task_init_done;
 
 void board_start(void)
 {
-	init_bss(__bss_start__ , __bss_end__);
+	//init_bss(__bss_start__ , __bss_end__);
 	ccu_init();
 	uart_init(CONFIG_UART_NUM, CONFIG_UART_BAUDRATE);
 	init_printf(NULL,uart_putc);
 	logo();
-
 	irq_init();
 
 #ifdef CONFIG_USE_PMP
@@ -71,5 +77,4 @@ void board_start(void)
 #endif
 
 	main();
-
 }

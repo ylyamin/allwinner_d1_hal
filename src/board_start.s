@@ -193,5 +193,15 @@ Reset_Handler:
 	la  t0, trap_func
    	csrw mtvec, t0
 
+    /* Clear bss sections */
+    la      t0, __bss_start__
+    la      t1, __bss_end__
+    j       clear_bss_loop_end
+clear_bss_loop:
+    sw      zero, 0(t0)
+    addi    t0, t0, 4
+clear_bss_loop_end:
+    bltu    t0, t1, clear_bss_loop
+
 	//fill0_fp64		/* set all floating registers to zero */
 	call board_start
